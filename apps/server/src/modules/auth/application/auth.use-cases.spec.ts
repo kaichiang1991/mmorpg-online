@@ -1,10 +1,10 @@
 import { InvalidCredentialsError, UsernameTakenError, ValidationError } from '../domain/errors';
-import { PasswordHasher } from '../domain/password-hasher';
+import { PasswordHasher } from '../domain/ports/password-hasher';
 import { User } from '../domain/user';
-import { UserRepository } from '../domain/user.repository';
+import { UserRepository } from '../domain/ports/user.repository';
 import { LoginUseCase } from './login.use-case';
 import { RegisterUserUseCase } from './register-user.use-case';
-import { TokenPayload, TokenService } from './token.service';
+import { TokenPayload, TokenService } from '../domain/ports/token.service';
 
 class FakeUserRepository implements UserRepository {
   private byName = new Map<string, User>();

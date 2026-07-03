@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '../domain/user';
-import { UserRepository } from '../domain/user.repository';
+import { UserRepository } from '../domain/ports/user.repository';
 
 /**
  * Dev/test adapter. Swap for a PostgreSQL adapter when persistence lands —

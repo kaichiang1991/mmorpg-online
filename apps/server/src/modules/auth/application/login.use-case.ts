@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InvalidCredentialsError } from '../domain/errors';
-import { PASSWORD_HASHER, PasswordHasher } from '../domain/password-hasher';
-import { USER_REPOSITORY, UserRepository } from '../domain/user.repository';
-import { TOKEN_SERVICE, TokenService } from './token.service';
+import { PASSWORD_HASHER, PasswordHasher } from '../domain/ports/password-hasher';
+import { USER_REPOSITORY, UserRepository } from '../domain/ports/user.repository';
+import { TOKEN_SERVICE, TokenService } from '../domain/ports/token.service';
 
 export interface LoginResult {
   token: string;

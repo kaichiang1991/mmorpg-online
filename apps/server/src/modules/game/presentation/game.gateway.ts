@@ -14,7 +14,7 @@ import {
   MovePayload,
   ServerToClientEvents,
 } from '@mmo/shared';
-import { TOKEN_SERVICE, TokenService } from '../../auth/application/token.service';
+import { TOKEN_SERVICE, TokenService } from '../../auth/domain/ports/token.service';
 import { GameService } from '../application/game.service';
 
 type GameServer = Server<ClientToServerEvents, ServerToClientEvents>;

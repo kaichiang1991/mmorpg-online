@@ -1,4 +1,4 @@
-import { User } from './user';
+import { User } from '../user';
 
 /** Port: persistence for users. Infrastructure provides the adapter. */
 export interface UserRepository {
