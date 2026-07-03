@@ -1,10 +1,7 @@
-/// <reference types="vitest" />
 import { fileURLToPath } from 'node:url';
-import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-  plugins: [react()],
   resolve: {
     alias: {
       '@mmo/shared': fileURLToPath(
@@ -12,14 +9,8 @@ export default defineConfig({
       ),
     },
   },
-  server: {
-    port: 5173,
-    proxy: {
-      '/auth': 'http://localhost:3001',
-      '/socket.io': { target: 'http://localhost:3001', ws: true },
-    },
-  },
   test: {
+    globals: true,
     environment: 'node',
     include: ['src/**/*.spec.ts'],
   },

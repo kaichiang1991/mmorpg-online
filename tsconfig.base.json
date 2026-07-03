@@ -7,6 +7,11 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noUnusedLocals": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@mmo/shared": ["packages/shared/src/index.ts"],
+      "@mmo/shared/*": ["packages/shared/src/*"]
+    }
   }
 }
