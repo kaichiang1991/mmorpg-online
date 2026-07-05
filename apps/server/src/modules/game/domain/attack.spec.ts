@@ -1,11 +1,20 @@
-import { Attack } from './attack';
+import { Attack, DamageElement, DamageKind } from './attack';
 
-const makeAttack = () => new Attack(10);
+const makeAttack = () =>
+  new Attack(320, DamageKind.Magical, DamageElement.Fire, [
+    { source: 'skill', value: 1.5 },
+    { source: 'crit', value: 2 },
+  ]);
+
 describe('Attack', () => {
-  it('create with base damage', () => {
+  it('create with resolved damage snapshot', () => {
     const attack = makeAttack();
-    expect(attack.baseDamage).toBe(10);
-    expect(attack.multiplier).toBe(1);
-    expect(attack.type).toBe('physic');
+    expect(attack.finalDamage).toBe(320);
+    expect(attack.kind).toBe(DamageKind.Magical);
+    expect(attack.element).toBe(DamageElement.Fire);
+    expect(attack.multipliers).toEqual([
+      { source: 'skill', value: 1.5 },
+      { source: 'crit', value: 2 },
+    ]);
   });
 });
