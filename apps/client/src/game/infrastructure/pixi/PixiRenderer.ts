@@ -1,6 +1,8 @@
 import { Application, Container, Graphics, Text } from 'pixi.js';
+import type { ActiveAttack } from '../../domain/active-attacks';
 import { cameraOffset } from '../../domain/camera';
 import type { Player } from '../../domain/player';
+import { EffectLayer } from './EffectLayer';
 
 interface PlayerSprite {
   root: Container;
@@ -16,6 +18,7 @@ export class PixiRenderer {
   private readonly app = new Application();
   private readonly world = new Container();
   private readonly sprites = new Map<string, PlayerSprite>();
+  private readonly effects = new EffectLayer();
   private map = { width: 0, height: 0 };
   private destroyed = false;
 
@@ -24,6 +27,10 @@ export class PixiRenderer {
     if (this.destroyed) return; // destroyed during async init
     host.appendChild(this.app.canvas);
     this.app.stage.addChild(this.world);
+    // player sprites are appended to `world` later; zIndex keeps effects on top
+    this.world.sortableChildren = true;
+    this.effects.container.zIndex = 100;
+    this.world.addChild(this.effects.container);
   }
 
   destroy(): void {
@@ -50,8 +57,9 @@ export class PixiRenderer {
     this.app.ticker.add(handler);
   }
 
-  render(players: Player[], selfId: string | null): void {
+  render(players: Player[], attacks: ActiveAttack[], selfId: string | null): void {
     const seen = new Set<string>();
+    const byId = new Map(players.map((p) => [p.id, p]));
 
     for (const p of players) {
       seen.add(p.id);
@@ -67,6 +75,8 @@ export class PixiRenderer {
         this.sprites.delete(id);
       }
     }
+
+    this.effects.render(attacks, byId, performance.now());
   }
 
   /* ------------------------------------------------------------ internal */

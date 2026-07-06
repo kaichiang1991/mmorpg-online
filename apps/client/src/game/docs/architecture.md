@@ -12,12 +12,14 @@ apps/client/src/
       player.ts                  ← Player entity（server 投影）
       interpolator.ts            ← snapshot 插值
       camera.ts                  ← 鏡頭 clamp 數學
+      active-attacks.ts          ← ActiveAttack 型別（tracker 待 protocol 有 attack event）
     application/
       GameSession.ts             ← use-case 協調：socket ↔ domain ↔ renderer
     infrastructure/
       network.ts                 ← socket.io adapter
       pixi/
-        PixiRenderer.ts          ← 全部 Pixi：sprite 生命週期、地板、鏡頭
+        PixiRenderer.ts          ← facade：sprite 生命週期、地板、鏡頭
+        EffectLayer.ts           ← 攻擊特效繪圖（軌跡、命中 ring）
   ui/                            ← React presentation
     GameCanvas.tsx               ← 只 mount/unmount GameSession
 ```
@@ -109,7 +111,7 @@ export interface ActiveAttack {
   startedAt: number; // 本地時鐘，同 interpolator 的 receivedAt
 }
 
-export class ActiveAttackTracker {
+export interface ActiveAttackTracker {
   push(event: AttackEvent, receivedAt: number): void;
   /** 回傳 now 時刻仍存活的攻擊（TTL 過期自動剔除） */
   activeAt(now: number): ActiveAttack[];

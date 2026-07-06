@@ -29,9 +29,11 @@ export class GameSession {
     });
 
     this.renderer.onWorldClick((x, y) => this.socket?.emit('move', { x, y }));
-    this.renderer.onTick(() =>
-      this.renderer.render(this.interpolator.playersAt(performance.now()), this.selfId),
-    );
+    // attacks: empty until the `attack` event lands in the protocol —
+    // then this becomes `this.attacks.activeAt(now)` (see docs/architecture.md)
+    this.renderer.onTick(() => {
+      this.renderer.render(this.interpolator.playersAt(performance.now()), [], this.selfId);
+    });
   }
 
   destroy(): void {
