@@ -12,4 +12,4 @@ export const WARRIOR_MAP: Map<string, string> = new Map(
 
 export const BAR_WIDTH = 50;
 export const BAR_HEIGHT = 5;
-export const BODY_HEIGHT = 48; // on-screen size; source texture is 49x78
+export const BODY_HEIGHT = 78; // on-screen size; source texture is 49x78
