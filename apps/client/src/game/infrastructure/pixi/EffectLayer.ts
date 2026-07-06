@@ -2,10 +2,10 @@ import { Container, Graphics } from 'pixi.js';
 import { ATTACK_TTL_MS, type ActiveAttack } from '../../domain/active-attacks';
 import type { Player } from '../../domain/player';
 
-/** Projectile flight time from attacker to target — a visual choice. */
-const FLIGHT_MS = 250;
+/** Duration of the axe-swing arc sweeping across the target — a visual choice. */
+const SWING_MS = 200;
 /** Impact ring lingers for whatever remains of the domain-owned lifetime. */
-const LINGER_MS = ATTACK_TTL_MS - FLIGHT_MS;
+const LINGER_MS = ATTACK_TTL_MS - SWING_MS;
 
 /**
  * Draws attack effects. Stateless between frames: one Graphics is cleared
@@ -31,24 +31,50 @@ export class EffectLayer {
       const age = now - attack.startedAt;
       if (age < 0 || age >= ATTACK_TTL_MS) continue;
 
-      if (age < FLIGHT_MS) {
-        this.drawFlight(from, to, age / FLIGHT_MS);
+      if (age < SWING_MS) {
+        this.drawSlash(from, to, age / SWING_MS);
       } else {
-        this.drawImpact(to, (age - FLIGHT_MS) / LINGER_MS);
+        this.drawImpact(to, (age - SWING_MS) / LINGER_MS);
       }
     }
   }
 
-  /** Trail from attacker to the projectile, projectile dot at progress t. */
-  private drawFlight(from: Player, to: Player, t: number): void {
-    const x = from.x + (to.x - from.x) * t;
-    const y = from.y + (to.y - from.y) * t;
+  /**
+   * Axe-swing slash: an arc centered on the attacker, sweeping through the
+   * target's direction. The trail behind the blade fades out and the leading
+   * edge stays bright, like the streak left by a swung axe; t runs 0→1.
+   */
+  private drawSlash(from: Player, to: Player, t: number): void {
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist < 1) return; // overlapping endpoints: no swing direction to draw
 
+    const SWEEP = Math.PI / 2; // 90° swing, centered on the aim direction
+    const aim = Math.atan2(dy, dx);
+    const start = aim - SWEEP / 2;
+    const head = start + SWEEP * t;
+
+    const inner = Math.max(dist - 7, 0);
+    const outer = dist + 7;
+
+    // Trail: crescent segments, brighter toward the blade's leading edge.
+    const SEGMENTS = 6;
+    for (let i = 0; i < SEGMENTS; i++) {
+      const a0 = start + ((head - start) * i) / SEGMENTS;
+      const a1 = start + ((head - start) * (i + 1)) / SEGMENTS;
+      this.g
+        .arc(from.x, from.y, outer, a0, a1)
+        .arc(from.x, from.y, inner, a1, a0, true)
+        .closePath()
+        .fill({ color: 0xffd166, alpha: 0.08 + 0.5 * ((i + 1) / SEGMENTS) });
+    }
+
+    // Blade's leading edge.
     this.g
-      .moveTo(from.x, from.y)
-      .lineTo(x, y)
-      .stroke({ width: 2, color: 0xffd166, alpha: 0.35 });
-    this.g.circle(x, y, 5).fill({ color: 0xffd166, alpha: 0.9 });
+      .moveTo(from.x + Math.cos(head) * inner, from.y + Math.sin(head) * inner)
+      .lineTo(from.x + Math.cos(head) * outer, from.y + Math.sin(head) * outer)
+      .stroke({ width: 3, color: 0xfff2c9, alpha: 0.95 });
   }
 
   /** Expanding, fading ring on the target; t runs 0→1 over the linger. */
