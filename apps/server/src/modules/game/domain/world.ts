@@ -27,6 +27,8 @@ export class World {
       this.width / 2 + (Math.random() * 200 - 100),
       this.height / 2 + (Math.random() * 200 - 100),
       GAME_CONSTANTS.PLAYER_SPEED,
+      // todo:
+      { str: 200, int: 100, def: 100, mdef: 100, critRate: 0 },
     );
     this.players.set(id, player);
     return player;

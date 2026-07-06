@@ -62,6 +62,7 @@ export class PlayerSprite extends Container {
         .ellipse(0, BODY_HEIGHT / 2, 16, 6)
         .stroke({ width: 2, color: 0x4a8cff, alpha: 0.9 });
       this.addChild(ring);
+      this.zIndex = 100;
     }
 
     const nameLabel = new Text({

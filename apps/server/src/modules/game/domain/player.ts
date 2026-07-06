@@ -1,5 +1,5 @@
 import { GAME_CONSTANTS } from '@mmo/shared';
-import { Combatant } from './attack';
+import { Combatant, DEFAULT_COMBATANT } from './attack';
 import { PlayerHpVo } from './value-objects/playerHpVo';
 import { PlayerMpVo } from './value-objects/playerMpVo';
 
@@ -12,11 +12,11 @@ export class Player implements Combatant {
   private _mp: PlayerMpVo;
 
   // flat baseline stats until characters get real progression
-  readonly str = 20;
-  readonly int = 10;
-  readonly def = 5;
-  readonly mdef = 5;
-  readonly critRate = 0;
+  str: number;
+  int: number;
+  def: number;
+  mdef: number;
+  critRate: number;
 
   constructor(
     readonly id: string,
@@ -24,9 +24,25 @@ export class Player implements Combatant {
     public x: number,
     public y: number,
     private readonly speed: number,
+    combatant: Combatant = DEFAULT_COMBATANT,
   ) {
     this._hp = new PlayerHpVo(GAME_CONSTANTS.MAX_HP, GAME_CONSTANTS.MAX_HP);
     this._mp = new PlayerMpVo(GAME_CONSTANTS.MAX_MP, GAME_CONSTANTS.MAX_MP);
+
+    // todo
+    if (name === 'aaa') {
+      this.str = combatant.str;
+      this.int = combatant.int;
+      this.def = combatant.def;
+      this.mdef = combatant.mdef;
+      this.critRate = combatant.critRate;
+    } else {
+      this.str = DEFAULT_COMBATANT.str;
+      this.int = DEFAULT_COMBATANT.int;
+      this.def = DEFAULT_COMBATANT.def;
+      this.mdef = DEFAULT_COMBATANT.mdef;
+      this.critRate = DEFAULT_COMBATANT.critRate;
+    }
   }
 
   get hp(): PlayerHpVo {

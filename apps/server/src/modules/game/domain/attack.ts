@@ -28,13 +28,20 @@ export interface Skill {
 
 /** 參戰者當下屬性（Player、怪物皆實作） */
 export interface Combatant {
-  readonly str: number;
-  readonly int: number;
-  readonly def: number;
-  readonly mdef: number;
-  readonly critRate: number;
+  str: number;
+  int: number;
+  def: number;
+  mdef: number;
+  critRate: number;
   // resistances、buffs... 之後擴充
 }
+export const DEFAULT_COMBATANT: Combatant = {
+  str: 100,
+  int: 100,
+  def: 100,
+  mdef: 100,
+  critRate: 0,
+};
 
 /** 一次攻擊的結算快照 */
 export class Attack {
