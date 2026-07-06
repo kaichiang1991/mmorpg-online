@@ -9,7 +9,7 @@ export const GAME_CONSTANTS = {
   TICK_RATE: 20,
   SNAPSHOT_RATE: 10,
   PLAYER_SPEED: 220, // px per second
-  ATTACK_RANGE: 50, // px, center to center
+  ATTACK_RANGE: 100, // px, center to center
   ATTACK_COOLDOWN_MS: 600,
 } as const;
 

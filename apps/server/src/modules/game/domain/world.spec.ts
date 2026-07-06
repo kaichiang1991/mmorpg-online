@@ -69,7 +69,7 @@ describe('World', () => {
 
     it('rejects out-of-range attacks', () => {
       const { world, b } = worldWithPair();
-      b.x = 100 + 51; // just past ATTACK_RANGE (50)
+      b.x = 100 + 101; // just past ATTACK_RANGE (100)
       expect(world.attack('a', 'b', basicSkillId, 1000)).toBeNull();
     });
 
