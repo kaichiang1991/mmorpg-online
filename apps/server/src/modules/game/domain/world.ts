@@ -77,7 +77,14 @@ export class World {
   snapshot(now: number): WorldSnapshot {
     const players: PlayerSnapshot[] = [];
     for (const p of this.players.values()) {
-      players.push({ id: p.id, name: p.name, x: Math.round(p.x), y: Math.round(p.y) });
+      players.push({
+        id: p.id,
+        name: p.name,
+        x: Math.round(p.x),
+        y: Math.round(p.y),
+        hp: GAME_CONSTANTS.MAX_HP,
+        mp: 200,
+      });
     }
     return { t: now, players };
   }

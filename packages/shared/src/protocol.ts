@@ -11,6 +11,7 @@ export const GAME_CONSTANTS = {
   PLAYER_SPEED: 220, // px per second
   ATTACK_RANGE: 100, // px, center to center
   ATTACK_COOLDOWN_MS: 600,
+  MAX_HP: 1000, // TODO: per-player stat once hp lives on the server entity
 } as const;
 
 /* ------------------------------------------------------------- REST auth */
@@ -37,6 +38,8 @@ export interface PlayerSnapshot {
   name: string;
   x: number;
   y: number;
+  hp: number;
+  mp: number;
 }
 
 export interface WorldSnapshot {

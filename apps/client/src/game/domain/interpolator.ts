@@ -36,6 +36,8 @@ export class Interpolator {
         name: p.name,
         x: before.x + (p.x - before.x) * alpha,
         y: before.y + (p.y - before.y) * alpha,
+        hp: p.hp,
+        mp: p.mp,
       };
     });
   }
@@ -46,4 +48,6 @@ const clone = (p: PlayerSnapshot): Player => ({
   name: p.name,
   x: p.x,
   y: p.y,
+  hp: p.hp,
+  mp: p.mp,
 });
