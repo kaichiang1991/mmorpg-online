@@ -82,7 +82,7 @@ export class World {
         name: p.name,
         x: Math.round(p.x),
         y: Math.round(p.y),
-        hp: GAME_CONSTANTS.MAX_HP,
+        hp: p.hp.remainHp,
         mp: 200,
       });
     }

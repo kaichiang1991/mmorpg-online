@@ -47,4 +47,12 @@ describe('Player', () => {
       expect(p.y).toBe(0);
     });
   });
+
+  describe('injured', () => {
+    it('reduces hp', () => {
+      const p = makePlayer();
+      p.injured(100);
+      expect(p.hp.remainHp).toBe(900);
+    });
+  });
 });
