@@ -47,6 +47,46 @@ describe('World', () => {
     expect(b.x).toBeLessThan(bx);
   });
 
+  describe('attack', () => {
+    const worldWithPair = () => {
+      const world = new World(1600, 1200);
+      const a = world.addPlayer('a', 'A');
+      const b = world.addPlayer('b', 'B');
+      a.x = a.y = 100;
+      b.x = 150; // within ATTACK_RANGE
+      b.y = 100;
+      return { world, a, b };
+    };
+
+    it('resolves an in-range attack with damage', () => {
+      const { world } = worldWithPair();
+      const result = world.attack('a', 'b', 1000);
+      expect(result).not.toBeNull();
+      expect(result!.finalDamage).toBeGreaterThanOrEqual(1);
+    });
+
+    it('rejects out-of-range attacks', () => {
+      const { world, b } = worldWithPair();
+      b.x = 100 + 201; // just past ATTACK_RANGE (200)
+      expect(world.attack('a', 'b', 1000)).toBeNull();
+    });
+
+    it('rejects self, unknown attacker and unknown target', () => {
+      const { world } = worldWithPair();
+      expect(world.attack('a', 'a', 1000)).toBeNull();
+      expect(world.attack('ghost', 'b', 1000)).toBeNull();
+      expect(world.attack('a', 'ghost', 1000)).toBeNull();
+    });
+
+    it('enforces the attack cooldown per attacker', () => {
+      const { world } = worldWithPair();
+      expect(world.attack('a', 'b', 1000)).not.toBeNull();
+      expect(world.attack('a', 'b', 1100)).toBeNull(); // still cooling down
+      expect(world.attack('a', 'b', 1000 + 600)).not.toBeNull(); // cooldown over
+      expect(world.attack('b', 'a', 1100)).not.toBeNull(); // b has own cooldown
+    });
+  });
+
   it('snapshot contains all players with rounded coordinates', () => {
     const world = new World();
     world.addPlayer('p1', 'Alice');

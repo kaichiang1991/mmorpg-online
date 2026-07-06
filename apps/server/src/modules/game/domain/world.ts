@@ -1,5 +1,8 @@
 import { GAME_CONSTANTS, PlayerSnapshot, WorldSnapshot } from '@mmo/shared';
+import { Attack } from './attack';
+import { CombatResolver } from './combat-resolver';
 import { Player } from './player';
+import { BASIC_ATTACK } from './skills';
 
 const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
 
@@ -10,6 +13,7 @@ const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.m
  */
 export class World {
   private readonly players = new Map<string, Player>();
+  private readonly combat = new CombatResolver();
 
   constructor(
     readonly width: number = GAME_CONSTANTS.MAP_WIDTH,
@@ -45,6 +49,22 @@ export class World {
     this.players
       .get(id)
       ?.setTarget(clamp(x, 0, this.width), clamp(y, 0, this.height));
+  }
+
+  /**
+   * Attack intent from a client. Validates and resolves immediately;
+   * null means rejected (unknown ids, self, out of range, cooling down).
+   */
+  attack(attackerId: string, targetId: string, now: number): Attack | null {
+    const attacker = this.players.get(attackerId);
+    const target = this.players.get(targetId);
+    if (!attacker || !target || attackerId === targetId) return null;
+
+    const distance = Math.hypot(target.x - attacker.x, target.y - attacker.y);
+    if (distance > GAME_CONSTANTS.ATTACK_RANGE) return null;
+    if (!attacker.tryAttack(now)) return null;
+
+    return this.combat.resolve(attacker, target, BASIC_ATTACK);
   }
 
   /** Advance the simulation by dt seconds. */

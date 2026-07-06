@@ -1,5 +1,5 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { GAME_CONSTANTS, WorldSnapshot } from '@mmo/shared';
+import { AttackEvent, GAME_CONSTANTS, WorldSnapshot } from '@mmo/shared';
 import { World } from '../domain/world';
 
 /**
@@ -39,6 +39,14 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
 
   snapshot(): WorldSnapshot {
     return this.world.snapshot(Date.now());
+  }
+
+  /** Resolves an attack intent; null when the domain rejects it. */
+  attack(playerId: string, targetId: string): AttackEvent | null {
+    const now = Date.now();
+    const result = this.world.attack(playerId, targetId, now);
+    if (!result) return null;
+    return { attackerId: playerId, targetId, damage: result.finalDamage, t: now };
   }
 
   get mapSize(): { width: number; height: number } {

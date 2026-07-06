@@ -9,6 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import {
+  AttackPayload,
   ClientToServerEvents,
   GAME_CONSTANTS,
   MovePayload,
@@ -67,5 +68,15 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return;
     }
     this.game.setMoveTarget(socket.id, payload.x, payload.y);
+  }
+
+  @SubscribeMessage('attack')
+  onAttack(socket: GameSocket, payload: AttackPayload): void {
+    console.log('on attack');
+    if (typeof payload?.targetId !== 'string') {
+      return;
+    }
+    const event = this.game.attack(socket.id, payload.targetId);
+    if (event) this.server.emit('attack', event);
   }
 }
