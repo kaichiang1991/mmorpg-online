@@ -38,6 +38,7 @@ class StatBar extends Container {
  * lifecycle (create/destroy) and click wiring belong to PlayerLayer.
  */
 export class PlayerSprite extends Container {
+  private readonly body: AnimatedSprite;
   private readonly hpBar = new StatBar(0xff0000);
   private readonly mpBar = new StatBar(0x3b82f6);
 
@@ -48,11 +49,12 @@ export class PlayerSprite extends Container {
     for (const key of WARRIOR_MAP.keys()) {
       if (/idle/.test(key)) idleTextures.push(key);
     }
-    const body = new AnimatedSprite(idleTextures.map((alias) => Texture.from(alias)));
-    body.anchor.set(0.5);
-    body.scale.set(BODY_HEIGHT / body.texture.height);
-    body.animationSpeed = 0.05;
-    body.play();
+
+    this.body = new AnimatedSprite(idleTextures.map((alias) => Texture.from(alias)));
+    this.body.anchor.set(0.5);
+    this.body.scale.set(BODY_HEIGHT / this.body.texture.height);
+    this.body.animationSpeed = 0.05;
+    this.body.play();
 
     if (isSelf) {
       // ground ring marking your own character
@@ -72,13 +74,20 @@ export class PlayerSprite extends Container {
     this.hpBar.y = -35;
     this.mpBar.y = -35 + BAR_HEIGHT;
 
-    this.addChild(body, nameLabel, this.hpBar, this.mpBar);
+    this.addChild(this.body, nameLabel, this.hpBar, this.mpBar);
   }
 
   /** Sync visuals to the latest player state; called every frame. */
   update(p: Player): void {
+    this.revert(p);
     this.position.set(p.x, p.y);
     this.hpBar.setPercentage(p.hp / GAME_CONSTANTS.MAX_HP);
     this.mpBar.setPercentage(p.mp / GAME_CONSTANTS.MAX_MP);
+  }
+
+  revert(player: Player) {
+    console.log(player.x, this.position.x);
+    if (player.x < this.position.x) this.body.scale.x = -1;
+    else this.body.scale.x = 1;
   }
 }
