@@ -1,18 +1,12 @@
 import { GAME_CONSTANTS } from '@mmo/shared';
-import { Assets, Container, Graphics, Sprite, Text } from 'pixi.js';
-import characterUrl from '../../../assets/characters/frame_001.png';
+import { AnimatedSprite, Assets, Container, Graphics, Text, Texture } from 'pixi.js';
 import type { Player } from '../../domain/player';
+import { BAR_HEIGHT, BAR_WIDTH, BODY_HEIGHT, WARRIOR_MAP } from './PlayerConfig';
 
-const BAR_WIDTH = 50;
-const BAR_HEIGHT = 5;
-const BODY_HEIGHT = 48; // on-screen size; source texture is 49x78
-
-/**
- * Loads every texture PlayerSprite draws with into the Assets cache.
- * Must resolve before the first PlayerSprite is constructed —
- * Sprite.from(url) only looks up the cache, it never fetches.
- */
-export const preloadPlayerAssets = (): Promise<unknown> => Assets.load(characterUrl);
+export const preloadPlayerAssets = async (): Promise<void> => {
+  const allTextures = [...WARRIOR_MAP.entries()];
+  await Assets.load(allTextures.map(([alias, url]) => ({ alias, src: url })));
+};
 
 /** One horizontal stat bar: white track, colored fill sized by percentage. */
 class StatBar extends Container {
@@ -50,9 +44,15 @@ export class PlayerSprite extends Container {
   constructor(name: string, isSelf: boolean) {
     super();
 
-    const body = Sprite.from(characterUrl);
+    const idleTextures: string[] = [];
+    for (const key of WARRIOR_MAP.keys()) {
+      if (/idle/.test(key)) idleTextures.push(key);
+    }
+    const body = new AnimatedSprite(idleTextures.map((alias) => Texture.from(alias)));
     body.anchor.set(0.5);
     body.scale.set(BODY_HEIGHT / body.texture.height);
+    body.animationSpeed = 0.05;
+    body.play();
 
     if (isSelf) {
       // ground ring marking your own character
