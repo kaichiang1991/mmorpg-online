@@ -4,6 +4,7 @@ import { cameraOffset } from '../../domain/camera';
 import type { Player } from '../../domain/player';
 import { EffectLayer } from './EffectLayer';
 import { PlayerLayer } from './PlayerLayer';
+import { preloadPlayerAssets } from './PlayerSprite';
 
 /**
  * Owns everything Pixi: canvas, layer composition, floor, camera.
@@ -19,7 +20,10 @@ export class PixiRenderer {
   private destroyed = false;
 
   async init(host: HTMLElement): Promise<void> {
-    await this.app.init({ resizeTo: window, background: '#1d2b1d', antialias: true });
+    await Promise.all([
+      this.app.init({ resizeTo: window, background: '#1d2b1d', antialias: true }),
+      preloadPlayerAssets(),
+    ]);
     if (this.destroyed) return; // destroyed during async init
     host.appendChild(this.app.canvas);
     this.app.stage.addChild(this.world);

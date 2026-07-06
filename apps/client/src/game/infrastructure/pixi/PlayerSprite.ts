@@ -1,9 +1,18 @@
 import { GAME_CONSTANTS } from '@mmo/shared';
-import { Container, Graphics, Text } from 'pixi.js';
+import { Assets, Container, Graphics, Sprite, Text } from 'pixi.js';
+import characterUrl from '../../../assets/characters/frame_001.png';
 import type { Player } from '../../domain/player';
 
 const BAR_WIDTH = 50;
 const BAR_HEIGHT = 5;
+const BODY_HEIGHT = 48; // on-screen size; source texture is 49x78
+
+/**
+ * Loads every texture PlayerSprite draws with into the Assets cache.
+ * Must resolve before the first PlayerSprite is constructed —
+ * Sprite.from(url) only looks up the cache, it never fetches.
+ */
+export const preloadPlayerAssets = (): Promise<unknown> => Assets.load(characterUrl);
 
 /** One horizontal stat bar: white track, colored fill sized by percentage. */
 class StatBar extends Container {
@@ -41,10 +50,17 @@ export class PlayerSprite extends Container {
   constructor(name: string, isSelf: boolean) {
     super();
 
-    const body = new Graphics()
-      .circle(0, 0, 16)
-      .fill(isSelf ? 0x4a8cff : 0x8fd14f)
-      .stroke({ width: isSelf ? 3 : 1, color: 0xffffff, alpha: 0.8 });
+    const body = Sprite.from(characterUrl);
+    body.anchor.set(0.5);
+    body.scale.set(BODY_HEIGHT / body.texture.height);
+
+    if (isSelf) {
+      // ground ring marking your own character
+      const ring = new Graphics()
+        .ellipse(0, BODY_HEIGHT / 2, 16, 6)
+        .stroke({ width: 2, color: 0x4a8cff, alpha: 0.9 });
+      this.addChild(ring);
+    }
 
     const nameLabel = new Text({
       text: name,
