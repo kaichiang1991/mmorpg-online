@@ -64,7 +64,9 @@ export class World {
 
     // todo: use factory to get skill by id
     const useSkill: Skill = BASIC_ATTACK;
-    return this.combat.resolve(attacker, target, useSkill);
+    const attack = this.combat.resolve(attacker, target, useSkill);
+    target.injured(attack.finalDamage);
+    return attack;
   }
 
   /** Advance the simulation by dt seconds. */

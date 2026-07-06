@@ -80,6 +80,20 @@ describe('World', () => {
       expect(world.attack('a', 'ghost', basicSkillId, 1000)).toBeNull();
     });
 
+    it('applies the resolved damage to the target', () => {
+      const { world, b } = worldWithPair();
+      const before = b.hp.remainHp;
+      const result = world.attack('a', 'b', basicSkillId, 1000);
+      expect(b.hp.remainHp).toBe(before - result!.finalDamage);
+    });
+
+    it('reports damaged hp in the snapshot', () => {
+      const { world, b } = worldWithPair();
+      world.attack('a', 'b', basicSkillId, 1000);
+      const snap = world.snapshot(2000);
+      expect(snap.players.find((p) => p.id === 'b')!.hp).toBe(b.hp.remainHp);
+    });
+
     it('enforces the attack cooldown per attacker', () => {
       const { world } = worldWithPair();
       expect(world.attack('a', 'b', basicSkillId, 1000)).not.toBeNull();
