@@ -35,7 +35,9 @@ export class GameSession {
     });
 
     this.renderer.onWorldClick((x, y) => this.socket?.emit('move', { x, y }));
-    this.renderer.onPlayerClick((targetId) => this.socket?.emit('attack', { targetId }));
+    this.renderer.onPlayerClick((targetId) =>
+      this.socket?.emit('attack', { targetId, skillId: 'basic' }),
+    );
     this.renderer.onTick(() => {
       const now = performance.now();
       this.renderer.render(

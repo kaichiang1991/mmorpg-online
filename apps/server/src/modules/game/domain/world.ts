@@ -1,5 +1,5 @@
 import { GAME_CONSTANTS, PlayerSnapshot, WorldSnapshot } from '@mmo/shared';
-import { Attack } from './attack';
+import { Attack, Skill } from './attack';
 import { CombatResolver } from './combat-resolver';
 import { Player } from './player';
 import { BASIC_ATTACK } from './skills';
@@ -46,25 +46,25 @@ export class World {
 
   /** Move intent from a client. Target is clamped inside the map. */
   setMoveTarget(id: string, x: number, y: number): void {
-    this.players
-      .get(id)
-      ?.setTarget(clamp(x, 0, this.width), clamp(y, 0, this.height));
+    this.players.get(id)?.setTarget(clamp(x, 0, this.width), clamp(y, 0, this.height));
   }
 
   /**
    * Attack intent from a client. Validates and resolves immediately;
    * null means rejected (unknown ids, self, out of range, cooling down).
    */
-  attack(attackerId: string, targetId: string, now: number): Attack | null {
+  attack(attackerId: string, targetId: string, skillId: string, now: number): Attack | null {
     const attacker = this.players.get(attackerId);
     const target = this.players.get(targetId);
-    if (!attacker || !target || attackerId === targetId) return null;
+    if (!attacker || !target || !skillId || attackerId === targetId) return null;
 
     const distance = Math.hypot(target.x - attacker.x, target.y - attacker.y);
     if (distance > GAME_CONSTANTS.ATTACK_RANGE) return null;
     if (!attacker.tryAttack(now)) return null;
 
-    return this.combat.resolve(attacker, target, BASIC_ATTACK);
+    // todo: use factory to get skill by id
+    const useSkill: Skill = BASIC_ATTACK;
+    return this.combat.resolve(attacker, target, useSkill);
   }
 
   /** Advance the simulation by dt seconds. */

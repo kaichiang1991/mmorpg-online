@@ -72,11 +72,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('attack')
   onAttack(socket: GameSocket, payload: AttackPayload): void {
-    console.log('on attack');
-    if (typeof payload?.targetId !== 'string') {
+    if (typeof payload?.targetId !== 'string' || typeof payload?.skillId !== 'string') {
       return;
     }
-    const event = this.game.attack(socket.id, payload.targetId);
+    const event = this.game.attack(socket.id, payload.targetId, payload.skillId);
     if (event) this.server.emit('attack', event);
   }
 }

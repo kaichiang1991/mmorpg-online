@@ -41,10 +41,9 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
     return this.world.snapshot(Date.now());
   }
 
-  /** Resolves an attack intent; null when the domain rejects it. */
-  attack(playerId: string, targetId: string): AttackEvent | null {
+  attack(playerId: string, targetId: string, skillId: string): AttackEvent | null {
     const now = Date.now();
-    const result = this.world.attack(playerId, targetId, now);
+    const result = this.world.attack(playerId, targetId, skillId, now);
     if (!result) return null;
     return { attackerId: playerId, targetId, damage: result.finalDamage, t: now };
   }
