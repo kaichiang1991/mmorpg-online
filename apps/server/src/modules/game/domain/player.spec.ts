@@ -55,4 +55,12 @@ describe('Player', () => {
       expect(p.hp.remainHp).toBe(900);
     });
   });
+
+  describe('consumeMp', () => {
+    it('reduces mp', () => {
+      const p = makePlayer();
+      p.consumeMp(50);
+      expect(p.mp.remainMp).toBe(150);
+    });
+  });
 });

@@ -4,7 +4,7 @@ import { Interpolator } from './interpolator';
 
 const snap = (t: number, x: number, y: number): WorldSnapshot => ({
   t,
-  players: [{ id: 'p1', name: 'Alice', x, y }],
+  players: [{ id: 'p1', name: 'Alice', x, y, hp: 1000, mp: 200 }],
 });
 
 describe('Interpolator', () => {
@@ -15,7 +15,9 @@ describe('Interpolator', () => {
   it('snaps to the only snapshot when there is no previous one', () => {
     const itp = new Interpolator();
     itp.push(snap(0, 100, 200), 1000);
-    expect(itp.playersAt(1050)).toEqual([{ id: 'p1', name: 'Alice', x: 100, y: 200 }]);
+    expect(itp.playersAt(1050)).toEqual([
+      { id: 'p1', name: 'Alice', x: 100, y: 200, hp: 1000, mp: 200 },
+    ]);
   });
 
   it('lerps halfway between two snapshots', () => {

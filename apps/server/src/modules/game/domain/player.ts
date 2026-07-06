@@ -1,6 +1,7 @@
 import { GAME_CONSTANTS } from '@mmo/shared';
 import { Combatant } from './attack';
 import { PlayerHpVo } from './value-objects/playerHpVo';
+import { PlayerMpVo } from './value-objects/playerMpVo';
 
 /** Pure domain entity: a player pawn in the world. No framework dependencies. */
 export class Player implements Combatant {
@@ -8,6 +9,7 @@ export class Player implements Combatant {
   private targetY: number | null = null;
   private lastAttackAt = Number.NEGATIVE_INFINITY;
   private _hp: PlayerHpVo;
+  private _mp: PlayerMpVo;
 
   // flat baseline stats until characters get real progression
   readonly str = 20;
@@ -24,10 +26,15 @@ export class Player implements Combatant {
     private readonly speed: number,
   ) {
     this._hp = new PlayerHpVo(GAME_CONSTANTS.MAX_HP, GAME_CONSTANTS.MAX_HP);
+    this._mp = new PlayerMpVo(GAME_CONSTANTS.MAX_MP, GAME_CONSTANTS.MAX_MP);
   }
 
   get hp(): PlayerHpVo {
     return this._hp;
+  }
+
+  get mp(): PlayerMpVo {
+    return this._mp;
   }
 
   get isMoving(): boolean {
@@ -65,5 +72,9 @@ export class Player implements Combatant {
 
   injured(damage: number): void {
     this._hp = this._hp.decrease(damage);
+  }
+
+  consumeMp(cost: number): void {
+    this._mp = this._mp.decrease(cost);
   }
 }

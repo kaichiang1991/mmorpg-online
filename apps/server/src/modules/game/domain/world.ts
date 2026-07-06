@@ -85,7 +85,7 @@ export class World {
         x: Math.round(p.x),
         y: Math.round(p.y),
         hp: p.hp.remainHp,
-        mp: 200,
+        mp: p.mp.remainMp,
       });
     }
     return { t: now, players };

@@ -12,6 +12,7 @@ export const GAME_CONSTANTS = {
   ATTACK_RANGE: 100, // px, center to center
   ATTACK_COOLDOWN_MS: 600,
   MAX_HP: 1000, // TODO: per-player stat once hp lives on the server entity
+  MAX_MP: 200, // TODO: same as MAX_HP
 } as const;
 
 /* ------------------------------------------------------------- REST auth */
