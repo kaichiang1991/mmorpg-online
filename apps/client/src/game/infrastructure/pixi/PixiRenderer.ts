@@ -1,3 +1,4 @@
+import gsap from 'gsap';
 import { Application, Container, Graphics } from 'pixi.js';
 import type { ActiveAttack } from '../../domain/active-attacks';
 import { cameraOffset } from '../../domain/camera';
@@ -18,10 +19,19 @@ export class PixiRenderer {
   private readonly effects = new EffectLayer();
   private map = { width: 0, height: 0 };
   private destroyed = false;
+  private tickHandler: (() => void) | null = null;
+
+  // The whole frame is driven by gsap.ticker (Pixi's own ticker never starts):
+  // GSAP updates its tweens first, then this listener runs game updates and
+  // renders — guaranteeing tween state is fresh in the same frame.
+  private readonly frame = () => {
+    this.tickHandler?.();
+    this.app.render();
+  };
 
   async init(host: HTMLElement): Promise<void> {
     await Promise.all([
-      this.app.init({ resizeTo: window, background: '#1d2b1d', antialias: true }),
+      this.app.init({ resizeTo: window, background: '#1d2b1d', antialias: true, autoStart: false }),
       preloadPlayerAssets(),
     ]);
     if (this.destroyed) return; // destroyed during async init
@@ -35,6 +45,10 @@ export class PixiRenderer {
 
   destroy(): void {
     this.destroyed = true;
+    // Order matters: stop driving frames and kill tweens before the Pixi
+    // objects they touch are destroyed.
+    gsap.ticker.remove(this.frame);
+    this.effects.destroy();
     this.app.destroy(true, { children: true });
   }
 
@@ -54,7 +68,8 @@ export class PixiRenderer {
   }
 
   onTick(handler: () => void): void {
-    this.app.ticker.add(handler);
+    this.tickHandler = handler;
+    gsap.ticker.add(this.frame);
   }
 
   /** Reports clicks on other players' sprites; self is not clickable. */
