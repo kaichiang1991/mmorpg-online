@@ -1,7 +1,8 @@
-import type { WelcomePayload } from '@mmo/shared';
+import type { AttackEvent, WelcomePayload } from '@mmo/shared';
 import { Interpolator } from '../domain/interpolator';
 import { connect, GameSocket } from '../infrastructure/network';
 import { PixiRenderer } from '../infrastructure/pixi/PixiRenderer';
+import { ActiveAttackTracker } from '../domain/active-attacks';
 
 /**
  * Application layer: orchestrates the game session. Wires the socket to
@@ -14,6 +15,7 @@ export class GameSession {
   private socket: GameSocket | null = null;
   private selfId: string | null = null;
   private destroyed = false;
+  private readonly attackers: ActiveAttackTracker = new ActiveAttackTracker(400);
 
   async mount(host: HTMLElement, token: string): Promise<void> {
     await this.renderer.init(host);
@@ -28,11 +30,20 @@ export class GameSession {
       this.interpolator.push(snapshot, performance.now());
     });
 
+    this.socket.on('attack', (event: AttackEvent) => {
+      this.attackers.push(event, performance.now());
+    });
+
     this.renderer.onWorldClick((x, y) => this.socket?.emit('move', { x, y }));
     // attacks: empty until the `attack` event lands in the protocol —
     // then this becomes `this.attacks.activeAt(now)` (see docs/architecture.md)
     this.renderer.onTick(() => {
-      this.renderer.render(this.interpolator.playersAt(performance.now()), [], this.selfId);
+      const now = performance.now();
+      this.renderer.render(
+        this.interpolator.playersAt(now),
+        this.attackers.activeAt(now),
+        this.selfId,
+      );
     });
   }
 

@@ -53,13 +53,27 @@ export interface MovePayload {
   y: number;
 }
 
+export interface AttackPayload {
+  targetId: string;
+}
+
+export interface AttackEvent {
+  attackerId: string;
+  targetId: string;
+  damage: number;
+  /** server timestamp (ms epoch) */
+  t: number;
+}
+
 /** events the client may emit */
 export interface ClientToServerEvents {
   move: (payload: MovePayload) => void;
+  attack: (payload: AttackPayload) => void;
 }
 
 /** events the server may emit */
 export interface ServerToClientEvents {
   welcome: (payload: WelcomePayload) => void;
   snapshot: (payload: WorldSnapshot) => void;
+  attack: (event: AttackEvent) => void;
 }
