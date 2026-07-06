@@ -1,11 +1,5 @@
 import type { PlayerSnapshot, WorldSnapshot } from '@mmo/shared';
-
-export interface InterpolatedPlayer {
-  id: string;
-  name: string;
-  x: number;
-  y: number;
-}
+import type { Player } from './player';
 
 /**
  * Buffers the two most recent world snapshots and lerps entity positions
@@ -26,7 +20,7 @@ export class Interpolator {
   }
 
   /** Interpolated player list at render time `now` (same clock as receivedAt). */
-  playersAt(now: number): InterpolatedPlayer[] {
+  playersAt(now: number): Player[] {
     if (!this.next) return [];
     if (!this.prev) return this.next.players.map(clone);
 
@@ -47,7 +41,7 @@ export class Interpolator {
   }
 }
 
-const clone = (p: PlayerSnapshot): InterpolatedPlayer => ({
+const clone = (p: PlayerSnapshot): Player => ({
   id: p.id,
   name: p.name,
   x: p.x,

@@ -1,5 +1,6 @@
 import { Application, Container, Graphics, Text } from 'pixi.js';
-import type { InterpolatedPlayer } from './interpolator';
+import { cameraOffset } from '../../domain/camera';
+import type { Player } from '../../domain/player';
 
 interface PlayerSprite {
   root: Container;
@@ -49,7 +50,7 @@ export class PixiRenderer {
     this.app.ticker.add(handler);
   }
 
-  render(players: InterpolatedPlayer[], selfId: string | null): void {
+  render(players: Player[], selfId: string | null): void {
     const seen = new Set<string>();
 
     for (const p of players) {
@@ -108,10 +109,7 @@ export class PixiRenderer {
   }
 
   private followCamera(x: number, y: number): void {
-    const { width, height } = this.app.screen;
-    this.world.position.set(
-      Math.min(0, Math.max(width - this.map.width, width / 2 - x)),
-      Math.min(0, Math.max(height - this.map.height, height / 2 - y)),
-    );
+    const offset = cameraOffset(this.app.screen, this.map, x, y);
+    this.world.position.set(offset.x, offset.y);
   }
 }
