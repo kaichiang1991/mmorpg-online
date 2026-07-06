@@ -86,7 +86,8 @@ export class PlayerSprite extends Container {
   }
 
   revert(player: Player) {
-    console.log(player.x, this.position.x);
+    if (player.x === this.position.x) return;
+
     if (player.x < this.position.x) this.body.scale.x = -1;
     else this.body.scale.x = 1;
   }
