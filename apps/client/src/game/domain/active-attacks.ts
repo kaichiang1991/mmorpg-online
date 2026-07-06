@@ -1,11 +1,15 @@
-import { AttackEvent } from '@mmo/shared';
+import type { AttackEvent } from '@mmo/shared';
+
+/**
+ * How long an attack counts as "happening" on the client, in local-clock ms.
+ * Domain fact — the renderer derives its visual phase timing from this,
+ * not the other way around.
+ */
+export const ATTACK_TTL_MS = 400;
 
 /**
  * A client-side fact: "this attack is happening right now."
  * Data only — how it looks (trajectory, colors, fade) lives in the renderer.
- *
- * ActiveAttackTracker (push/activeAt, same pattern as Interpolator) will be
- * added here once the `attack` event lands in the shared protocol.
  */
 export interface ActiveAttack {
   attackerId: string;
@@ -15,13 +19,15 @@ export interface ActiveAttack {
   startedAt: number;
 }
 
-export class ActiveAttackTracker{
-
+/**
+ * Tracks attacks currently in flight. Same pattern as Interpolator:
+ * `push()` ingests a server event, `activeAt(now)` answers for render time.
+ * Pure logic — unit-tested, no Pixi/socket dependencies.
+ */
+export class ActiveAttackTracker {
   private attacks: ActiveAttack[] = [];
 
-  constructor(private readonly ttlMs: number) {
-  }
-
+  /** `receivedAt` is the local clock — AttackEvent.t (server epoch) is not comparable. */
   push(event: AttackEvent, receivedAt: number): void {
     this.attacks.push({
       attackerId: event.attackerId,
@@ -31,8 +37,9 @@ export class ActiveAttackTracker{
     });
   }
 
+  /** Attacks still alive at `now`; expired ones are dropped for good. */
   activeAt(now: number): ActiveAttack[] {
-    this.attacks = this.attacks.filter((attack) => now - attack.startedAt < this.ttlMs);
+    this.attacks = this.attacks.filter((attack) => now - attack.startedAt < ATTACK_TTL_MS);
     return this.attacks;
   }
 }

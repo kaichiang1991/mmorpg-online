@@ -15,7 +15,7 @@ export class GameSession {
   private socket: GameSocket | null = null;
   private selfId: string | null = null;
   private destroyed = false;
-  private readonly attackers: ActiveAttackTracker = new ActiveAttackTracker(400);
+  private readonly attackers = new ActiveAttackTracker();
 
   async mount(host: HTMLElement, token: string): Promise<void> {
     await this.renderer.init(host);
@@ -35,8 +35,6 @@ export class GameSession {
     });
 
     this.renderer.onWorldClick((x, y) => this.socket?.emit('move', { x, y }));
-    // attacks: empty until the `attack` event lands in the protocol —
-    // then this becomes `this.attacks.activeAt(now)` (see docs/architecture.md)
     this.renderer.onTick(() => {
       const now = performance.now();
       this.renderer.render(

@@ -1,13 +1,11 @@
 import { Container, Graphics } from 'pixi.js';
-import type { ActiveAttack } from '../../domain/active-attacks';
+import { ATTACK_TTL_MS, type ActiveAttack } from '../../domain/active-attacks';
 import type { Player } from '../../domain/player';
 
-/** Projectile flight time from attacker to target. */
+/** Projectile flight time from attacker to target — a visual choice. */
 const FLIGHT_MS = 250;
-/** Impact ring linger time after the projectile lands. */
-const LINGER_MS = 150;
-/** Total lifetime of one attack effect; older attacks are skipped. */
-export const ATTACK_EFFECT_MS = FLIGHT_MS + LINGER_MS;
+/** Impact ring lingers for whatever remains of the domain-owned lifetime. */
+const LINGER_MS = ATTACK_TTL_MS - FLIGHT_MS;
 
 /**
  * Draws attack effects. Stateless between frames: one Graphics is cleared
@@ -31,7 +29,7 @@ export class EffectLayer {
       if (!from || !to) continue; // endpoint no longer in the world: nothing to anchor to
 
       const age = now - attack.startedAt;
-      if (age < 0 || age >= ATTACK_EFFECT_MS) continue;
+      if (age < 0 || age >= ATTACK_TTL_MS) continue;
 
       if (age < FLIGHT_MS) {
         this.drawFlight(from, to, age / FLIGHT_MS);
