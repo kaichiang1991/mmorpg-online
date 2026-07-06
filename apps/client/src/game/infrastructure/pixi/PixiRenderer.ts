@@ -21,6 +21,7 @@ export class PixiRenderer {
   private readonly effects = new EffectLayer();
   private map = { width: 0, height: 0 };
   private destroyed = false;
+  private playerClickHandler: ((targetId: string) => void) | null = null;
 
   async init(host: HTMLElement): Promise<void> {
     await this.app.init({ resizeTo: window, background: '#1d2b1d', antialias: true });
@@ -55,6 +56,11 @@ export class PixiRenderer {
 
   onTick(handler: () => void): void {
     this.app.ticker.add(handler);
+  }
+
+  /** Reports clicks on other players' sprites; self is not clickable. */
+  onPlayerClick(handler: (targetId: string) => void): void {
+    this.playerClickHandler = handler;
   }
 
   render(players: Player[], attacks: ActiveAttack[], selfId: string | null): void {
@@ -111,6 +117,14 @@ export class PixiRenderer {
     label.anchor.set(0.5);
     label.y = -30;
     root.addChild(body, label);
+    if (!isSelf) {
+      root.eventMode = 'static';
+      root.cursor = 'pointer';
+      root.on('pointerdown', (e) => {
+        e.stopPropagation(); // don't also fire the stage's move-to click
+        this.playerClickHandler?.(id);
+      });
+    }
     this.world.addChild(root);
 
     sprite = { root, label };
