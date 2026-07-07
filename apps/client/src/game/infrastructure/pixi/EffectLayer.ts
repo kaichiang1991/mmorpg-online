@@ -41,7 +41,7 @@ export class EffectLayer {
       if (remaining <= 0) continue;
 
       this.ctx.add(() => {
-        this.spawnSlash(from, to, remaining);
+        this.spawnSlash(to, remaining);
         this.spawnDamage(attack.damage, to, remaining);
       });
     }
@@ -54,41 +54,74 @@ export class EffectLayer {
 
   /** How far the stroke's endpoint sits past the target's center. */
   private static readonly REACH = 1.5;
+  /** Fixed cut direction, upper-right to lower-left — every slash reads the same regardless of attacker/target layout. */
+  private static readonly SLASH_ANGLE = (3 * Math.PI) / 4;
+  /** Steel-blue tip color the main stroke fades into — keeps the slash cold, not fiery. */
+  private static readonly BLADE_DARK = 0x14294d;
+  /** Impact crescent radius and angular span at the target. */
+  private static readonly IMPACT_RADIUS = 28;
+  private static readonly IMPACT_SPAN = Math.PI / 1.8;
+
+  /** Lerps two 0xRRGGBB colors channel-by-channel. */
+  private static lerpColor(a: number, b: number, t: number): number {
+    const ar = (a >> 16) & 0xff;
+    const ag = (a >> 8) & 0xff;
+    const ab = a & 0xff;
+    const br = (b >> 16) & 0xff;
+    const bg = (b >> 8) & 0xff;
+    const bb = b & 0xff;
+    const r = Math.round(ar + (br - ar) * t);
+    const gr = Math.round(ag + (bg - ag) * t);
+    const bl = Math.round(ab + (bb - ab) * t);
+    return (r << 16) | (gr << 8) | bl;
+  }
 
   /**
    * Slash: a single straight stroke from the attacker through the target,
    * like one swipe of an axe — whipped out fast from the attacker's end,
    * then fading over the rest of its life.
    */
-  private spawnSlash(from: Player, to: Player, duration: number): void {
-    const dx = to.x - from.x;
-    const dy = to.y - from.y;
-    const length = Math.hypot(dx, dy) * EffectLayer.REACH;
+  private spawnSlash(to: Player, duration: number): void {
+    const angle = EffectLayer.SLASH_ANGLE;
 
-    // Grayscale gradient along the stroke: brightest at the attacker's end,
-    // darkening toward the tip. Drawn as short segments along local +x so
-    // the whole stroke scales and rotates as one object — cheaper than
-    // allocating a gradient texture.
-    const SEGMENTS = 8;
-    const BRIGHT = 0xff;
-    const DARK = 0x40;
-    const g = new Graphics();
-    for (let i = 0; i < SEGMENTS; i++) {
-      const t0 = i / SEGMENTS;
-      const t1 = (i + 1) / SEGMENTS;
-      const shade = Math.round(BRIGHT - (BRIGHT - DARK) * ((t0 + t1) / 2));
-      g.moveTo(length * t0, 0)
-        .lineTo(length * t1, 0)
-        .stroke({ width: 4, color: shade * 0x010101 });
-    }
-    g.position.set(from.x, from.y);
-    g.rotation = Math.atan2(dy, dx);
-    this.slashLayer.addChild(g);
+    // Impact crescent (劍影): a clean arc() curve, not the old arcTo() hook,
+    // so the trajectory is one smooth cut instead of a jagged corner-round.
+    // Rotated 90° off the swing direction so it slices across the target
+    // rather than pointing along the blade's travel.
+    const g2 = new Graphics();
+    g2.arc(
+      0,
+      0,
+      EffectLayer.IMPACT_RADIUS,
+      -EffectLayer.IMPACT_SPAN / 2,
+      EffectLayer.IMPACT_SPAN / 2,
+    ).stroke({ width: 3, color: 0xffffff, cap: 'round' });
+    g2.position.set(to.x - 5, to.y - 10);
+    g2.rotation = angle - Math.PI / 2;
+    this.slashLayer.addChild(g2);
 
+    // Icy flash that whips in then fades fast — a glint, not a lingering mark.
+    const tintProxy = { t: 0 };
     gsap
-      .timeline({ onComplete: () => g.destroy() })
-      .fromTo(g.scale, { x: 0.15 }, { x: 1, duration: duration * 0.3, ease: 'power4.out' }, 0)
-      .to(g, { alpha: 0, duration: duration * 0.7, ease: 'power2.in' }, duration * 0.3);
+      .timeline({ onComplete: () => g2.destroy() })
+      .fromTo(
+        g2.scale,
+        { x: 0.5, y: 0.5 },
+        { x: 1, y: 1, duration: duration * 0.2, ease: 'power4.out' },
+        0,
+      )
+      .to(
+        tintProxy,
+        {
+          t: 1,
+          duration: duration * 0.2,
+          onUpdate: () => {
+            g2.tint = gsap.utils.interpolate('#ffffff', '#97dcf8', tintProxy.t);
+          },
+        },
+        0,
+      )
+      .to(g2, { alpha: 0, duration: duration * 0.6, ease: 'power2.in' }, duration * 0.4);
   }
 
   /** Damage numbers ≥ this are shown in yellow instead of white. */
