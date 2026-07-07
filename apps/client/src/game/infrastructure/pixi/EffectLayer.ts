@@ -52,29 +52,11 @@ export class EffectLayer {
     this.ctx.kill();
   }
 
-  /** How far the stroke's endpoint sits past the target's center. */
-  private static readonly REACH = 1.5;
   /** Fixed cut direction, upper-right to lower-left — every slash reads the same regardless of attacker/target layout. */
   private static readonly SLASH_ANGLE = (3 * Math.PI) / 4;
-  /** Steel-blue tip color the main stroke fades into — keeps the slash cold, not fiery. */
-  private static readonly BLADE_DARK = 0x14294d;
   /** Impact crescent radius and angular span at the target. */
   private static readonly IMPACT_RADIUS = 28;
   private static readonly IMPACT_SPAN = Math.PI / 1.8;
-
-  /** Lerps two 0xRRGGBB colors channel-by-channel. */
-  private static lerpColor(a: number, b: number, t: number): number {
-    const ar = (a >> 16) & 0xff;
-    const ag = (a >> 8) & 0xff;
-    const ab = a & 0xff;
-    const br = (b >> 16) & 0xff;
-    const bg = (b >> 8) & 0xff;
-    const bb = b & 0xff;
-    const r = Math.round(ar + (br - ar) * t);
-    const gr = Math.round(ag + (bg - ag) * t);
-    const bl = Math.round(ab + (bb - ab) * t);
-    return (r << 16) | (gr << 8) | bl;
-  }
 
   /**
    * Slash: a single straight stroke from the attacker through the target,
@@ -114,9 +96,9 @@ export class EffectLayer {
         tintProxy,
         {
           t: 1,
-          duration: duration * 0.2,
+          duration: duration * 0.5,
           onUpdate: () => {
-            g2.tint = gsap.utils.interpolate('#ffffff', '#97dcf8', tintProxy.t);
+            g2.tint = gsap.utils.interpolate('#14294d', '#ffffff', tintProxy.t);
           },
         },
         0,
@@ -152,8 +134,8 @@ export class EffectLayer {
       .timeline({ onComplete: () => text.destroy() })
       .fromTo(
         text.scale,
-        { x: 1.6, y: 1.6 },
-        { x: 1, y: 1, duration: duration * 0.35, ease: 'back.out(2.5)' },
+        { x: 2, y: 2 },
+        { x: 1, y: 1, duration: duration, ease: 'back.out(2.5)' },
         0,
       )
       .to(text, { y: text.y - EffectLayer.FLOAT_DISTANCE, duration, ease: 'power1.out' }, 0)
