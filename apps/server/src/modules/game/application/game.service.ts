@@ -1,5 +1,5 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { AttackEvent, GAME_CONSTANTS, WorldSnapshot } from '@mmo/shared';
+import { AttackResultPayload, GAME_CONSTANTS, WorldSnapshot } from '@mmo/shared';
 import { World } from '../domain/world';
 
 /**
@@ -41,11 +41,21 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
     return this.world.snapshot(Date.now());
   }
 
-  attack(playerId: string, targetId: string, skillId: string): AttackEvent | null {
+  attack(playerId: string, targetId: string, skillId: string): AttackResultPayload | null {
     const now = Date.now();
     const result = this.world.attack(playerId, targetId, skillId, now);
     if (!result) return null;
-    return { attackerId: playerId, targetId, damage: result.finalDamage, t: now };
+    // crit/kind/element/multipliers stubbed until CombatResolver wires them through — see combat-sync-design.md §4.
+    return {
+      attackerId: playerId,
+      targetId,
+      skillId,
+      damage: result.finalDamage,
+      crit: false,
+      kind: 'physical',
+      element: 'none',
+      multipliers: [],
+    };
   }
 
   get mapSize(): { width: number; height: number } {

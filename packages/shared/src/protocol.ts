@@ -64,12 +64,28 @@ export interface AttackPayload {
   skillId: string;
 }
 
-export interface AttackEvent {
+/** Mirrors combat-design.md's DamageKind — wire-format copy, string union keeps it dependency-free from server domain code. */
+export type DamageKind = 'physical' | 'magical';
+
+/** Mirrors combat-design.md's DamageElement. */
+export type DamageElement = 'none' | 'fire' | 'ice' | 'thunder';
+
+/** Mirrors combat-design.md's Multiplier — one line of the damage breakdown, for battle-log/floating-text detail. */
+export interface Multiplier {
+  source: string;
+  value: number;
+}
+
+export interface AttackResultPayload {
   attackerId: string;
   targetId: string;
+  skillId: string;
   damage: number;
-  /** server timestamp (ms epoch) */
-  t: number;
+  /** Not rolled by CombatResolver yet — always false until crit lands in the domain. */
+  crit: boolean;
+  kind: DamageKind;
+  element: DamageElement;
+  multipliers: Multiplier[];
 }
 
 /** events the client may emit */
@@ -82,5 +98,5 @@ export interface ClientToServerEvents {
 export interface ServerToClientEvents {
   welcome: (payload: WelcomePayload) => void;
   snapshot: (payload: WorldSnapshot) => void;
-  attack: (event: AttackEvent) => void;
+  attack: (event: AttackResultPayload) => void;
 }

@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import type { AttackEvent } from '@mmo/shared';
+import type { AttackResultPayload } from '@mmo/shared';
 import { ATTACK_TTL_MS, ActiveAttackTracker } from './active-attacks';
 
-const event = (attackerId = 'a1', targetId = 't1'): AttackEvent => ({
+const event = (attackerId = 'a1', targetId = 't1'): AttackResultPayload => ({
   attackerId,
   targetId,
+  skillId: 'basic',
   damage: 42,
-  t: 999_999, // server epoch — must be ignored in favor of receivedAt
+  crit: false,
+  kind: 'physical',
+  element: 'none',
+  multipliers: [],
 });
 
 describe('ActiveAttackTracker', () => {

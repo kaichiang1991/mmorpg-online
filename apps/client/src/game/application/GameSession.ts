@@ -1,4 +1,4 @@
-import type { AttackEvent, WelcomePayload } from '@mmo/shared';
+import type { AttackResultPayload, WelcomePayload } from '@mmo/shared';
 import { Interpolator } from '../domain/interpolator';
 import { connect, GameSocket } from '../infrastructure/network';
 import { PixiRenderer } from '../infrastructure/pixi/PixiRenderer';
@@ -30,7 +30,7 @@ export class GameSession {
       this.interpolator.push(snapshot, performance.now());
     });
 
-    this.socket.on('attack', (event: AttackEvent) => {
+    this.socket.on('attack', (event: AttackResultPayload) => {
       this.attackers.push(event, performance.now());
     });
 

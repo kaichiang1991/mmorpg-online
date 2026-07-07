@@ -1,4 +1,4 @@
-import type { AttackEvent } from '@mmo/shared';
+import type { AttackResultPayload } from '@mmo/shared';
 
 /**
  * How long an attack counts as "happening" on the client, in local-clock ms.
@@ -27,8 +27,8 @@ export interface ActiveAttack {
 export class ActiveAttackTracker {
   private attacks: ActiveAttack[] = [];
 
-  /** `receivedAt` is the local clock — AttackEvent.t (server epoch) is not comparable. */
-  push(event: AttackEvent, receivedAt: number): void {
+  /** `receivedAt` is the local clock — the payload carries no server timestamp to compare against. */
+  push(event: AttackResultPayload, receivedAt: number): void {
     this.attacks.push({
       attackerId: event.attackerId,
       targetId: event.targetId,
