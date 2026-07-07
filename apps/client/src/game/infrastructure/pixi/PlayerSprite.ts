@@ -12,17 +12,29 @@ export const preloadPlayerAssets = async (): Promise<void> => {
 class StatBar extends Container {
   private readonly fill = new Graphics();
   private lastPercentage = -1;
+  private readonly valueDisplay = new Text({
+    text: '',
+    position: { x: BAR_WIDTH / 2, y: 0 },
+    anchor: { x: 0.5, y: 0 },
+    style: {
+      fontSize: BAR_HEIGHT,
+      fill: 0xffffff,
+      align: 'center',
+    },
+  });
 
   constructor(private readonly color: number) {
     super();
     this.addChild(
       new Graphics().roundRect(0, 0, BAR_WIDTH, BAR_HEIGHT, 1).fill(0xffffff),
       this.fill,
+      this.valueDisplay,
     );
     this.pivot.set(BAR_WIDTH / 2, 0);
   }
 
   setPercentage(percentage: number): void {
+    // todo: remain hp display
     percentage = Math.min(1, Math.max(0, percentage));
     if (percentage === this.lastPercentage) return; // Graphics redraw re-tessellates; skip when unchanged
     this.lastPercentage = percentage;
