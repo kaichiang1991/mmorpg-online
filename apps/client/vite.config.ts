@@ -20,6 +20,7 @@ export default defineConfig({
     },
   },
   test: {
+    globals: true,
     environment: 'node',
     include: ['src/**/*.spec.ts'],
   },

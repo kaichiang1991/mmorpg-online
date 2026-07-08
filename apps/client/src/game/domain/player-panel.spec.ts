@@ -1,4 +1,3 @@
-import { describe, expect, it } from 'vitest';
 import { PlayerPanel } from './player-panel';
 
 const makePlayerPanel = () => new PlayerPanel();

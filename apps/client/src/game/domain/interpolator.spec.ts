@@ -1,4 +1,3 @@
-import { describe, expect, it } from 'vitest';
 import type { WorldSnapshot } from '@mmo/shared';
 import { Interpolator } from './interpolator';
 

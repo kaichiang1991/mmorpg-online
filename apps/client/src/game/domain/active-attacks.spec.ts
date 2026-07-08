@@ -1,4 +1,3 @@
-import { describe, expect, it } from 'vitest';
 import type { AttackResultPayload } from '@mmo/shared';
 import { ATTACK_TTL_MS, ActiveAttackTracker } from './active-attacks';
 
