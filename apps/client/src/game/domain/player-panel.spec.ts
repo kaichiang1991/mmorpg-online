@@ -9,6 +9,8 @@ class PlayerPanel {
 
   addSkillAt(skillId: string, index?: number) {
     if (index === undefined) {
+      const findIndex = this.skills.findIndex((s) => s === '');
+      this.skills[findIndex] = skillId;
       return;
     }
 
@@ -26,7 +28,13 @@ describe('PlayerPanel', () => {
 
   it('can add skill to the panel', () => {
     const panel = makePlayerPanel();
-    panel.addSkillAt('basic', 0);
+    panel.addSkillAt('basic');
     expect(panel.skills.at(0)).toBe('basic');
+  });
+
+  it('can add skill at any index', () => {
+    const panel = makePlayerPanel();
+    panel.addSkillAt('basic', 5);
+    expect(panel.skills.at(5)).toBe('basic');
   });
 });
