@@ -2,25 +2,27 @@ import { GAME_CONSTANTS } from '@mmo/shared';
 import { Combatant, CombatUnit, DEFAULT_COMBATANT } from './combatant';
 import { CombatStatsVo } from './value-objects/combatStatsVo';
 import { CooldownVo } from './value-objects/cooldownVo';
+import { PositionVo } from './value-objects/positionVo';
 import { ResourcePoolVo } from './value-objects/resourcePoolVo';
 
 /** Pure domain entity: a player pawn in the world. No framework dependencies. */
 export class Player implements CombatUnit {
-  private targetX: number | null = null;
-  private targetY: number | null = null;
+  private target: PositionVo | null = null;
   private attackCooldown = new CooldownVo(GAME_CONSTANTS.ATTACK_COOLDOWN_MS);
+  private _position: PositionVo;
   private _hp: ResourcePoolVo;
   private _mp: ResourcePoolVo;
-  private _stats: CombatStatsVo;
+  private readonly _stats: CombatStatsVo;
 
   constructor(
     readonly id: string,
     readonly name: string,
-    public x: number,
-    public y: number,
+    x: number,
+    y: number,
     private readonly speed: number,
     combatant: Combatant = DEFAULT_COMBATANT,
   ) {
+    this._position = new PositionVo(x, y);
     this._hp = new ResourcePoolVo(GAME_CONSTANTS.MAX_HP, GAME_CONSTANTS.MAX_HP);
     this._mp = new ResourcePoolVo(GAME_CONSTANTS.MAX_MP, GAME_CONSTANTS.MAX_MP);
 
@@ -41,13 +43,28 @@ export class Player implements CombatUnit {
     return this._mp;
   }
 
-  get isMoving(): boolean {
-    return this.targetX !== null;
+  get position(): PositionVo {
+    return this._position;
   }
 
-  setTarget(x: number, y: number): void {
-    this.targetX = x;
-    this.targetY = y;
+  set position(position: PositionVo) {
+    this._position = position;
+  }
+
+  get x(): number {
+    return this._position.x;
+  }
+
+  get y(): number {
+    return this._position.y;
+  }
+
+  get isMoving(): boolean {
+    return this.target !== null;
+  }
+
+  setTarget(target: PositionVo): void {
+    this.target = target;
   }
 
   /** Consumes the attack cooldown if it is ready; false while still cooling down. */
@@ -59,19 +76,9 @@ export class Player implements CombatUnit {
 
   /** Advance toward the target by speed * dt seconds. Stops exactly on arrival. */
   advance(dt: number): void {
-    if (this.targetX === null || this.targetY === null) return;
-    const dx = this.targetX - this.x;
-    const dy = this.targetY - this.y;
-    const distance = Math.hypot(dx, dy);
-    const step = this.speed * dt;
-    if (distance <= step) {
-      this.x = this.targetX;
-      this.y = this.targetY;
-      this.targetX = this.targetY = null;
-      return;
-    }
-    this.x += (dx / distance) * step;
-    this.y += (dy / distance) * step;
+    if (this.target === null) return;
+    this._position = this._position.moveToward(this.target, this.speed * dt);
+    if (this._position.equals(this.target)) this.target = null;
   }
 
   injured(damage: number): void {

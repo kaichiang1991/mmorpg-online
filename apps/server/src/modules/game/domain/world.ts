@@ -1,10 +1,9 @@
 import { GAME_CONSTANTS, PlayerSnapshot, WorldSnapshot } from '@mmo/shared';
 import { CombatResolver } from './combat-resolver';
 import { AttackResultVo } from './value-objects/attackResultVo';
+import { PositionVo } from './value-objects/positionVo';
 import { Player } from './player';
 import { BASIC_ATTACK, Skill } from './skills';
-
-const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
 
 /**
  * Pure domain aggregate: the game world. Owns all players, advances the
@@ -48,7 +47,7 @@ export class World {
 
   /** Move intent from a client. Target is clamped inside the map. */
   setMoveTarget(id: string, x: number, y: number): void {
-    this.players.get(id)?.setTarget(clamp(x, 0, this.width), clamp(y, 0, this.height));
+    this.players.get(id)?.setTarget(new PositionVo(x, y).clampTo(this.width, this.height));
   }
 
   /**
@@ -60,7 +59,7 @@ export class World {
     const target = this.players.get(targetId);
     if (!attacker || !target || !skillId || attackerId === targetId) return null;
 
-    const distance = Math.hypot(target.x - attacker.x, target.y - attacker.y);
+    const distance = attacker.position.distanceTo(target.position);
     if (distance > GAME_CONSTANTS.ATTACK_RANGE) return null;
     if (!attacker.tryAttack(now)) return null;
 

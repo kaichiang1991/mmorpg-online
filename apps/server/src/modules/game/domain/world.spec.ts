@@ -1,3 +1,4 @@
+import { PositionVo } from './value-objects/positionVo';
 import { World } from './world';
 
 describe('World', () => {
@@ -52,9 +53,8 @@ describe('World', () => {
       const world = new World(1600, 1200);
       const a = world.addPlayer('a', 'A');
       const b = world.addPlayer('b', 'B');
-      a.x = a.y = 100;
-      b.x = 120; // within ATTACK_RANGE
-      b.y = 100;
+      a.position = new PositionVo(100, 100);
+      b.position = new PositionVo(120, 100); // within ATTACK_RANGE
       return { world, a, b };
     };
 
@@ -69,7 +69,7 @@ describe('World', () => {
 
     it('rejects out-of-range attacks', () => {
       const { world, b } = worldWithPair();
-      b.x = 100 + 101; // just past ATTACK_RANGE (100)
+      b.position = new PositionVo(100 + 101, 100); // just past ATTACK_RANGE (100)
       expect(world.attack('a', 'b', basicSkillId, 1000)).toBeNull();
     });
 
