@@ -1,5 +1,5 @@
 import { GAME_CONSTANTS } from '@mmo/shared';
-import { Combatant, CombatUnit, DEFAULT_COMBATANT } from './attack';
+import { Combatant, CombatUnit, DEFAULT_COMBATANT } from './combatant';
 import { CombatStatsVo } from './value-objects/combatStatsVo';
 import { PlayerHpVo } from './value-objects/playerHpVo';
 import { PlayerMpVo } from './value-objects/playerMpVo';

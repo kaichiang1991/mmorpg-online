@@ -1,4 +1,4 @@
-import { Combatant } from '../attack';
+import { Combatant } from '../combatant';
 
 /** 參戰屬性快照：不可變，建構即驗證 */
 export class CombatStatsVo implements Combatant {

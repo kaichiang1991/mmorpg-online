@@ -1,4 +1,6 @@
-import { Combatant, DamageKind, Multiplier, Skill } from './attack';
+import { Combatant } from './combatant';
+import { DamageKind, Multiplier } from './damage';
+import { Skill } from './skills';
 import { AttackResultVo } from './value-objects/attackResultVo';
 
 /** 純函式服務：跑完整傷害公式 */

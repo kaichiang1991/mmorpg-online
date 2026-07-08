@@ -1,9 +1,8 @@
 import { GAME_CONSTANTS, PlayerSnapshot, WorldSnapshot } from '@mmo/shared';
-import { Skill } from './attack';
 import { CombatResolver } from './combat-resolver';
 import { AttackResultVo } from './value-objects/attackResultVo';
 import { Player } from './player';
-import { BASIC_ATTACK } from './skills';
+import { BASIC_ATTACK, Skill } from './skills';
 
 const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
 

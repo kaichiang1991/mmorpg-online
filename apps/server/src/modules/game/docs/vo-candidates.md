@@ -46,11 +46,11 @@ export class PositionVo {
 - `player.ts` 的 `name === 'aaa'` 分支是刻意保留的測試後門（已註解），等角色屬性系統落地後移除。
 - 之後 buff／裝備加成掛載點：加 `withBuff(...)` 回傳新 VO，`_stats` 重新指派。
 
-### 介面分工（attack.ts）
+### 介面分工（combatant.ts）
 
 - **`Combatant`**：resolver 的唯讀輸入形狀，全欄位 `readonly`。`CombatStatsVo implements Combatant`。
 - **`CombatUnit`**：「能參戰的單位」，只要求 `readonly stats: Combatant`。`Player implements CombatUnit`，之後 `Enemy` 也實作這個；`CombatResolver` 不用動。
-- `CombatUnit.stats` 型別刻意宣告為 `Combatant` 而非 `CombatStatsVo`，避免 `attack.ts` 反向 import value-objects 造成循環依賴（結構相容，`Player.stats` 實際回傳 VO）。
+- `CombatUnit.stats` 型別刻意宣告為 `Combatant` 而非 `CombatStatsVo`，避免 `combatant.ts` 反向 import value-objects 造成循環依賴（結構相容，`Player.stats` 實際回傳 VO）。
 - `World.attack` 改傳 `attacker.stats` / `target.stats` 給 resolver；`tryAttack`／`injured` 尚未收進 `CombatUnit`，等 Enemy 實作時再決定。
 
 ## 3. `CooldownVo` — 小而美
@@ -69,7 +69,7 @@ export class CooldownVo {
 
 ## 4. `MultiplierVo` — 順手加驗證
 
-現為 interface（`attack.ts`），任何 `value`（含 0、負數）都收。轉 class 驗 `value > 0`、`source` 非空即可。成本低，但影響 `AttackResultVo` 建構參數與 shared 的 wire-format 映射，建議與 crit roll 實作一起動。
+現為 interface（`damage.ts`），任何 `value`（含 0、負數）都收。轉 class 驗 `value > 0`、`source` 非空即可。成本低，但影響 `AttackResultVo` 建構參數與 shared 的 wire-format 映射，建議與 crit roll 實作一起動。
 
 ## 5. `ResourcePoolVo` — 反向建議：合併而非新增
 

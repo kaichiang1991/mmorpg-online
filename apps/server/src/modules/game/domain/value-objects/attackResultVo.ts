@@ -1,4 +1,4 @@
-import { DamageElement, DamageKind, Multiplier } from '../attack';
+import { DamageElement, DamageKind, Multiplier } from '../damage';
 
 /** 一次攻擊的結算快照 */
 export class AttackResultVo {

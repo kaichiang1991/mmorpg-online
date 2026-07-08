@@ -1,4 +1,4 @@
-import { DamageElement, DamageKind } from '../attack';
+import { DamageElement, DamageKind } from '../damage';
 import { AttackResultVo } from './attackResultVo';
 
 const makeAttackResultVo = () =>

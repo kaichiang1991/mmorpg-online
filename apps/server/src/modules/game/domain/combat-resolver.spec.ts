@@ -1,4 +1,6 @@
-import { Combatant, DamageElement, DamageKind, Skill } from './attack';
+import { Combatant } from './combatant';
+import { DamageElement, DamageKind } from './damage';
+import { Skill } from './skills';
 import { CombatResolver } from './combat-resolver';
 
 const makeCombatant = (overrides: Partial<Combatant> = {}): Combatant => ({
