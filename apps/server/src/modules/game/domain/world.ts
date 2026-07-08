@@ -55,7 +55,12 @@ export class World {
    * Attack intent from a client. Validates and resolves immediately; null means
    * rejected (unknown ids/skill, self, out of range, low mp, cooling down).
    */
-  attack(attackerId: string, targetId: string, skillId: string, now: number): AttackResultVo | null {
+  attack(
+    attackerId: string,
+    targetId: string,
+    skillId: string,
+    now: number,
+  ): AttackResultVo | null {
     const attacker = this.players.get(attackerId);
     const target = this.players.get(targetId);
     if (!attacker || !target || attackerId === targetId) return null;
@@ -64,8 +69,10 @@ export class World {
     if (!skill) return null;
 
     const distance = attacker.position.distanceTo(target.position);
+    // todo: seperate distance
     if (distance > GAME_CONSTANTS.ATTACK_RANGE) return null;
     if (attacker.mp.remaining < skill.mpCost) return null;
+    // todo: seperate try
     if (!attacker.tryAttack(now)) return null;
 
     const attack = this.combat.resolve(attacker.stats, target.stats, skill);
