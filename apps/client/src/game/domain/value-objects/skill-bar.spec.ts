@@ -1,14 +1,4 @@
-class SkillVo {
-  static empty() {
-    return new SkillVo('', '', '');
-  }
-
-  constructor(
-    public readonly id: string,
-    public readonly name: string,
-    public readonly imageUrl: string,
-  ) {}
-}
+import { SkillVo } from './skill-bar';
 
 const makeSkill = (overrides: Partial<InstanceType<typeof SkillVo>> = {}) =>
   new SkillVo(
