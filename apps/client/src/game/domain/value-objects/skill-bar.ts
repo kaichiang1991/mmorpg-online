@@ -1,5 +1,5 @@
 export class SkillVo {
-  static empty() {
+  static empty(): SkillVo {
     return new SkillVo('', '', '');
   }
 
@@ -9,3 +9,9 @@ export class SkillVo {
     public readonly imageUrl: string,
   ) {}
 }
+
+export const SKILL_MAPPING = new Map<string, SkillVo>([
+  ['empty', SkillVo.empty()],
+  ['basic', new SkillVo('basic', 'Attack', '')],
+  ['spear', new SkillVo('spear', 'Spear', '')],
+]);
