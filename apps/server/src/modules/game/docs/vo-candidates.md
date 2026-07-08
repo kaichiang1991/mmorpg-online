@@ -1,6 +1,6 @@
 # Value Object 候選清單（VO Candidates）
 
-> 狀態：`AttackResultVo`、`CombatStatsVo` 已完成，其餘為待辦候選。
+> 狀態：`AttackResultVo`、`CombatStatsVo`、`CooldownVo` 已完成，其餘為待辦候選。
 > 範圍：`modules/game/domain` 的值物件盤點。
 > 慣例：VO class 一律以 `Vo` 結尾，放在 `domain/value-objects/`，不可變（`readonly`）、建構子驗不變式、無 identity。
 
@@ -53,19 +53,13 @@ export class PositionVo {
 - `CombatUnit.stats` 型別刻意宣告為 `Combatant` 而非 `CombatStatsVo`，避免 `combatant.ts` 反向 import value-objects 造成循環依賴（結構相容，`Player.stats` 實際回傳 VO）。
 - `World.attack` 改傳 `attacker.stats` / `target.stats` 給 resolver；`tryAttack`／`injured` 尚未收進 `CombatUnit`，等 Enemy 實作時再決定。
 
-## 3. `CooldownVo` — 小而美
+## 3. `CooldownVo` — 已完成
 
-`player.ts` 的 `lastAttackAt` + `tryAttack(now)` 就是冷卻邏輯。
+`value-objects/cooldownVo.ts`。`Player` 的 `lastAttackAt` 欄位改為持有 `CooldownVo`（`attackCooldown`），`tryAttack(now)` 改走 `isReady` / `consume`。
 
-```typescript
-export class CooldownVo {
-  constructor(readonly durationMs: number, readonly lastUsedAt = Number.NEGATIVE_INFINITY) {}
-  isReady(now: number): boolean;
-  consume(now: number): CooldownVo; // 回傳新實例
-}
-```
-
-之後技能系統各技能獨立 CD 時直接複用，`Player` 不用為每個技能長一個 `lastXxxAt` 欄位。
+- 不變式：`durationMs` 必須為 finite 且 `≥ 0`；`lastUsedAt` 不可為 NaN（預設 `NEGATIVE_INFINITY`，代表從未使用）。
+- 行為：`isReady(now)`（`now - lastUsedAt >= durationMs`）、`consume(now)` 回傳新實例。
+- 之後技能系統各技能獨立 CD 時直接複用，`Player` 不用為每個技能長一個 `lastXxxAt` 欄位。
 
 ## 4. `MultiplierVo` — 順手加驗證
 

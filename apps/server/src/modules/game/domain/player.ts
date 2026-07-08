@@ -1,6 +1,7 @@
 import { GAME_CONSTANTS } from '@mmo/shared';
 import { Combatant, CombatUnit, DEFAULT_COMBATANT } from './combatant';
 import { CombatStatsVo } from './value-objects/combatStatsVo';
+import { CooldownVo } from './value-objects/cooldownVo';
 import { PlayerHpVo } from './value-objects/playerHpVo';
 import { PlayerMpVo } from './value-objects/playerMpVo';
 
@@ -8,7 +9,7 @@ import { PlayerMpVo } from './value-objects/playerMpVo';
 export class Player implements CombatUnit {
   private targetX: number | null = null;
   private targetY: number | null = null;
-  private lastAttackAt = Number.NEGATIVE_INFINITY;
+  private attackCooldown = new CooldownVo(GAME_CONSTANTS.ATTACK_COOLDOWN_MS);
   private _hp: PlayerHpVo;
   private _mp: PlayerMpVo;
   private _stats: CombatStatsVo;
@@ -52,8 +53,8 @@ export class Player implements CombatUnit {
 
   /** Consumes the attack cooldown if it is ready; false while still cooling down. */
   tryAttack(now: number): boolean {
-    if (now - this.lastAttackAt < GAME_CONSTANTS.ATTACK_COOLDOWN_MS) return false;
-    this.lastAttackAt = now;
+    if (!this.attackCooldown.isReady(now)) return false;
+    this.attackCooldown = this.attackCooldown.consume(now);
     return true;
   }
 
