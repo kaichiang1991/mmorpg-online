@@ -45,4 +45,11 @@ describe('SkillBar', () => {
     expect(newSkillBar.some((skill) => skill.id === 'basic')).toBe(true);
     expect(newSkillBar.at(5).id).toBe('basic');
   });
+
+  it('throws when constructed with more skills than BAR_LENGTH', () => {
+    const tooManyIds = Array.from({ length: SkillBar.BAR_LENGTH + 1 }, () => 'basic');
+    expect(() => new SkillBar(tooManyIds)).toThrow(
+      `SkillBar cannot have more than ${SkillBar.BAR_LENGTH} skills`,
+    );
+  });
 });
