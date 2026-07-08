@@ -45,4 +45,10 @@ export class SkillBar {
   every(predict: (skill: SkillVo) => boolean): boolean {
     return this.elements.every(predict);
   }
+
+  at(index: number): SkillVo {
+    if (index < 0 || index >= SkillBar.BAR_LENGTH)
+      throw new Error(`SkillBar index out of range: ${index}`);
+    return this.elements.at(index)!;
+  }
 }

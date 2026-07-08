@@ -1,4 +1,4 @@
-import { SkillBar, SkillVo } from './skill-bar';
+import { SKILL_MAPPING, SkillBar, SkillVo } from './skill-bar';
 
 const makeSkill = (overrides: Partial<InstanceType<typeof SkillVo>> = {}) =>
   new SkillVo(
@@ -28,5 +28,13 @@ describe('SkillBar', () => {
     const skillbar = SkillBar.empty();
     expect(skillbar.length).toBe(10);
     expect(skillbar.every((skill) => skill.id === '')).toBe(true);
+  });
+
+  it('can insert at first position', () => {
+    const skillbar = SkillBar.empty();
+    const newSkillBar = skillbar.insertSkillAt(SKILL_MAPPING.get('basic')!, 0);
+
+    expect(newSkillBar.some((skill) => skill.id === 'basic')).toBe(true);
+    expect(newSkillBar.at(0).id).toBe('basic');
   });
 });
