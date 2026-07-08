@@ -51,4 +51,8 @@ export class SkillBar {
       throw new Error(`SkillBar index out of range: ${index}`);
     return this.elements.at(index)!;
   }
+
+  insertSkillAt(newSkill: SkillVo, at: number): SkillBar {
+    return new SkillBar(this.elements.map((skill, index) => (index === at ? newSkill : skill).id));
+  }
 }
