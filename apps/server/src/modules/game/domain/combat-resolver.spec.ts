@@ -18,6 +18,7 @@ const makeSkill = (overrides: Partial<Skill> = {}): Skill => ({
   multiplier: 1.5,
   kind: DamageKind.Magical,
   element: DamageElement.Fire,
+  mpCost: 0,
   ...overrides,
 });
 

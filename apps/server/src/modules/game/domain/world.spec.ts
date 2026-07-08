@@ -69,7 +69,7 @@ describe('World', () => {
 
     it('rejects out-of-range attacks', () => {
       const { world, b } = worldWithPair();
-      b.position = new PositionVo(100 + 101, 100); // just past ATTACK_RANGE (100)
+      b.position = new PositionVo(100 + 201, 100); // just past ATTACK_RANGE (200)
       expect(world.attack('a', 'b', basicSkillId, 1000)).toBeNull();
     });
 
@@ -111,8 +111,21 @@ describe('World', () => {
         const result = world.attack(a.id, b.id, skillId, 1000);
 
         expect(result).not.toBeNull();
-        expect(b.mp.remaining).toBe(190); // 200 - 10
+        expect(a.mp.remaining).toBe(190); // 200 - 10
       });
+
+      it('rejects an attack the attacker cannot afford', () => {
+        const { world, a, b } = worldWithPair();
+        a.consumeMp(195); // 5 mp left, spear costs 10
+        expect(world.attack(a.id, b.id, 'spear', 1000)).toBeNull();
+        expect(a.mp.remaining).toBe(5);
+      });
+    });
+
+    it('rejects an unknown skill id', () => {
+      const { world } = worldWithPair();
+      expect(world.attack('a', 'b', 'no-such-skill', 1000)).toBeNull();
+      expect(world.attack('a', 'b', '', 1000)).toBeNull();
     });
   });
 

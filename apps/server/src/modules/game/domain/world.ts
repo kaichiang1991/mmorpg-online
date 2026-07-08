@@ -3,7 +3,7 @@ import { CombatResolver } from './combat-resolver';
 import { AttackResultVo } from './value-objects/attackResultVo';
 import { PositionVo } from './value-objects/positionVo';
 import { Player } from './player';
-import { BASIC_ATTACK, Skill } from './skills';
+import { SkillFactory } from './skill-factory';
 
 /**
  * Pure domain aggregate: the game world. Owns all players, advances the
@@ -13,6 +13,7 @@ import { BASIC_ATTACK, Skill } from './skills';
 export class World {
   private readonly players = new Map<string, Player>();
   private readonly combat = new CombatResolver();
+  private readonly skills = new SkillFactory();
 
   constructor(
     readonly width: number = GAME_CONSTANTS.MAP_WIDTH,
@@ -51,21 +52,24 @@ export class World {
   }
 
   /**
-   * Attack intent from a client. Validates and resolves immediately;
-   * null means rejected (unknown ids, self, out of range, cooling down).
+   * Attack intent from a client. Validates and resolves immediately; null means
+   * rejected (unknown ids/skill, self, out of range, low mp, cooling down).
    */
   attack(attackerId: string, targetId: string, skillId: string, now: number): AttackResultVo | null {
     const attacker = this.players.get(attackerId);
     const target = this.players.get(targetId);
-    if (!attacker || !target || !skillId || attackerId === targetId) return null;
+    if (!attacker || !target || attackerId === targetId) return null;
+
+    const skill = this.skills.get(skillId);
+    if (!skill) return null;
 
     const distance = attacker.position.distanceTo(target.position);
     if (distance > GAME_CONSTANTS.ATTACK_RANGE) return null;
+    if (attacker.mp.remaining < skill.mpCost) return null;
     if (!attacker.tryAttack(now)) return null;
 
-    // todo: use factory to get skill by id
-    const useSkill: Skill = BASIC_ATTACK;
-    const attack = this.combat.resolve(attacker.stats, target.stats, useSkill);
+    const attack = this.combat.resolve(attacker.stats, target.stats, skill);
+    attacker.consumeMp(skill.mpCost);
     target.injured(attack.finalDamage);
     return attack;
   }
