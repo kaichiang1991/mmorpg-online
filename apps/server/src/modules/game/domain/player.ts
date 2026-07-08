@@ -2,16 +2,15 @@ import { GAME_CONSTANTS } from '@mmo/shared';
 import { Combatant, CombatUnit, DEFAULT_COMBATANT } from './combatant';
 import { CombatStatsVo } from './value-objects/combatStatsVo';
 import { CooldownVo } from './value-objects/cooldownVo';
-import { PlayerHpVo } from './value-objects/playerHpVo';
-import { PlayerMpVo } from './value-objects/playerMpVo';
+import { ResourcePoolVo } from './value-objects/resourcePoolVo';
 
 /** Pure domain entity: a player pawn in the world. No framework dependencies. */
 export class Player implements CombatUnit {
   private targetX: number | null = null;
   private targetY: number | null = null;
   private attackCooldown = new CooldownVo(GAME_CONSTANTS.ATTACK_COOLDOWN_MS);
-  private _hp: PlayerHpVo;
-  private _mp: PlayerMpVo;
+  private _hp: ResourcePoolVo;
+  private _mp: ResourcePoolVo;
   private _stats: CombatStatsVo;
 
   constructor(
@@ -22,8 +21,8 @@ export class Player implements CombatUnit {
     private readonly speed: number,
     combatant: Combatant = DEFAULT_COMBATANT,
   ) {
-    this._hp = new PlayerHpVo(GAME_CONSTANTS.MAX_HP, GAME_CONSTANTS.MAX_HP);
-    this._mp = new PlayerMpVo(GAME_CONSTANTS.MAX_MP, GAME_CONSTANTS.MAX_MP);
+    this._hp = new ResourcePoolVo(GAME_CONSTANTS.MAX_HP, GAME_CONSTANTS.MAX_HP);
+    this._mp = new ResourcePoolVo(GAME_CONSTANTS.MAX_MP, GAME_CONSTANTS.MAX_MP);
 
     // 刻意保留的測試後門：名字 'aaa' 才吃傳入屬性，其餘玩家一律 DEFAULT_COMBATANT。
     // 等角色屬性系統落地後移除。
@@ -34,11 +33,11 @@ export class Player implements CombatUnit {
     return this._stats;
   }
 
-  get hp(): PlayerHpVo {
+  get hp(): ResourcePoolVo {
     return this._hp;
   }
 
-  get mp(): PlayerMpVo {
+  get mp(): ResourcePoolVo {
     return this._mp;
   }
 

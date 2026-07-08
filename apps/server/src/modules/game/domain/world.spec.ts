@@ -82,16 +82,16 @@ describe('World', () => {
 
     it('applies the resolved damage to the target', () => {
       const { world, b } = worldWithPair();
-      const before = b.hp.remainHp;
+      const before = b.hp.remaining;
       const result = world.attack('a', 'b', basicSkillId, 1000);
-      expect(b.hp.remainHp).toBe(before - result!.finalDamage);
+      expect(b.hp.remaining).toBe(before - result!.finalDamage);
     });
 
     it('reports damaged hp in the snapshot', () => {
       const { world, b } = worldWithPair();
       world.attack('a', 'b', basicSkillId, 1000);
       const snap = world.snapshot(2000);
-      expect(snap.players.find((p) => p.id === 'b')!.hp).toBe(b.hp.remainHp);
+      expect(snap.players.find((p) => p.id === 'b')!.hp).toBe(b.hp.remaining);
     });
 
     it('enforces the attack cooldown per attacker', () => {

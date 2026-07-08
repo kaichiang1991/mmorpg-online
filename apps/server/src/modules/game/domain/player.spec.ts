@@ -52,7 +52,7 @@ describe('Player', () => {
     it('reduces hp', () => {
       const p = makePlayer();
       p.injured(100);
-      expect(p.hp.remainHp).toBe(900);
+      expect(p.hp.remaining).toBe(900);
     });
   });
 
@@ -60,7 +60,7 @@ describe('Player', () => {
     it('reduces mp', () => {
       const p = makePlayer();
       p.consumeMp(50);
-      expect(p.mp.remainMp).toBe(150);
+      expect(p.mp.remaining).toBe(150);
     });
   });
 });
