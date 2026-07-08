@@ -37,4 +37,12 @@ describe('SkillBar', () => {
     expect(newSkillBar.some((skill) => skill.id === 'basic')).toBe(true);
     expect(newSkillBar.at(0).id).toBe('basic');
   });
+
+  it('can insert at any position', () => {
+    const skillbar = SkillBar.empty();
+    const newSkillBar = skillbar.insertSkillAt(SKILL_MAPPING.get('basic')!, 5);
+
+    expect(newSkillBar.some((skill) => skill.id === 'basic')).toBe(true);
+    expect(newSkillBar.at(5).id).toBe('basic');
+  });
 });

@@ -29,8 +29,8 @@ export class SkillBar {
       throw new Error(`SkillBar cannot have more than ${SkillBar.BAR_LENGTH} skills`);
 
     this.elements = Array.from({ length: SkillBar.BAR_LENGTH }, (_, i) => i).map((i) => {
-      const skillId = skillIds.at(i);
-      return SKILL_MAPPING.get(skillId ?? 'empty')!;
+      const skillId = skillIds.at(i) ?? '';
+      return SKILL_MAPPING.get(skillId === '' ? 'empty' : skillId)!;
     });
   }
 
