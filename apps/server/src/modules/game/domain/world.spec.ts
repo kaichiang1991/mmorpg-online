@@ -48,16 +48,16 @@ describe('World', () => {
     expect(b.x).toBeLessThan(bx);
   });
 
-  describe('basic attack', () => {
-    const worldWithPair = () => {
-      const world = new World(1600, 1200);
-      const a = world.addPlayer('a', 'A');
-      const b = world.addPlayer('b', 'B');
-      a.position = new PositionVo(100, 100);
-      b.position = new PositionVo(120, 100); // within ATTACK_RANGE
-      return { world, a, b };
-    };
+  function worldWithPair() {
+    const world = new World(1600, 1200);
+    const a = world.addPlayer('a', 'A');
+    const b = world.addPlayer('b', 'B');
+    a.position = new PositionVo(100, 100);
+    b.position = new PositionVo(120, 100); // within ATTACK_RANGE
+    return { world, a, b };
+  }
 
+  describe('basic attack', () => {
     const basicSkillId = 'basic';
 
     it('resolves an in-range attack with damage', () => {
@@ -100,6 +100,19 @@ describe('World', () => {
       expect(world.attack('a', 'b', basicSkillId, 1100)).toBeNull(); // still cooling down
       expect(world.attack('a', 'b', basicSkillId, 1000 + 600)).not.toBeNull(); // cooldown over
       expect(world.attack('b', 'a', basicSkillId, 1100)).not.toBeNull(); // b has own cooldown
+    });
+  });
+
+  describe('skill attack', () => {
+    describe('Immediately skill', () => {
+      it("reduce attacker's mp", () => {
+        const { world, a, b } = worldWithPair();
+        const skillId = 'spear';
+        const result = world.attack(a.id, b.id, skillId, 1000);
+
+        expect(result).not.toBeNull();
+        expect(b.mp.remaining).toBe(190); // 200 - 10
+      });
     });
   });
 
