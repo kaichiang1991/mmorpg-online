@@ -43,18 +43,18 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
 
   attack(playerId: string, targetId: string, skillId: string): AttackResultPayload | null {
     const now = Date.now();
-    const result = this.world.attack(playerId, targetId, skillId, now);
-    if (!result) return null;
-    // crit/kind/element/multipliers stubbed until CombatResolver wires them through — see combat-sync-design.md §4.
+    const attackVo = this.world.attack(playerId, targetId, skillId, now);
+    if (!attackVo) return null;
+    // domain enums share the wire-format string values, hence the casts
     return {
       attackerId: playerId,
       targetId,
       skillId,
-      damage: result.finalDamage,
-      crit: false,
-      kind: 'physical',
-      element: 'none',
-      multipliers: [],
+      damage: attackVo.finalDamage,
+      crit: attackVo.isCrit,
+      kind: attackVo.kind,
+      element: attackVo.element,
+      multipliers: [...attackVo.multipliers],
     };
   }
 

@@ -1,8 +1,9 @@
-import { Attack, Combatant, DamageKind, Multiplier, Skill } from './attack';
+import { Combatant, DamageKind, Multiplier, Skill } from './attack';
+import { AttackResultVo } from './value-objects/attackResultVo';
 
 /** 純函式服務：跑完整傷害公式 */
 export class CombatResolver {
-  resolve(attacker: Combatant, target: Combatant, skill: Skill): Attack {
+  resolve(attacker: Combatant, target: Combatant, skill: Skill): AttackResultVo {
     const attackPower =
       skill.kind === DamageKind.Physical ? attacker.str : attacker.int;
     const raw = attackPower + skill.baseDamage;
@@ -20,6 +21,6 @@ export class CombatResolver {
 
     const finalDamage = Math.max(1, Math.floor(multiplied - mitigation));
 
-    return new Attack(finalDamage, skill.kind, skill.element, multipliers);
+    return new AttackResultVo(finalDamage, skill.kind, skill.element, multipliers);
   }
 }

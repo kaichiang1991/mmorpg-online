@@ -81,7 +81,7 @@ export interface AttackResultPayload {
   targetId: string;
   skillId: string;
   damage: number;
-  /** Not rolled by CombatResolver yet — always false until crit lands in the domain. */
+  /** Derived from the crit multiplier; stays false until CombatResolver rolls crit. */
   crit: boolean;
   kind: DamageKind;
   element: DamageElement;

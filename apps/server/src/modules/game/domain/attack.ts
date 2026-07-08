@@ -42,13 +42,3 @@ export const DEFAULT_COMBATANT: Combatant = {
   mdef: 100,
   critRate: 0,
 };
-
-/** 一次攻擊的結算快照 */
-export class Attack {
-  constructor(
-    public readonly finalDamage: number,
-    public readonly kind: DamageKind,
-    public readonly element: DamageElement,
-    public readonly multipliers: readonly Multiplier[],
-  ) {}
-}

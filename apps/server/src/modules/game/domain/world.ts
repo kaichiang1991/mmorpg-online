@@ -1,6 +1,7 @@
 import { GAME_CONSTANTS, PlayerSnapshot, WorldSnapshot } from '@mmo/shared';
-import { Attack, Skill } from './attack';
+import { Skill } from './attack';
 import { CombatResolver } from './combat-resolver';
+import { AttackResultVo } from './value-objects/attackResultVo';
 import { Player } from './player';
 import { BASIC_ATTACK } from './skills';
 
@@ -55,7 +56,7 @@ export class World {
    * Attack intent from a client. Validates and resolves immediately;
    * null means rejected (unknown ids, self, out of range, cooling down).
    */
-  attack(attackerId: string, targetId: string, skillId: string, now: number): Attack | null {
+  attack(attackerId: string, targetId: string, skillId: string, now: number): AttackResultVo | null {
     const attacker = this.players.get(attackerId);
     const target = this.players.get(targetId);
     if (!attacker || !target || !skillId || attackerId === targetId) return null;
