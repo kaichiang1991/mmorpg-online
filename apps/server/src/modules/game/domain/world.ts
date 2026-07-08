@@ -67,7 +67,7 @@ export class World {
 
     // todo: use factory to get skill by id
     const useSkill: Skill = BASIC_ATTACK;
-    const attack = this.combat.resolve(attacker, target, useSkill);
+    const attack = this.combat.resolve(attacker.stats, target.stats, useSkill);
     target.injured(attack.finalDamage);
     return attack;
   }

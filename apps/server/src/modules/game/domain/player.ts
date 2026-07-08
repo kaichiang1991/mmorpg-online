@@ -1,22 +1,17 @@
 import { GAME_CONSTANTS } from '@mmo/shared';
-import { Combatant, DEFAULT_COMBATANT } from './attack';
+import { Combatant, CombatUnit, DEFAULT_COMBATANT } from './attack';
+import { CombatStatsVo } from './value-objects/combatStatsVo';
 import { PlayerHpVo } from './value-objects/playerHpVo';
 import { PlayerMpVo } from './value-objects/playerMpVo';
 
 /** Pure domain entity: a player pawn in the world. No framework dependencies. */
-export class Player implements Combatant {
+export class Player implements CombatUnit {
   private targetX: number | null = null;
   private targetY: number | null = null;
   private lastAttackAt = Number.NEGATIVE_INFINITY;
   private _hp: PlayerHpVo;
   private _mp: PlayerMpVo;
-
-  // flat baseline stats until characters get real progression
-  str: number;
-  int: number;
-  def: number;
-  mdef: number;
-  critRate: number;
+  private _stats: CombatStatsVo;
 
   constructor(
     readonly id: string,
@@ -29,20 +24,13 @@ export class Player implements Combatant {
     this._hp = new PlayerHpVo(GAME_CONSTANTS.MAX_HP, GAME_CONSTANTS.MAX_HP);
     this._mp = new PlayerMpVo(GAME_CONSTANTS.MAX_MP, GAME_CONSTANTS.MAX_MP);
 
-    // todo
-    if (name === 'aaa') {
-      this.str = combatant.str;
-      this.int = combatant.int;
-      this.def = combatant.def;
-      this.mdef = combatant.mdef;
-      this.critRate = combatant.critRate;
-    } else {
-      this.str = DEFAULT_COMBATANT.str;
-      this.int = DEFAULT_COMBATANT.int;
-      this.def = DEFAULT_COMBATANT.def;
-      this.mdef = DEFAULT_COMBATANT.mdef;
-      this.critRate = DEFAULT_COMBATANT.critRate;
-    }
+    // 刻意保留的測試後門：名字 'aaa' 才吃傳入屬性，其餘玩家一律 DEFAULT_COMBATANT。
+    // 等角色屬性系統落地後移除。
+    this._stats = CombatStatsVo.from(name === 'aaa' ? combatant : DEFAULT_COMBATANT);
+  }
+
+  get stats(): CombatStatsVo {
+    return this._stats;
   }
 
   get hp(): PlayerHpVo {
