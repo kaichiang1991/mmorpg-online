@@ -39,12 +39,19 @@ export class PositionVo {
 
 ## 2. `CombatStatsVo` — 已完成
 
-`value-objects/combatStatsVo.ts`。`Player` 五個 public 可變欄位改為持有 `CombatStatsVo`，對外以 getter 滿足 `Combatant` 介面。
+`value-objects/combatStatsVo.ts`。`Player` 五個 public 可變欄位改為持有 `CombatStatsVo`，以 `get stats()` 對外暴露（`_hp`/`_mp` 同款 pattern）。
 
 - 不變式：`0 ≤ critRate ≤ 1`，其餘屬性 `≥ 0` 且 finite。
 - `CombatStatsVo.from(combatant)` 從任意 `Combatant` 複製快照。
 - `player.ts` 的 `name === 'aaa'` 分支是刻意保留的測試後門（已註解），等角色屬性系統落地後移除。
-- 之後 buff／裝備加成掛載點：加 `withBuff(...)` 回傳新 VO。
+- 之後 buff／裝備加成掛載點：加 `withBuff(...)` 回傳新 VO，`_stats` 重新指派。
+
+### 介面分工（attack.ts）
+
+- **`Combatant`**：resolver 的唯讀輸入形狀，全欄位 `readonly`。`CombatStatsVo implements Combatant`。
+- **`CombatUnit`**：「能參戰的單位」，只要求 `readonly stats: Combatant`。`Player implements CombatUnit`，之後 `Enemy` 也實作這個；`CombatResolver` 不用動。
+- `CombatUnit.stats` 型別刻意宣告為 `Combatant` 而非 `CombatStatsVo`，避免 `attack.ts` 反向 import value-objects 造成循環依賴（結構相容，`Player.stats` 實際回傳 VO）。
+- `World.attack` 改傳 `attacker.stats` / `target.stats` 給 resolver；`tryAttack`／`injured` 尚未收進 `CombatUnit`，等 Enemy 實作時再決定。
 
 ## 3. `CooldownVo` — 小而美
 
