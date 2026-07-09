@@ -1,23 +1,6 @@
 import { SkillId } from '@mmo/shared';
 import { SkillFactory } from '../skill-factory';
-import { Skill } from '../skills';
-
-class CastingVo {
-  private readonly _endsAt: number;
-
-  constructor(
-    private readonly _skill: Skill,
-    now: number,
-  ) {
-    if (this._skill.castTime === 0) throw new Error('instant cast');
-
-    this._endsAt = now + this._skill.castTime;
-  }
-
-  isDone(now: number): boolean {
-    return now >= this._endsAt;
-  }
-}
+import { CastingVo } from './casting.vo';
 
 const makeSkill = (skillId: SkillId = 'basic') => new SkillFactory().get(skillId)!;
 
@@ -30,5 +13,16 @@ describe('CastingVo', () => {
     const skill = makeSkill('fireball');
     const casting = new CastingVo(skill, 0);
     expect(casting.isDone(skill.castTime)).toBe(true);
+  });
+
+  it('isDone returns false when time is before end time', () => {
+    const casting = new CastingVo(makeSkill('fireball'), 0);
+    expect(casting.isDone(0)).toBe(false);
+  });
+
+  it('isDone returns true when time is after end time', () => {
+    const skill = makeSkill('fireball');
+    const casting = new CastingVo(skill, 0);
+    expect(casting.isDone(1 + skill.castTime)).toBe(true);
   });
 });
