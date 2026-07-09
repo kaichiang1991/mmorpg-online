@@ -64,4 +64,11 @@ describe('Player', () => {
       expect(p.mp.remaining).toBe(150);
     });
   });
+
+  describe('cast skill', () => {
+    it('throws if the skill is instant', () => {
+      const p = makePlayer();
+      expect(() => p.castSkill('basic')).toThrow();
+    });
+  });
 });
