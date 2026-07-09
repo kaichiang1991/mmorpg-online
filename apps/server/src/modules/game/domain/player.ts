@@ -4,6 +4,7 @@ import { CombatStatsVo } from './value-objects/combat-stats.vo';
 import { CooldownVo } from './value-objects/cooldown.vo';
 import { PositionVo } from './value-objects/position.vo';
 import { ResourcePoolVo } from './value-objects/resource-pool.vo';
+import { Skill } from './skills';
 
 /** Pure domain entity: a player pawn in the world. No framework dependencies. */
 export class Player implements CombatUnit {
@@ -87,5 +88,9 @@ export class Player implements CombatUnit {
 
   consumeMp(cost: number): void {
     this._mp = this._mp.decrease(cost);
+  }
+
+  castSkill(skill: Skill) {
+    if (skill.castTime === 0) throw new Error('skill cast time must be greater than 0');
   }
 }
