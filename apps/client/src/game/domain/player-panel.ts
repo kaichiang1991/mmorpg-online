@@ -7,8 +7,14 @@ export class PlayerPanel {
     return this._skillBar;
   }
 
+  private _selectSkillIndex: number | undefined = undefined;
+  public get selectSkillIndex(): number | undefined {
+    return this._selectSkillIndex;
+  }
+
   constructor({ skillBar }: { skillBar?: SkillBarVo }) {
     this._skillBar = skillBar ?? SkillBarVo.empty();
+    this._selectSkillIndex = undefined;
   }
 
   insertSkillAt(skillId: SkillId, index: number) {

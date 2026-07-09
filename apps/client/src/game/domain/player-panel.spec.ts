@@ -23,7 +23,7 @@ describe('PlayerPanel', () => {
 
     it('default selectIndex = undefined', () => {
       const panel = makePlayerPanel();
-      expect(panel.selectIndex).toBeUndefined();
+      expect(panel.selectSkillIndex).toBeUndefined();
     });
   });
 });
