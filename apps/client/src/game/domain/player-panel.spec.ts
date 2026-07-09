@@ -1,11 +1,12 @@
 import { PlayerPanel } from './player-panel';
+import { SkillBar } from './value-objects/skill-bar';
 
 const makePlayerPanel = () => new PlayerPanel();
 
 describe('PlayerPanel', () => {
-  it('have default ten skills ', () => {
+  it('have default skill bar', () => {
     const panel = makePlayerPanel();
-    expect(panel.skills.length).toBe(10);
+    expect(panel).toHaveProperty('skillBar', SkillBar.empty());
   });
 
   it('can add skill at any index', () => {
