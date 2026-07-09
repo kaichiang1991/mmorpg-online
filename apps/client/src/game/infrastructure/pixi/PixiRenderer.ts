@@ -84,11 +84,6 @@ export class PixiRenderer {
     gsap.ticker.add(this.frame);
   }
 
-  /** Reports clicks on other players' sprites; self is not clickable. */
-  onPlayerClick(handler: (targetId: string) => void): void {
-    this.players.onPlayerClick(handler);
-  }
-
   onSkillSelect(handler: (index: number) => void): void {
     this.ui.onSkillSelect(handler);
   }

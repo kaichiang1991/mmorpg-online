@@ -5,6 +5,7 @@ import { PixiRenderer } from '../infrastructure/pixi/PixiRenderer';
 import { ActiveAttackTracker } from '../domain/active-attacks';
 import { PlayerPanel } from '../domain/player-panel';
 import { SkillBarVo } from '../domain/value-objects/skill-bar.vo';
+import { hitTestWorld } from '../domain/world-hit-test';
 
 /**
  * Application layer: orchestrates the game session. Wires the socket to
@@ -41,7 +42,19 @@ export class GameSession {
       this.attackers.push(event, performance.now());
     });
 
-    this.renderer.onWorldClick((x, y) => this.socket?.emit('move', { x, y }));
+    this.renderer.onWorldClick((x, y) => {
+      const players = this.interpolator.playersAt(performance.now());
+      const hit = hitTestWorld(players, x, y);
+      switch (hit.kind) {
+        case 'ground':
+          this.socket?.emit('move', { x, y });
+          break;
+        case 'player':
+          if (hit.player.id === this.selfId) break; // clicking yourself is neither move nor attack
+          this.socket?.emit('attack', { targetId: hit.player.id, skillId: 'basic' });
+          break;
+      }
+    });
 
     this.renderer.onSkillSelect((index: number) => {
       if (index === this.playerPanel?.selectSkillIndex)
@@ -50,9 +63,6 @@ export class GameSession {
       this.playerPanel?.selectSkillAt(index);
     });
 
-    this.renderer.onPlayerClick((targetId) =>
-      this.socket?.emit('attack', { targetId, skillId: 'basic' }),
-    );
     this.renderer.onTick(() => {
       const now = performance.now();
       this.renderer.render(

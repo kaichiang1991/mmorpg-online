@@ -10,12 +10,6 @@ import { PlayerSprite } from './PlayerSprite';
 export class PlayerLayer {
   readonly container = new Container();
   private readonly sprites = new Map<string, PlayerSprite>();
-  private clickHandler: ((targetId: string) => void) | null = null;
-
-  /** Reports clicks on other players' sprites; self is not clickable. */
-  onPlayerClick(handler: (targetId: string) => void): void {
-    this.clickHandler = handler;
-  }
 
   render(players: Player[], selfId: string | null): void {
     const seen = new Set<string>();
@@ -38,12 +32,10 @@ export class PlayerLayer {
   private createSprite(id: string, name: string, isSelf: boolean): PlayerSprite {
     const sprite = new PlayerSprite(name, isSelf);
     if (!isSelf) {
+      // hover affordance only — clicks bubble to the stage and are dispatched
+      // by hitTestWorld in the application layer
       sprite.eventMode = 'static';
       sprite.cursor = 'pointer';
-      sprite.on('pointerdown', (e) => {
-        e.stopPropagation(); // don't also fire the stage's move-to click
-        this.clickHandler?.(id);
-      });
     }
     this.container.addChild(sprite);
     this.sprites.set(id, sprite);
