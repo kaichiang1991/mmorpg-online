@@ -26,6 +26,12 @@ describe('PlayerPanel', () => {
       expect(panel.selectSkillIndex).toBeUndefined();
     });
 
+    it('cannot select empty skill', () => {
+      const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('basic', 0));
+      panel.selectSkillAt(1);
+      expect(panel.selectSkillIndex).toBeUndefined();
+    });
+
     it('can select skill by index', () => {
       const panel = makePlayerPanel();
       panel.selectSkillAt(0);
