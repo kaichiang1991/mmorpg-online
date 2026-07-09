@@ -16,7 +16,7 @@ import {
   ServerToClientEvents,
 } from '@mmo/shared';
 import { TOKEN_SERVICE, TokenService } from '../../auth/domain/ports/token.service';
-import { GameService } from '../application/game.service';
+import { GameEvent, GameService } from '../application/game.service';
 
 type GameServer = Server<ClientToServerEvents, ServerToClientEvents>;
 type GameSocket = Socket<ClientToServerEvents, ServerToClientEvents>;
@@ -34,16 +34,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   ) {}
 
   afterInit(): void {
-    this.game.onEvent((event) => {
-      switch (event.name) {
-        case 'attack':
-          this.server.emit('attack', event.payload);
-          break;
-        case 'castCancel':
-          this.server.emit('castCancel', event.payload);
-          break;
-      }
-    });
+    this.game.onEvent((event) => this.broadcast(event));
     this.snapshotTimer = setInterval(() => {
       this.server.emit('snapshot', this.game.snapshot());
     }, 1000 / GAME_CONSTANTS.SNAPSHOT_RATE);
@@ -93,6 +84,21 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return;
     }
     const event = this.game.attack(socket.id, payload.targetId, payload.skillId);
-    if (event) this.server.emit('attack', event);
+    if (event) this.broadcast(event);
+  }
+
+  /** Request-born and tick-born events funnel through the same emit switch. */
+  private broadcast(event: GameEvent): void {
+    switch (event.name) {
+      case 'attack':
+        this.server.emit('attack', event.payload);
+        break;
+      case 'castBegin':
+        this.server.emit('castBegin', event.payload);
+        break;
+      case 'castCancel':
+        this.server.emit('castCancel', event.payload);
+        break;
+    }
   }
 }

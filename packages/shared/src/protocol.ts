@@ -95,6 +95,13 @@ export interface AttackResultPayload {
   multipliers: Multiplier[];
 }
 
+export interface CastBeginPayload {
+  casterId: string;
+  skillId: string;
+  duration: number; // ms，簡單版時鐘方案只用這個
+  endsAt: number; // server epoch ms，完整版校正後使用
+}
+
 export interface CastCancelPayload {
   casterId: string;
   reason: 'moved' | 'interrupted' | 'died' | 'disconnected';
@@ -112,5 +119,6 @@ export interface ServerToClientEvents {
   snapshot: (payload: WorldSnapshot) => void;
   /** instant-skill resolution and cast completion share this result event */
   attack: (event: AttackResultPayload) => void;
+  castBegin: (payload: CastBeginPayload) => void;
   castCancel: (payload: CastCancelPayload) => void;
 }

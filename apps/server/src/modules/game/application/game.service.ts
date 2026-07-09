@@ -1,11 +1,18 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { AttackResultPayload, CastCancelPayload, GAME_CONSTANTS, WorldSnapshot } from '@mmo/shared';
+import {
+  AttackResultPayload,
+  CastBeginPayload,
+  CastCancelPayload,
+  GAME_CONSTANTS,
+  WorldSnapshot,
+} from '@mmo/shared';
 import { AttackResultVo } from '../domain/value-objects/attack-result.vo';
 import { World, WorldEvent } from '../domain/world';
 
 /** Domain occurrence translated to the wire: which socket event to emit, with its payload. */
 export type GameEvent =
   | { name: 'attack'; payload: AttackResultPayload }
+  | { name: 'castBegin'; payload: CastBeginPayload }
   | { name: 'castCancel'; payload: CastCancelPayload };
 
 /**
@@ -55,12 +62,23 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
     return this.world.snapshot(Date.now());
   }
 
-  attack(playerId: string, targetId: string, skillId: string): AttackResultPayload | null {
+  attack(playerId: string, targetId: string, skillId: string): GameEvent | null {
     const now = Date.now();
     const outcome = this.world.attack(playerId, targetId, skillId, now);
-    // todo: broadcast castBegin when outcome.kind === 'castStarted'
-    if (outcome.kind !== 'resolved') return null;
-    return this.toAttackPayload(playerId, targetId, skillId, outcome.attack);
+    switch (outcome.kind) {
+      case 'resolved':
+        return {
+          name: 'attack',
+          payload: this.toAttackPayload(playerId, targetId, skillId, outcome.attack),
+        };
+      case 'castStarted':
+        return {
+          name: 'castBegin',
+          payload: this.toCastBeginPayload(playerId, skillId, outcome.duration, outcome.endsAt),
+        };
+      case 'rejected':
+        return null;
+    }
   }
 
   private toGameEvent(event: WorldEvent): GameEvent {
@@ -68,7 +86,12 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
       case 'attackResolved':
         return {
           name: 'attack',
-          payload: this.toAttackPayload(event.attackerId, event.targetId, event.skillId, event.attack),
+          payload: this.toAttackPayload(
+            event.attackerId,
+            event.targetId,
+            event.skillId,
+            event.attack,
+          ),
         };
       case 'castCancelled':
         return {
@@ -94,6 +117,20 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
       kind: attackVo.kind,
       element: attackVo.element,
       multipliers: [...attackVo.multipliers],
+    };
+  }
+
+  private toCastBeginPayload(
+    casterId: string,
+    skillId: string,
+    duration: number,
+    endsAt: number,
+  ): CastBeginPayload {
+    return {
+      casterId,
+      skillId,
+      duration,
+      endsAt,
     };
   }
 
