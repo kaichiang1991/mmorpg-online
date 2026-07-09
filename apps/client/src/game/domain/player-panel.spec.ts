@@ -12,6 +12,6 @@ describe('PlayerPanel', () => {
   it('can add skill at any index', () => {
     const panel = makePlayerPanel();
     panel.addSkillAt('basic', 5);
-    expect(panel.skills.at(5)).toBe('basic');
+    expect(panel.skillBar.at(5).id).toBe('basic');
   });
 });

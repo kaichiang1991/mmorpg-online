@@ -1,9 +1,10 @@
-import { SkillBarVo } from './value-objects/skill-bar-vo';
+import { SKILL_MAPPING, SkillBarVo } from './value-objects/skill-bar-vo';
+import { SkillId } from '@mmo/shared';
 
 export class PlayerPanel {
   public skills: string[]; // todo: skill to Vo
 
-  private readonly _skillBar: SkillBarVo;
+  private _skillBar: SkillBarVo;
   public get skillBar(): SkillBarVo {
     return this._skillBar;
   }
@@ -13,13 +14,7 @@ export class PlayerPanel {
     this._skillBar = SkillBarVo.empty();
   }
 
-  addSkillAt(skillId: string, index: number) {
-    if (index === undefined) {
-      const findIndex = this.skills.findIndex((s) => s === '');
-      this.skills[findIndex] = skillId;
-      return;
-    }
-
-    this.skills[index] = skillId;
+  addSkillAt(skillId: SkillId, index: number) {
+    this._skillBar = this._skillBar.insertSkillAt(SKILL_MAPPING.get(skillId)!, index);
   }
 }
