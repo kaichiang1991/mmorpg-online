@@ -3,6 +3,7 @@ import { Interpolator } from '../domain/interpolator';
 import { connect, GameSocket } from '../infrastructure/network';
 import { PixiRenderer } from '../infrastructure/pixi/PixiRenderer';
 import { ActiveAttackTracker } from '../domain/active-attacks';
+import { PlayerPanel } from '../domain/player-panel';
 
 /**
  * Application layer: orchestrates the game session. Wires the socket to
@@ -25,7 +26,8 @@ export class GameSession {
     this.socket.on('welcome', (payload: WelcomePayload) => {
       this.selfId = payload.selfId;
       this.renderer.setMap(payload.map);
-      this.renderer.setUI(); // todo: 帶入從伺服器來的資料 e.g. 玩家技能
+      // todo: 使用PlayerPanel.from
+      this.renderer.setUI(new PlayerPanel({})); // todo: 帶入從伺服器來的資料 e.g. 玩家技能
     });
 
     this.socket.on('snapshot', (snapshot) => {

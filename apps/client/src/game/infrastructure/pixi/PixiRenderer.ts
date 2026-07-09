@@ -6,6 +6,8 @@ import type { Player } from '../../domain/player';
 import { EffectLayer } from './EffectLayer';
 import { PlayerLayer } from './PlayerLayer';
 import { preloadPlayerAssets } from './PlayerSprite';
+import { PlayerPanel } from '../../domain/player-panel';
+import UILayer from './UILayer';
 
 /**
  * Owns everything Pixi: canvas, layer composition, floor, camera.
@@ -17,6 +19,7 @@ export class PixiRenderer {
   private readonly world = new Container();
   private readonly players = new PlayerLayer();
   private readonly effects = new EffectLayer();
+  private readonly ui = new UILayer();
   private map = { width: 0, height: 0 };
   private destroyed = false;
   private tickHandler: (() => void) | null = null;
@@ -41,6 +44,10 @@ export class PixiRenderer {
     this.world.sortableChildren = true;
     this.effects.container.zIndex = 100;
     this.world.addChild(this.players.container, this.effects.container);
+    // UI is screen-fixed: it lives on the stage, not in the camera-driven world
+    this.app.stage.addChild(this.ui.container);
+    this.ui.layout(this.app.screen.width, this.app.screen.height);
+    this.app.renderer.on('resize', (width, height) => this.ui.layout(width, height));
   }
 
   destroy(): void {
@@ -57,7 +64,9 @@ export class PixiRenderer {
     this.drawFloor();
   }
 
-  setUI() {}
+  setUI(playerPanel: PlayerPanel) {
+    this.renderPlayerPanel(playerPanel);
+  }
 
   /** Reports pointer-down positions in world coordinates. */
   onWorldClick(handler: (x: number, y: number) => void): void {
@@ -108,5 +117,9 @@ export class PixiRenderer {
   private followCamera(x: number, y: number): void {
     const offset = cameraOffset(this.app.screen, this.map, x, y);
     this.world.position.set(offset.x, offset.y);
+  }
+
+  private renderPlayerPanel(playerPanel: PlayerPanel) {
+    this.ui.initPlayerPanel(playerPanel.skillBar);
   }
 }
