@@ -31,5 +31,12 @@ describe('PlayerPanel', () => {
       panel.selectSkillAt(0);
       expect(panel.selectSkillIndex).toBe(0);
     });
+
+    it('can cancels select skill', () => {
+      const panel = makePlayerPanel();
+      panel.selectSkillAt(0);
+      panel.cancelSkillAt(0);
+      expect(panel.selectSkillIndex).toBeUndefined();
+    });
   });
 });
