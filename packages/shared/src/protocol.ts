@@ -15,7 +15,7 @@ export const GAME_CONSTANTS = {
 } as const;
 
 /** Canonical skill ids — server domain and client display both key off these. */
-export const SKILL_IDS = ['basic', 'spear'] as const;
+export const SKILL_IDS = ['basic', 'spear', 'fireball'] as const;
 export type SkillId = (typeof SKILL_IDS)[number];
 export type SkillIdWithEmpty = SkillId | '';
 

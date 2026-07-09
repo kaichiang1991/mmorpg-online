@@ -104,7 +104,7 @@ describe('World', () => {
   });
 
   describe('skill attack', () => {
-    describe('Immediately skill', () => {
+    describe('Instant case skill', () => {
       it("reduce attacker's mp", () => {
         const { world, a, b } = worldWithPair();
         const skillId = 'spear';
@@ -119,6 +119,13 @@ describe('World', () => {
         a.consumeMp(195); // 5 mp left, spear costs 10
         expect(world.attack(a.id, b.id, 'spear', 1000)).toBeNull();
         expect(a.mp.remaining).toBe(5);
+      });
+    });
+
+    describe('Non-Instant case skill', () => {
+      it('will NOT send "attack" event when there is casting time', () => {
+        const { world, a, b } = worldWithPair();
+        expect(world.attack(a.id, b.id, 'fireball', 1000)).toBeNull();
       });
     });
 

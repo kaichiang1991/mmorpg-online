@@ -32,3 +32,13 @@ export const SPEAR: Skill = {
   element: DamageElement.None,
   mpCost: 10,
 };
+
+export const FIRE_BALL: Skill = {
+  id: 'fireball',
+  baseDamage: 80,
+  multiplier: 1.5,
+  range: 500,
+  kind: DamageKind.Magical,
+  element: DamageElement.Fire,
+  mpCost: 20,
+};
