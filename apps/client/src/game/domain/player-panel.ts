@@ -22,6 +22,7 @@ export class PlayerPanel {
   }
 
   selectSkillAt(index: number) {
+    if (this._skillBar.at(index).isEmpty) return;
     this._selectSkillIndex = index;
   }
 
