@@ -44,6 +44,9 @@ export class GameSession {
     this.renderer.onWorldClick((x, y) => this.socket?.emit('move', { x, y }));
 
     this.renderer.onSkillSelect((index: number) => {
+      if (index === this.playerPanel?.selectSkillIndex)
+        return this.playerPanel.cancelSkillAt(index);
+
       this.playerPanel?.selectSkillAt(index);
     });
 
