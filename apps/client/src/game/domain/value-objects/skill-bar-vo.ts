@@ -19,19 +19,19 @@ export const SKILL_MAPPING = new Map<SkillIdWithEmpty, SkillVo>([
   ['spear', new SkillVo('spear', 'Spear', '')],
 ]);
 
-export class SkillBar {
+export class SkillBarVo {
   static BAR_LENGTH = 10;
-  static empty(): SkillBar {
-    return new SkillBar([]);
+  static empty(): SkillBarVo {
+    return new SkillBarVo([]);
   }
 
   private elements: SkillVo[] = [];
 
   constructor(skillIds: SkillIdWithEmpty[]) {
-    if (skillIds.length > SkillBar.BAR_LENGTH)
-      throw new Error(`SkillBar cannot have more than ${SkillBar.BAR_LENGTH} skills`);
+    if (skillIds.length > SkillBarVo.BAR_LENGTH)
+      throw new Error(`SkillBar cannot have more than ${SkillBarVo.BAR_LENGTH} skills`);
 
-    this.elements = Array.from({ length: SkillBar.BAR_LENGTH }, (_, i) => i).map((i) => {
+    this.elements = Array.from({ length: SkillBarVo.BAR_LENGTH }, (_, i) => i).map((i) => {
       const skillId = skillIds.at(i) ?? '';
       return SKILL_MAPPING.get(skillId)!;
     });
@@ -50,12 +50,14 @@ export class SkillBar {
   }
 
   at(index: number): SkillVo {
-    if (index < 0 || index >= SkillBar.BAR_LENGTH)
+    if (index < 0 || index >= SkillBarVo.BAR_LENGTH)
       throw new Error(`SkillBar index out of range: ${index}`);
     return this.elements.at(index)!;
   }
 
-  insertSkillAt(newSkill: SkillVo, at: number): SkillBar {
-    return new SkillBar(this.elements.map((skill, index) => (index === at ? newSkill : skill).id));
+  insertSkillAt(newSkill: SkillVo, at: number): SkillBarVo {
+    return new SkillBarVo(
+      this.elements.map((skill, index) => (index === at ? newSkill : skill).id),
+    );
   }
 }

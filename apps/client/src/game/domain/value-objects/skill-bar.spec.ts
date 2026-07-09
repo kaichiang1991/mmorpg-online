@@ -1,4 +1,4 @@
-import { SKILL_MAPPING, SkillBar, SkillVo } from './skill-bar';
+import { SKILL_MAPPING, SkillBarVo, SkillVo } from './skill-bar-vo';
 import { SKILL_IDS } from '@mmo/shared';
 
 const makeSkill = (overrides: Partial<InstanceType<typeof SkillVo>> = {}) =>
@@ -26,13 +26,13 @@ describe('Skill', () => {
 
 describe('SkillBar', () => {
   it('empty skill bar has TEN empty skills', () => {
-    const skillbar = SkillBar.empty();
+    const skillbar = SkillBarVo.empty();
     expect(skillbar.length).toBe(10);
     expect(skillbar.every((skill) => skill.id === '')).toBe(true);
   });
 
   it('can insert at first position', () => {
-    const skillbar = SkillBar.empty();
+    const skillbar = SkillBarVo.empty();
     const newSkillBar = skillbar.insertSkillAt(SKILL_MAPPING.get('basic')!, 0);
 
     expect(newSkillBar.some((skill) => skill.id === 'basic')).toBe(true);
@@ -40,7 +40,7 @@ describe('SkillBar', () => {
   });
 
   it('can insert at any position', () => {
-    const skillbar = SkillBar.empty();
+    const skillbar = SkillBarVo.empty();
     const newSkillBar = skillbar.insertSkillAt(SKILL_MAPPING.get('basic')!, 5);
 
     expect(newSkillBar.some((skill) => skill.id === 'basic')).toBe(true);
@@ -48,9 +48,9 @@ describe('SkillBar', () => {
   });
 
   it('throws when constructed with more skills than BAR_LENGTH', () => {
-    const tooManyIds = Array.from({ length: SkillBar.BAR_LENGTH + 1 }, () => SKILL_IDS[0]);
-    expect(() => new SkillBar(tooManyIds)).toThrow(
-      `SkillBar cannot have more than ${SkillBar.BAR_LENGTH} skills`,
+    const tooManyIds = Array.from({ length: SkillBarVo.BAR_LENGTH + 1 }, () => SKILL_IDS[0]);
+    expect(() => new SkillBarVo(tooManyIds)).toThrow(
+      `SkillBar cannot have more than ${SkillBarVo.BAR_LENGTH} skills`,
     );
   });
 });
