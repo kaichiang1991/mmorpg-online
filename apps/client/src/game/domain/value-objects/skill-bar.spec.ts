@@ -1,4 +1,4 @@
-import { SKILL_MAPPING, SkillBarVo, SkillVo } from './skill-bar-vo';
+import { SkillBarVo, SkillVo } from './skill-bar-vo';
 import { SKILL_IDS } from '@mmo/shared';
 
 const makeSkill = (overrides: Partial<InstanceType<typeof SkillVo>> = {}) =>
@@ -33,7 +33,7 @@ describe('SkillBar', () => {
 
   it('can insert at first position', () => {
     const skillbar = SkillBarVo.empty();
-    const newSkillBar = skillbar.insertSkillAt(SKILL_MAPPING.get('basic')!, 0);
+    const newSkillBar = skillbar.insertSkillAt('basic', 0);
 
     expect(newSkillBar.some((skill) => skill.id === 'basic')).toBe(true);
     expect(newSkillBar.at(0).id).toBe('basic');
@@ -41,7 +41,7 @@ describe('SkillBar', () => {
 
   it('can insert at any position', () => {
     const skillbar = SkillBarVo.empty();
-    const newSkillBar = skillbar.insertSkillAt(SKILL_MAPPING.get('basic')!, 5);
+    const newSkillBar = skillbar.insertSkillAt('basic', 5);
 
     expect(newSkillBar.some((skill) => skill.id === 'basic')).toBe(true);
     expect(newSkillBar.at(5).id).toBe('basic');

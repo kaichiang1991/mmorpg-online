@@ -55,9 +55,9 @@ export class SkillBarVo {
     return this.elements.at(index)!;
   }
 
-  insertSkillAt(newSkill: SkillVo, at: number): SkillBarVo {
+  insertSkillAt(newSkillId: SkillId, at: number): SkillBarVo {
     return new SkillBarVo(
-      this.elements.map((skill, index) => (index === at ? newSkill : skill).id),
+      this.elements.map((skill, index) => (index === at ? newSkillId : skill.id)),
     );
   }
 }

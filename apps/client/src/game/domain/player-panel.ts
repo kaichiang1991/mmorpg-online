@@ -14,7 +14,7 @@ export class PlayerPanel {
     this._skillBar = SkillBarVo.empty();
   }
 
-  addSkillAt(skillId: SkillId, index: number) {
+  insertSkillAt(skillId: SkillId, index: number) {
     this._skillBar = this._skillBar.insertSkillAt(SKILL_MAPPING.get(skillId)!, index);
   }
 }
