@@ -5,7 +5,8 @@ import { PixiRenderer } from '../infrastructure/pixi/PixiRenderer';
 import { ActiveAttackTracker } from '../domain/active-attacks';
 import { PlayerPanel } from '../domain/player-panel';
 import { SkillBarVo } from '../domain/value-objects/skill-bar.vo';
-import { hitTestWorld } from '../domain/world-hit-test';
+import { hitTestWorld, WorldHit } from '../domain/world-hit-test';
+import { b } from 'vitest/dist/suite-dWqIFb_-';
 
 /**
  * Application layer: orchestrates the game session. Wires the socket to
@@ -47,12 +48,9 @@ export class GameSession {
       const hit = hitTestWorld(players, x, y);
       switch (hit.kind) {
         case 'ground':
-          this.socket?.emit('move', { x, y });
-          break;
+          return this.socket?.emit('move', { x, y });
         case 'player':
-          if (hit.player.id === this.selfId) break; // clicking yourself is neither move nor attack
-          this.socket?.emit('attack', { targetId: hit.player.id, skillId: 'basic' });
-          break;
+          return this.hitPlayerAction(hit);
       }
     });
 
@@ -79,5 +77,14 @@ export class GameSession {
     this.destroyed = true;
     this.socket?.disconnect();
     this.renderer.destroy();
+  }
+
+  private hitPlayerAction(hit: WorldHit) {
+    if (hit.kind !== 'player') return;
+
+    // todo: self cast skill
+    if (hit.player.id === this.selfId) return;
+
+    this.socket?.emit('attack', { targetId: hit.player.id, skillId: 'basic' });
   }
 }
