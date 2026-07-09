@@ -25,7 +25,9 @@ export class GameSession {
     this.socket.on('welcome', (payload: WelcomePayload) => {
       this.selfId = payload.selfId;
       this.renderer.setMap(payload.map);
+      this.renderer.setUI(); // todo: 帶入從伺服器來的資料 e.g. 玩家技能
     });
+
     this.socket.on('snapshot', (snapshot) => {
       this.interpolator.push(snapshot, performance.now());
     });

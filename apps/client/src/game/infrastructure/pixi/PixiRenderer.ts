@@ -57,6 +57,8 @@ export class PixiRenderer {
     this.drawFloor();
   }
 
+  setUI() {}
+
   /** Reports pointer-down positions in world coordinates. */
   onWorldClick(handler: (x: number, y: number) => void): void {
     this.app.stage.eventMode = 'static';
