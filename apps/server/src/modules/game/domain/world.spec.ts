@@ -31,7 +31,7 @@ describe('World', () => {
     world.addPlayer('p1', 'Alice');
     world.setMoveTarget('p1', -500, 99999);
     // run long enough to arrive at the clamped target
-    for (let i = 0; i < 200; i++) world.tick(0.1);
+    for (let i = 0; i < 200; i++) world.tick(0.1, 0);
     const p = world.getPlayer('p1')!;
     expect(p.x).toBe(0);
     expect(p.y).toBe(1200);
@@ -49,7 +49,7 @@ describe('World', () => {
     const [ax, bx] = [a.x, b.x];
     world.setMoveTarget('a', ax + 100, a.y);
     world.setMoveTarget('b', bx - 100, b.y);
-    world.tick(0.1);
+    world.tick(0.1, 0);
     expect(a.x).toBeGreaterThan(ax);
     expect(b.x).toBeLessThan(bx);
   });

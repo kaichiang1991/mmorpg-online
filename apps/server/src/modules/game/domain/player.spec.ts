@@ -77,7 +77,7 @@ describe('Player', () => {
 
     it('get casting vo when casting', () => {
       const p = makePlayer();
-      p.castSkill(makeSkill('fireball'));
+      p.castSkill(makeSkill('fireball'), 0);
       expect(p.casting).not.toBeNull();
     });
   });

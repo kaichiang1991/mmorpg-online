@@ -12,6 +12,10 @@ export class CastingVo {
     this._endsAt = now + this._skill.castTime;
   }
 
+  get skill(): Skill {
+    return this._skill;
+  }
+
   isDone(now: number): boolean {
     return now >= this._endsAt;
   }

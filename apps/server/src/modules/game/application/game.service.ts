@@ -36,7 +36,7 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
     this.lastTickAt = Date.now();
     this.tickTimer = setInterval(() => {
       const now = Date.now();
-      const events = this.world.tick((now - this.lastTickAt) / 1000);
+      const events = this.world.tick((now - this.lastTickAt) / 1000, now);
       this.lastTickAt = now;
       for (const event of events) this.listener?.(this.toGameEvent(event));
     }, 1000 / GAME_CONSTANTS.TICK_RATE);

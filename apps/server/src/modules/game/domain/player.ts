@@ -97,7 +97,11 @@ export class Player implements CombatUnit {
     this._mp = this._mp.decrease(cost);
   }
 
-  castSkill(skill: Skill) {
-    this._casting = new CastingVo(skill, Date.now());
+  castSkill(skill: Skill, now: number) {
+    this._casting = new CastingVo(skill, now);
+  }
+
+  clearCasting(): void {
+    this._casting = null;
   }
 }

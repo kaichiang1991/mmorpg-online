@@ -31,6 +31,7 @@ export class World {
   private readonly players = new Map<string, Player>();
   private readonly combat = new CombatResolver();
   private readonly skills = new SkillFactory();
+  private readonly castTargets = new Map<string, string>();
 
   constructor(
     readonly width: number = GAME_CONSTANTS.MAP_WIDTH,
@@ -92,13 +93,16 @@ export class World {
 
     attacker.consumeMp(skill.mpCost);
 
-    if (skill.castTime > 0)
+    if (skill.castTime > 0) {
+      attacker.castSkill(skill, now);
+      this.castTargets.set(attackerId, targetId);
       return {
         kind: 'castStarted',
         skillId,
         duration: skill.castTime,
         endsAt: now + skill.castTime,
       };
+    }
 
     const attack = this.combat.resolve(attacker.stats, target.stats, skill);
     target.injured(attack.finalDamage);
@@ -106,16 +110,35 @@ export class World {
   }
 
   /** Advance the simulation by dt seconds. */
-  tick(dt: number): WorldEvent[] {
+  tick(dt: number, now: number): WorldEvent[] {
     const events: WorldEvent[] = [];
-    for (const player of this.players.values()) {
-      player.advance(dt);
-      // todo:
-      // if (player.casting && now >= player.casting.endsAt) {
-      // 重驗證：目標還在? 還活著? 距離?（詠唱期間世界變了）
-      // 過 → resolve → events.push({ type: 'attackResolved', ... })
-      // 不過 → events.push({ type: 'castCancelled', ... })
-      // }
+    for (const [attackerId, attacker] of this.players) {
+      attacker.advance(dt);
+
+      const casting = attacker.casting;
+      if (!casting || !casting.isDone(now)) continue;
+
+      const targetId = this.castTargets.get(attackerId);
+      const target = targetId ? this.players.get(targetId) : undefined;
+      const skill = casting.skill;
+
+      attacker.clearCasting();
+      this.castTargets.delete(attackerId);
+
+      if (!target || attacker.position.distanceTo(target.position) > skill.range) {
+        events.push({ type: 'castCancelled', casterId: attackerId, reason: 'interrupted' });
+        continue;
+      }
+
+      const attack = this.combat.resolve(attacker.stats, target.stats, skill);
+      target.injured(attack.finalDamage);
+      events.push({
+        type: 'attackResolved',
+        attackerId,
+        targetId: target.id,
+        skillId: skill.id,
+        attack,
+      });
     }
 
     return events;
