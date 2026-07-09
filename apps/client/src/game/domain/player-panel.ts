@@ -1,4 +1,4 @@
-import { SKILL_MAPPING, SkillBarVo } from './value-objects/skill-bar-vo';
+import { SkillBarVo } from './value-objects/skill-bar-vo';
 import { SkillId } from '@mmo/shared';
 
 export class PlayerPanel {
@@ -15,6 +15,6 @@ export class PlayerPanel {
   }
 
   insertSkillAt(skillId: SkillId, index: number) {
-    this._skillBar = this._skillBar.insertSkillAt(SKILL_MAPPING.get(skillId)!, index);
+    this._skillBar = this._skillBar.insertSkillAt(skillId, index);
   }
 }
