@@ -21,9 +21,15 @@ describe('PlayerPanel', () => {
       expect(panel.skillBar.at(0).id).toBe('basic');
     });
 
-    it('default selectIndex = undefined', () => {
+    it('default selectSkillIndex = undefined', () => {
       const panel = makePlayerPanel();
       expect(panel.selectSkillIndex).toBeUndefined();
+    });
+
+    it('can select skill by index', () => {
+      const panel = makePlayerPanel();
+      panel.selectSkillAt(0);
+      expect(panel.selectSkillIndex).toBe(0);
     });
   });
 });
