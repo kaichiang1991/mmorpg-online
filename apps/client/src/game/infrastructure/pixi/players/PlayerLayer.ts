@@ -1,5 +1,5 @@
 import { Container } from 'pixi.js';
-import type { Player } from '../../domain/player';
+import type { Player } from '../../../domain/player';
 import { PlayerSprite } from './PlayerSprite';
 
 /**

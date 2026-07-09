@@ -4,8 +4,8 @@ import type { ActiveAttack } from '../../domain/active-attacks';
 import { cameraOffset } from '../../domain/camera';
 import type { Player } from '../../domain/player';
 import { EffectLayer } from './EffectLayer';
-import { PlayerLayer } from './PlayerLayer';
-import { preloadPlayerAssets } from './PlayerSprite';
+import { PlayerLayer } from './players/PlayerLayer';
+import { preloadPlayerAssets } from './players/PlayerSprite';
 import { PlayerPanel } from '../../domain/player-panel';
 import UILayer from './UILayer';
 

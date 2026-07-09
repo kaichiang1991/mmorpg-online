@@ -1,6 +1,6 @@
 import { GAME_CONSTANTS } from '@mmo/shared';
 import { AnimatedSprite, Assets, Container, Graphics, Text, Texture } from 'pixi.js';
-import type { Player } from '../../domain/player';
+import type { Player } from '../../../domain/player';
 import { BAR_HEIGHT, BAR_WIDTH, BODY_HEIGHT, WARRIOR_MAP } from './PlayerConfig';
 
 export const preloadPlayerAssets = async (): Promise<void> => {
