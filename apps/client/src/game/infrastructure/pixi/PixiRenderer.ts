@@ -88,7 +88,7 @@ export class PixiRenderer {
     this.players.onPlayerClick(handler);
   }
 
-  onSkillSelect(handler: () => void): void {
+  onSkillSelect(handler: (index: number) => void): void {
     this.ui.onSkillSelect(handler);
   }
 

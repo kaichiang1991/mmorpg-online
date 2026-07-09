@@ -63,5 +63,12 @@ export default class UILayer {
     );
   }
 
-  onSkillSelect(handler: () => void) {}
+  onSkillSelect(handler: (index: number) => void) {
+    this.skillBarContainer.interactive = true;
+    this.skillBarContainer.on('pointerdown', (event) => {
+      const index = Math.floor(event.data.global.x / (SLOT_SIZE + SLOT_GAP));
+      alert(index);
+      handler(index);
+    });
+  }
 }

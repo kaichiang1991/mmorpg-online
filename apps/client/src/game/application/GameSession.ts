@@ -19,6 +19,8 @@ export class GameSession {
   private destroyed = false;
   private readonly attackers = new ActiveAttackTracker();
 
+  private playerPanel: PlayerPanel | null = null;
+
   async mount(host: HTMLElement, token: string): Promise<void> {
     await this.renderer.init(host);
     if (this.destroyed) return; // unmounted during async init
@@ -27,7 +29,8 @@ export class GameSession {
     this.socket.on('welcome', (payload: WelcomePayload) => {
       this.selfId = payload.selfId;
       this.renderer.setMap(payload.map);
-      this.renderer.setUI(new PlayerPanel({ skillBar: SkillBarVo.from(payload.player.skillIds) }));
+      this.playerPanel = new PlayerPanel({ skillBar: SkillBarVo.from(payload.player.skillIds) });
+      this.renderer.setUI(this.playerPanel);
     });
 
     this.socket.on('snapshot', (snapshot) => {
@@ -40,8 +43,8 @@ export class GameSession {
 
     this.renderer.onWorldClick((x, y) => this.socket?.emit('move', { x, y }));
 
-    this.renderer.onSkillSelect(() => {
-      console.log('skill select handler');
+    this.renderer.onSkillSelect((index: number) => {
+      this.playerPanel?.selectSkillAt(index);
     });
 
     this.renderer.onPlayerClick((targetId) =>
