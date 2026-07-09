@@ -43,8 +43,10 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
 
   attack(playerId: string, targetId: string, skillId: string): AttackResultPayload | null {
     const now = Date.now();
-    const attackVo = this.world.attack(playerId, targetId, skillId, now);
-    if (!attackVo) return null;
+    const outcome = this.world.attack(playerId, targetId, skillId, now);
+    // todo: broadcast castBegin when outcome.kind === 'castStarted'
+    if (outcome.kind !== 'resolved') return null;
+    const attackVo = outcome.attack;
     // domain enums share the wire-format string values, hence the casts
     return {
       attackerId: playerId,

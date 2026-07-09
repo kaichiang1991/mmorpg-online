@@ -1,5 +1,11 @@
 import { PositionVo } from './value-objects/position.vo';
-import { World } from './world';
+import { AttackOutcome, World } from './world';
+import { AttackResultVo } from './value-objects/attack-result.vo';
+
+function resolvedAttack(outcome: AttackOutcome): AttackResultVo {
+  if (outcome.kind !== 'resolved') throw new Error(`expected 'resolved', got '${outcome.kind}'`);
+  return outcome.attack;
+}
 
 describe('World', () => {
   it('spawns players inside the map', () => {
@@ -62,29 +68,28 @@ describe('World', () => {
 
     it('resolves an in-range attack with damage', () => {
       const { world } = worldWithPair();
-      const result = world.attack('a', 'b', basicSkillId, 1000);
-      expect(result).not.toBeNull();
-      expect(result!.finalDamage).toBeGreaterThanOrEqual(1);
+      const attack = resolvedAttack(world.attack('a', 'b', basicSkillId, 1000));
+      expect(attack.finalDamage).toBeGreaterThanOrEqual(1);
     });
 
     it('rejects out-of-range attacks', () => {
       const { world, b } = worldWithPair();
       b.position = new PositionVo(100 + 201, 100); // just past ATTACK_RANGE (200)
-      expect(world.attack('a', 'b', basicSkillId, 1000)).toBeNull();
+      expect(world.attack('a', 'b', basicSkillId, 1000)).toEqual({ kind: 'rejected' });
     });
 
     it('rejects self, unknown attacker and unknown target', () => {
       const { world } = worldWithPair();
-      expect(world.attack('a', 'a', basicSkillId, 1000)).toBeNull();
-      expect(world.attack('ghost', 'b', basicSkillId, 1000)).toBeNull();
-      expect(world.attack('a', 'ghost', basicSkillId, 1000)).toBeNull();
+      expect(world.attack('a', 'a', basicSkillId, 1000)).toEqual({ kind: 'rejected' });
+      expect(world.attack('ghost', 'b', basicSkillId, 1000)).toEqual({ kind: 'rejected' });
+      expect(world.attack('a', 'ghost', basicSkillId, 1000)).toEqual({ kind: 'rejected' });
     });
 
     it('applies the resolved damage to the target', () => {
       const { world, b } = worldWithPair();
       const before = b.hp.remaining;
-      const result = world.attack('a', 'b', basicSkillId, 1000);
-      expect(b.hp.remaining).toBe(before - result!.finalDamage);
+      const attack = resolvedAttack(world.attack('a', 'b', basicSkillId, 1000));
+      expect(b.hp.remaining).toBe(before - attack.finalDamage);
     });
 
     it('reports damaged hp in the snapshot', () => {
@@ -96,10 +101,10 @@ describe('World', () => {
 
     it('enforces the attack cooldown per attacker', () => {
       const { world } = worldWithPair();
-      expect(world.attack('a', 'b', basicSkillId, 1000)).not.toBeNull();
-      expect(world.attack('a', 'b', basicSkillId, 1100)).toBeNull(); // still cooling down
-      expect(world.attack('a', 'b', basicSkillId, 1000 + 600)).not.toBeNull(); // cooldown over
-      expect(world.attack('b', 'a', basicSkillId, 1100)).not.toBeNull(); // b has own cooldown
+      expect(world.attack('a', 'b', basicSkillId, 1000).kind).toBe('resolved');
+      expect(world.attack('a', 'b', basicSkillId, 1100).kind).toBe('rejected'); // still cooling down
+      expect(world.attack('a', 'b', basicSkillId, 1000 + 600).kind).toBe('resolved'); // cooldown over
+      expect(world.attack('b', 'a', basicSkillId, 1100).kind).toBe('resolved'); // b has own cooldown
     });
   });
 
@@ -110,29 +115,34 @@ describe('World', () => {
         const skillId = 'spear';
         const result = world.attack(a.id, b.id, skillId, 1000);
 
-        expect(result).not.toBeNull();
+        expect(result.kind).toBe('resolved');
         expect(a.mp.remaining).toBe(190); // 200 - 10
       });
 
       it('rejects an attack the attacker cannot afford', () => {
         const { world, a, b } = worldWithPair();
         a.consumeMp(195); // 5 mp left, spear costs 10
-        expect(world.attack(a.id, b.id, 'spear', 1000)).toBeNull();
+        expect(world.attack(a.id, b.id, 'spear', 1000)).toEqual({ kind: 'rejected' });
         expect(a.mp.remaining).toBe(5);
       });
     });
 
     describe('Non-Instant case skill', () => {
-      it('will NOT send "attack" event when there is casting time', () => {
+      it('reports castStarted with cast timing instead of resolving', () => {
         const { world, a, b } = worldWithPair();
-        expect(world.attack(a.id, b.id, 'fireball', 1000)).toBeNull();
+        expect(world.attack(a.id, b.id, 'fireball', 1000)).toEqual({
+          kind: 'castStarted',
+          skillId: 'fireball',
+          duration: 300,
+          endsAt: 1300, // now + castTime
+        });
       });
     });
 
     it('rejects an unknown skill id', () => {
       const { world } = worldWithPair();
-      expect(world.attack('a', 'b', 'no-such-skill', 1000)).toBeNull();
-      expect(world.attack('a', 'b', '', 1000)).toBeNull();
+      expect(world.attack('a', 'b', 'no-such-skill', 1000)).toEqual({ kind: 'rejected' });
+      expect(world.attack('a', 'b', '', 1000)).toEqual({ kind: 'rejected' });
     });
   });
 

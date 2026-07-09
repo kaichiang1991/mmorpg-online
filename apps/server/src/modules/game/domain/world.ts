@@ -5,6 +5,11 @@ import { PositionVo } from './value-objects/position.vo';
 import { Player } from './player';
 import { SkillFactory } from './skill-factory';
 
+export type AttackOutcome =
+  | { kind: 'resolved'; attack: AttackResultVo }
+  | { kind: 'castStarted'; skillId: string; duration: number; endsAt: number }
+  | { kind: 'rejected' };
+
 /**
  * Pure domain aggregate: the game world. Owns all players, advances the
  * simulation, produces snapshots. No sockets, no timers, no Nest — fully
@@ -52,35 +57,33 @@ export class World {
   }
 
   /**
-   * Attack intent from a client. Validates and resolves immediately; null means
-   * rejected (unknown ids/skill, self, out of range, low mp, cooling down).
+   * Attack intent from a client. Instant skills resolve immediately
+   * ('resolved'); skills with a cast time report 'castStarted' and settle
+   * later in the tick. 'rejected' covers any failed validation (unknown
+   * ids/skill, self, out of range, low mp, cooling down).
    */
-  attack(
-    attackerId: string,
-    targetId: string,
-    skillId: string,
-    now: number,
-  ): AttackResultVo | null {
+  attack(attackerId: string, targetId: string, skillId: string, now: number): AttackOutcome {
     const attacker = this.players.get(attackerId);
     const target = this.players.get(targetId);
-    if (!attacker || !target || attackerId === targetId) return null;
+    if (!attacker || !target || attackerId === targetId) return { kind: 'rejected' };
 
     const skill = this.skills.get(skillId);
-    if (!skill) return null;
+    if (!skill) return { kind: 'rejected' };
 
     const distance = attacker.position.distanceTo(target.position);
-    if (distance > skill.range) return null;
+    if (distance > skill.range) return { kind: 'rejected' };
 
-    if (attacker.mp.remaining < skill.mpCost) return null;
+    if (attacker.mp.remaining < skill.mpCost) return { kind: 'rejected' };
 
-    if (skill.castTime > 0) return null;
+    if (skill.castTime > 0)
+      return { kind: 'castStarted', skillId, duration: skill.castTime, endsAt: now + skill.castTime };
     // todo: seperate try
-    if (!attacker.tryAttack(now)) return null;
+    if (!attacker.tryAttack(now)) return { kind: 'rejected' };
 
     const attack = this.combat.resolve(attacker.stats, target.stats, skill);
     attacker.consumeMp(skill.mpCost);
     target.injured(attack.finalDamage);
-    return attack;
+    return { kind: 'resolved', attack };
   }
 
   /** Advance the simulation by dt seconds. */
