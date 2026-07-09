@@ -69,8 +69,8 @@ export class World {
     if (!skill) return null;
 
     const distance = attacker.position.distanceTo(target.position);
-    // todo: seperate distance
-    if (distance > GAME_CONSTANTS.ATTACK_RANGE) return null;
+    if (distance > skill.range) return null;
+
     if (attacker.mp.remaining < skill.mpCost) return null;
     // todo: seperate try
     if (!attacker.tryAttack(now)) return null;

@@ -9,7 +9,6 @@ export const GAME_CONSTANTS = {
   TICK_RATE: 20,
   SNAPSHOT_RATE: 10,
   PLAYER_SPEED: 220, // px per second
-  ATTACK_RANGE: 200, // px, center to center
   ATTACK_COOLDOWN_MS: 600,
   MAX_HP: 1000, // TODO: per-player stat once hp lives on the server entity
   MAX_MP: 200, // TODO: same as MAX_HP
