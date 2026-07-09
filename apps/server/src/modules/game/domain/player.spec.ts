@@ -1,7 +1,11 @@
 import { Player } from './player';
 import { PositionVo } from './value-objects/position.vo';
+import { SkillFactory } from './skill-factory';
+import { SkillId } from '@mmo/shared';
 
 const makePlayer = () => new Player('p1', 'Alice', 0, 0, 100);
+const makeSkill = (skillId: SkillId = 'basic') => new SkillFactory().get(skillId)!;
+
 describe('Player', () => {
   describe('advance', () => {
     it('does not move without a target', () => {
@@ -68,7 +72,8 @@ describe('Player', () => {
   describe('cast skill', () => {
     it('throws if the skill is instant', () => {
       const p = makePlayer();
-      expect(() => p.castSkill('basic')).toThrow();
+      const skill = makeSkill('basic');
+      expect(() => p.castSkill(skill)).toThrow();
     });
   });
 });
