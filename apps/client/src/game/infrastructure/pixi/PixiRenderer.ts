@@ -88,6 +88,10 @@ export class PixiRenderer {
     this.players.onPlayerClick(handler);
   }
 
+  onSkillSelect(handler: () => void): void {
+    this.ui.onSkillSelect(handler);
+  }
+
   render(players: Player[], attacks: ActiveAttack[], selfId: string | null): void {
     this.players.render(players, selfId);
 

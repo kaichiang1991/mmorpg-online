@@ -39,6 +39,11 @@ export class GameSession {
     });
 
     this.renderer.onWorldClick((x, y) => this.socket?.emit('move', { x, y }));
+
+    this.renderer.onSkillSelect(() => {
+      console.log('skill select handler');
+    });
+
     this.renderer.onPlayerClick((targetId) =>
       this.socket?.emit('attack', { targetId, skillId: 'basic' }),
     );

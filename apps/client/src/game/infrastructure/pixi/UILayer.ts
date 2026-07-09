@@ -62,4 +62,6 @@ export default class UILayer {
       screenHeight - SLOT_SIZE - BAR_BOTTOM_MARGIN,
     );
   }
+
+  onSkillSelect(handler: () => void) {}
 }
