@@ -18,7 +18,7 @@ describe('PlayerPanel', () => {
 
     it('can reconstitute from snapshot', () => {
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('basic', 0));
-      expect(panel.skillBar.at(0)).toBe('basic');
+      expect(panel.skillBar.at(0).id).toBe('basic');
     });
   });
 });

@@ -7,8 +7,8 @@ export class PlayerPanel {
     return this._skillBar;
   }
 
-  constructor(skills: string[] = []) {
-    this._skillBar = SkillBarVo.empty();
+  constructor({ skillBar }: { skillBar?: SkillBarVo }) {
+    this._skillBar = skillBar ?? SkillBarVo.empty();
   }
 
   insertSkillAt(skillId: SkillId, index: number) {
