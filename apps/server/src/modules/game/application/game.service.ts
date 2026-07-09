@@ -1,23 +1,37 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { AttackResultPayload, GAME_CONSTANTS, WorldSnapshot } from '@mmo/shared';
-import { World } from '../domain/world';
+import { AttackResultPayload, CastCancelPayload, GAME_CONSTANTS, WorldSnapshot } from '@mmo/shared';
+import { AttackResultVo } from '../domain/value-objects/attack-result.vo';
+import { World, WorldEvent } from '../domain/world';
+
+/** Domain occurrence translated to the wire: which socket event to emit, with its payload. */
+export type GameEvent =
+  | { name: 'attack'; payload: AttackResultPayload }
+  | { name: 'castCancel'; payload: CastCancelPayload };
 
 /**
  * Application service: drives the domain World with a fixed tick loop.
- * Presentation (gateway) calls in with intents and pulls snapshots out.
+ * Presentation (gateway) calls in with intents and pulls snapshots out;
+ * tick-born events (cast completion/cancel) are pushed via onEvent.
  */
 @Injectable()
 export class GameService implements OnModuleInit, OnModuleDestroy {
   private readonly world = new World();
   private tickTimer: NodeJS.Timeout | null = null;
   private lastTickAt = Date.now();
+  private listener: ((event: GameEvent) => void) | null = null;
+
+  /** Presentation registers here to broadcast tick-born events. */
+  onEvent(listener: (event: GameEvent) => void): void {
+    this.listener = listener;
+  }
 
   onModuleInit(): void {
     this.lastTickAt = Date.now();
     this.tickTimer = setInterval(() => {
       const now = Date.now();
-      this.world.tick((now - this.lastTickAt) / 1000);
+      const events = this.world.tick((now - this.lastTickAt) / 1000);
       this.lastTickAt = now;
+      for (const event of events) this.listener?.(this.toGameEvent(event));
     }, 1000 / GAME_CONSTANTS.TICK_RATE);
   }
 
@@ -46,10 +60,33 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
     const outcome = this.world.attack(playerId, targetId, skillId, now);
     // todo: broadcast castBegin when outcome.kind === 'castStarted'
     if (outcome.kind !== 'resolved') return null;
-    const attackVo = outcome.attack;
+    return this.toAttackPayload(playerId, targetId, skillId, outcome.attack);
+  }
+
+  private toGameEvent(event: WorldEvent): GameEvent {
+    switch (event.type) {
+      case 'attackResolved':
+        return {
+          name: 'attack',
+          payload: this.toAttackPayload(event.attackerId, event.targetId, event.skillId, event.attack),
+        };
+      case 'castCancelled':
+        return {
+          name: 'castCancel',
+          payload: { casterId: event.casterId, reason: event.reason },
+        };
+    }
+  }
+
+  private toAttackPayload(
+    attackerId: string,
+    targetId: string,
+    skillId: string,
+    attackVo: AttackResultVo,
+  ): AttackResultPayload {
     // domain enums share the wire-format string values, hence the casts
     return {
-      attackerId: playerId,
+      attackerId,
       targetId,
       skillId,
       damage: attackVo.finalDamage,

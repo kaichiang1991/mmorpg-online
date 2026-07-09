@@ -95,6 +95,11 @@ export interface AttackResultPayload {
   multipliers: Multiplier[];
 }
 
+export interface CastCancelPayload {
+  casterId: string;
+  reason: 'moved' | 'interrupted' | 'died' | 'disconnected';
+}
+
 /** events the client may emit */
 export interface ClientToServerEvents {
   move: (payload: MovePayload) => void;
@@ -105,5 +110,7 @@ export interface ClientToServerEvents {
 export interface ServerToClientEvents {
   welcome: (payload: WelcomePayload) => void;
   snapshot: (payload: WorldSnapshot) => void;
+  /** instant-skill resolution and cast completion share this result event */
   attack: (event: AttackResultPayload) => void;
+  castCancel: (payload: CastCancelPayload) => void;
 }

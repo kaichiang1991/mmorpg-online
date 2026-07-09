@@ -34,6 +34,16 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   ) {}
 
   afterInit(): void {
+    this.game.onEvent((event) => {
+      switch (event.name) {
+        case 'attack':
+          this.server.emit('attack', event.payload);
+          break;
+        case 'castCancel':
+          this.server.emit('castCancel', event.payload);
+          break;
+      }
+    });
     this.snapshotTimer = setInterval(() => {
       this.server.emit('snapshot', this.game.snapshot());
     }, 1000 / GAME_CONSTANTS.SNAPSHOT_RATE);

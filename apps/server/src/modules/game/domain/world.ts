@@ -10,7 +10,7 @@ export type AttackOutcome =
   | { kind: 'castStarted'; skillId: string; duration: number; endsAt: number }
   | { kind: 'rejected' };
 
-type CastCancelReason = string;
+export type CastCancelReason = 'moved' | 'interrupted' | 'died' | 'disconnected';
 
 export type WorldEvent =
   | {
