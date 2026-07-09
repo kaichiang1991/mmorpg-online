@@ -20,5 +20,10 @@ describe('PlayerPanel', () => {
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('basic', 0));
       expect(panel.skillBar.at(0).id).toBe('basic');
     });
+
+    it('default selectIndex = undefined', () => {
+      const panel = makePlayerPanel();
+      expect(panel.selectIndex).toBeUndefined();
+    });
   });
 });
