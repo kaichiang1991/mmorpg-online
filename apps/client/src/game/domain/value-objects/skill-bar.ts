@@ -1,17 +1,20 @@
+import { SkillId } from '@mmo/shared';
+
 export class SkillVo {
   static empty(): SkillVo {
     return new SkillVo('', '', '');
   }
 
   constructor(
-    public readonly id: string,
+    public readonly id: SkillId | '',
     public readonly name: string,
     public readonly imageUrl: string,
   ) {}
 }
 
-export const SKILL_MAPPING = new Map<string, SkillVo>([
-  ['empty', SkillVo.empty()],
+type SkillIdWithEmpty = SkillId | '';
+export const SKILL_MAPPING = new Map<SkillIdWithEmpty, SkillVo>([
+  ['', SkillVo.empty()],
   ['basic', new SkillVo('basic', 'Attack', '')],
   ['spear', new SkillVo('spear', 'Spear', '')],
 ]);
@@ -24,13 +27,13 @@ export class SkillBar {
 
   private elements: SkillVo[] = [];
 
-  constructor(skillIds: string[]) {
+  constructor(skillIds: SkillIdWithEmpty[]) {
     if (skillIds.length > SkillBar.BAR_LENGTH)
       throw new Error(`SkillBar cannot have more than ${SkillBar.BAR_LENGTH} skills`);
 
     this.elements = Array.from({ length: SkillBar.BAR_LENGTH }, (_, i) => i).map((i) => {
-      const skillId = skillIds.at(i);
-      return SKILL_MAPPING.get(skillId || 'empty')!;
+      const skillId = skillIds.at(i) ?? '';
+      return SKILL_MAPPING.get(skillId)!;
     });
   }
 

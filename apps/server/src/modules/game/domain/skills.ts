@@ -1,8 +1,9 @@
+import { SkillId } from '@mmo/shared';
 import { DamageElement, DamageKind } from './damage';
 
 /** 技能的靜態定義 */
 export interface Skill {
-  readonly id: string;
+  readonly id: SkillId;
   readonly baseDamage: number;
   readonly multiplier: number; // 技能本身的倍率
   readonly kind: DamageKind;

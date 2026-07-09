@@ -15,6 +15,9 @@ export const GAME_CONSTANTS = {
   MAX_MP: 200, // TODO: same as MAX_HP
 } as const;
 
+/** Canonical skill ids — server domain and client display both key off these. */
+export const SKILL_IDS = ['basic', 'spear'] as const;
+export type SkillId = (typeof SKILL_IDS)[number];
 /* ------------------------------------------------------------- REST auth */
 
 export interface RegisterRequest {

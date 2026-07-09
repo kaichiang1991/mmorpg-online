@@ -1,4 +1,5 @@
 import { SKILL_MAPPING, SkillBar, SkillVo } from './skill-bar';
+import { SKILL_IDS } from '@mmo/shared';
 
 const makeSkill = (overrides: Partial<InstanceType<typeof SkillVo>> = {}) =>
   new SkillVo(
@@ -47,7 +48,7 @@ describe('SkillBar', () => {
   });
 
   it('throws when constructed with more skills than BAR_LENGTH', () => {
-    const tooManyIds = Array.from({ length: SkillBar.BAR_LENGTH + 1 }, () => 'basic');
+    const tooManyIds = Array.from({ length: SkillBar.BAR_LENGTH + 1 }, () => SKILL_IDS[0]);
     expect(() => new SkillBar(tooManyIds)).toThrow(
       `SkillBar cannot have more than ${SkillBar.BAR_LENGTH} skills`,
     );
