@@ -146,6 +146,55 @@ describe('World', () => {
     });
   });
 
+  describe('cast resolution (tick)', () => {
+    it('does not resolve before the cast time elapses', () => {
+      const { world, a } = worldWithPair();
+      world.attack(a.id, 'b', 'fireball', 1000); // endsAt 1300
+      const events = world.tick(0.1, 1299);
+      expect(events).toEqual([]);
+      expect(a.casting).not.toBeNull();
+    });
+
+    it('resolves the attack and clears casting once the cast time elapses', () => {
+      const { world, a, b } = worldWithPair();
+      world.attack(a.id, b.id, 'fireball', 1000); // endsAt 1300
+      const before = b.hp.remaining;
+      const events = world.tick(0.1, 1300);
+
+      expect(events).toHaveLength(1);
+      expect(events[0]).toMatchObject({
+        type: 'attackResolved',
+        attackerId: a.id,
+        targetId: b.id,
+        skillId: 'fireball',
+      });
+      expect(b.hp.remaining).toBeLessThan(before);
+      expect(a.casting).toBeNull();
+    });
+
+    it('cancels the cast if the target left the world', () => {
+      const { world, a, b } = worldWithPair();
+      world.attack(a.id, b.id, 'fireball', 1000); // endsAt 1300
+      world.removePlayer(b.id);
+
+      const events = world.tick(0.1, 1300);
+
+      expect(events).toEqual([{ type: 'castCancelled', casterId: a.id, reason: 'interrupted' }]);
+      expect(a.casting).toBeNull();
+    });
+
+    it('cancels the cast if the target moved out of range', () => {
+      const { world, a, b } = worldWithPair();
+      world.attack(a.id, b.id, 'fireball', 1000); // endsAt 1300, fireball range 500
+      b.position = new PositionVo(100 + 501, 100);
+
+      const events = world.tick(0.1, 1300);
+
+      expect(events).toEqual([{ type: 'castCancelled', casterId: a.id, reason: 'interrupted' }]);
+      expect(a.casting).toBeNull();
+    });
+  });
+
   it('snapshot contains all players with rounded coordinates', () => {
     const world = new World();
     world.addPlayer('p1', 'Alice');
