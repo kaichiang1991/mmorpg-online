@@ -57,6 +57,7 @@ export class GameSession {
         this.attackers.activeAt(now),
         this.selfId,
       );
+      this.renderer.renderDebug({ selectSkillIndex: this.playerPanel?.selectSkillIndex });
     });
   }
 
