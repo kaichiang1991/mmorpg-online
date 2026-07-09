@@ -20,4 +20,8 @@ export class PlayerPanel {
   insertSkillAt(skillId: SkillId, index: number) {
     this._skillBar = this._skillBar.insertSkillAt(skillId, index);
   }
+
+  selectSkillAt(index: number) {
+    this._selectSkillIndex = index;
+  }
 }
