@@ -1,18 +1,21 @@
 import { SkillId } from '@mmo/shared';
 
+type SkillIdWithEmpty = SkillId | '';
+
 export class SkillVo {
   static empty(): SkillVo {
     return new SkillVo('', '', '');
   }
 
+  private readonly _castingTimeMs: number;
+
   constructor(
-    public readonly id: SkillId | '',
+    public readonly id: SkillIdWithEmpty,
     public readonly name: string,
     public readonly imageUrl: string,
   ) {}
 }
 
-type SkillIdWithEmpty = SkillId | '';
 export const SKILL_MAPPING = new Map<SkillIdWithEmpty, SkillVo>([
   ['', SkillVo.empty()],
   ['basic', new SkillVo('basic', 'Attack', '')],

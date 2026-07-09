@@ -1,4 +1,4 @@
-import { SkillBarVo } from './value-objects/skill-bar-vo';
+import { SkillBarVo } from './value-objects/skill-bar.vo';
 import { SkillId } from '@mmo/shared';
 
 export class PlayerPanel {

@@ -1,4 +1,4 @@
-import { SkillBarVo, SkillVo } from './skill-bar-vo';
+import { SkillBarVo, SkillVo } from './skill-bar.vo';
 import { SKILL_IDS } from '@mmo/shared';
 
 const makeSkill = (overrides: Partial<InstanceType<typeof SkillVo>> = {}) =>
@@ -14,6 +14,7 @@ describe('Skill', () => {
     expect(skill.id).toBe('');
     expect(skill.name).toBe('');
     expect(skill.imageUrl).toBe('');
+    expect(skill.isInstantCast).toBe(true);
   });
 
   it('have all fields in normal skill', () => {
@@ -21,6 +22,7 @@ describe('Skill', () => {
     expect(skill.id).toBe('basic');
     expect(skill.name).toBe('Attack');
     expect(skill.imageUrl).toBe('http://image');
+    expect(skill.isInstantCast).toBe(true);
   });
 });
 
