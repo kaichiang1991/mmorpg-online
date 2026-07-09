@@ -10,6 +10,18 @@ export type AttackOutcome =
   | { kind: 'castStarted'; skillId: string; duration: number; endsAt: number }
   | { kind: 'rejected' };
 
+type CastCancelReason = string;
+
+export type WorldEvent =
+  | {
+      type: 'attackResolved';
+      attackerId: string;
+      targetId: string;
+      skillId: string;
+      attack: AttackResultVo;
+    }
+  | { type: 'castCancelled'; casterId: string; reason: CastCancelReason };
+
 /**
  * Pure domain aggregate: the game world. Owns all players, advances the
  * simulation, produces snapshots. No sockets, no timers, no Nest — fully
@@ -94,10 +106,19 @@ export class World {
   }
 
   /** Advance the simulation by dt seconds. */
-  tick(dt: number): void {
+  tick(dt: number): WorldEvent[] {
+    const events: WorldEvent[] = [];
     for (const player of this.players.values()) {
       player.advance(dt);
+      // todo:
+      // if (player.casting && now >= player.casting.endsAt) {
+      // 重驗證：目標還在? 還活著? 距離?（詠唱期間世界變了）
+      // 過 → resolve → events.push({ type: 'attackResolved', ... })
+      // 不過 → events.push({ type: 'castCancelled', ... })
+      // }
     }
+
+    return events;
   }
 
   snapshot(now: number): WorldSnapshot {
