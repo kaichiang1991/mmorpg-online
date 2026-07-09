@@ -4,9 +4,12 @@ import { SkillVo } from '../../domain/value-objects/skill-bar.vo';
 export const SLOT_SIZE = 48;
 export const SLOT_GAP = 4;
 const SLOT_RADIUS = 6;
+const SELECTED_COLOR = 0xffd700;
 
 // todo: load skill texture
 export default class SkillSprite extends Container {
+  private readonly selectedBorder: Graphics;
+
   constructor(index: number, skill: SkillVo) {
     super();
     this.label = 'skill';
@@ -38,6 +41,13 @@ export default class SkillSprite extends Container {
       name.position.set(SLOT_SIZE / 2, SLOT_SIZE / 2);
       this.addChild(name);
     }
+
+    // added last so it draws above the slot content
+    this.selectedBorder = new Graphics()
+      .roundRect(0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_RADIUS)
+      .stroke({ width: 2, color: SELECTED_COLOR });
+    this.selectedBorder.visible = false;
+    this.addChild(this.selectedBorder);
   }
 
   onClick(handler: () => void) {
@@ -45,5 +55,9 @@ export default class SkillSprite extends Container {
       e.stopPropagation();
       handler();
     });
+  }
+
+  setSelected(selected: boolean) {
+    this.selectedBorder.visible = selected;
   }
 }

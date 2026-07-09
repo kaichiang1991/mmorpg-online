@@ -81,7 +81,15 @@ export default class UILayer {
   private bindSkillSelect() {
     if (!this.skillSelectHandler) return;
     const handler = this.skillSelectHandler;
-    const slots = this.skillBarContainer.getChildrenByLabel('skill') as SkillSprite[];
-    slots.forEach((slot, index) => slot.onClick(() => handler(index)));
+    this.skillSlots.forEach((slot, index) => slot.onClick(() => handler(index)));
+  }
+
+  /** Highlights the slot at `index`, clearing all others; undefined clears everything. */
+  renderSelectedSkill(index: number | undefined): void {
+    this.skillSlots.forEach((slot, i) => slot.setSelected(i === index));
+  }
+
+  private get skillSlots(): SkillSprite[] {
+    return this.skillBarContainer.getChildrenByLabel('skill') as SkillSprite[];
   }
 }

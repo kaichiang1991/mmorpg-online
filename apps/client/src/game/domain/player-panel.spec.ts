@@ -33,20 +33,20 @@ describe('PlayerPanel', () => {
     });
 
     it('can select skill by index', () => {
-      const panel = makePlayerPanel();
+      const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('basic', 0));
       panel.selectSkillAt(0);
       expect(panel.selectSkillIndex).toBe(0);
     });
 
     it('can cancels select skill', () => {
-      const panel = makePlayerPanel();
+      const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('basic', 0));
       panel.selectSkillAt(0);
       panel.cancelSkillAt(0);
       expect(panel.selectSkillIndex).toBeUndefined();
     });
 
     it('cancels select skill at not selected index throws', () => {
-      const panel = makePlayerPanel();
+      const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('basic', 0));
       expect(() => panel.cancelSkillAt(0)).toThrow();
 
       panel.selectSkillAt(0);

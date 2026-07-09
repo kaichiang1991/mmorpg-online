@@ -97,6 +97,10 @@ export class PixiRenderer {
     this.ui.renderDebug(values);
   }
 
+  renderSelectedSkill(index: number | undefined): void {
+    this.ui.renderSelectedSkill(index);
+  }
+
   render(players: Player[], attacks: ActiveAttack[], selfId: string | null): void {
     this.players.render(players, selfId);
 
