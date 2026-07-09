@@ -75,13 +75,20 @@ export class World {
 
     if (attacker.mp.remaining < skill.mpCost) return { kind: 'rejected' };
 
-    if (skill.castTime > 0)
-      return { kind: 'castStarted', skillId, duration: skill.castTime, endsAt: now + skill.castTime };
     // todo: seperate try
     if (!attacker.tryAttack(now)) return { kind: 'rejected' };
 
-    const attack = this.combat.resolve(attacker.stats, target.stats, skill);
     attacker.consumeMp(skill.mpCost);
+
+    if (skill.castTime > 0)
+      return {
+        kind: 'castStarted',
+        skillId,
+        duration: skill.castTime,
+        endsAt: now + skill.castTime,
+      };
+
+    const attack = this.combat.resolve(attacker.stats, target.stats, skill);
     target.injured(attack.finalDamage);
     return { kind: 'resolved', attack };
   }

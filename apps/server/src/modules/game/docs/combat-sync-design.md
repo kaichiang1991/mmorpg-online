@@ -214,7 +214,7 @@ export interface Skill {
   readonly kind: DamageKind;
   readonly element: DamageElement;
   readonly mpCost: number;
-  readonly castTime?: number; // ms；未設或 0 = 瞬發（普攻、瞬發技能）
+  readonly castTime: number; // ms；未設或 0 = 瞬發（普攻、瞬發技能）
   readonly hitCount?: number;
 }
 ```
