@@ -56,6 +56,7 @@ export class PixiRenderer {
     // objects they touch are destroyed.
     gsap.ticker.remove(this.frame);
     this.effects.destroy();
+    this.ui.destroy();
     this.app.destroy(true, { children: true });
   }
 

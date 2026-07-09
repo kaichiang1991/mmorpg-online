@@ -16,12 +16,23 @@ export default class UILayer {
     style: { fontSize: 12, fill: 0xffffff, fontFamily: 'monospace' },
   });
 
+  // hotkey → slot index: keys 1-9 → slots 0-8, key 0 → slot 9 (inverse of the slot label)
+  private readonly handleKeyDown = (e: KeyboardEvent) => {
+    if (e.repeat || !/^[0-9]$/.test(e.key)) return;
+    this.skillSelectHandler?.((Number(e.key) + 9) % 10);
+  };
+
   constructor() {
     const debugPanel = new Container();
     debugPanel.position.set(8, 8);
     this.debugText.position.set(6, 4);
     debugPanel.addChild(this.debugBg, this.debugText);
     this.container.addChild(this.skillBarContainer, debugPanel);
+    window.addEventListener('keydown', this.handleKeyDown);
+  }
+
+  destroy(): void {
+    window.removeEventListener('keydown', this.handleKeyDown);
   }
 
   /** Debug panel at top-left: prints each entry as `key: value`, one per line. */
