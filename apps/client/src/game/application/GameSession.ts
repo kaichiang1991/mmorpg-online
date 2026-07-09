@@ -6,7 +6,6 @@ import { ActiveAttackTracker } from '../domain/active-attacks';
 import { PlayerPanel } from '../domain/player-panel';
 import { SkillBarVo } from '../domain/value-objects/skill-bar.vo';
 import { hitTestWorld, WorldHit } from '../domain/world-hit-test';
-import { b } from 'vitest/dist/suite-dWqIFb_-';
 
 /**
  * Application layer: orchestrates the game session. Wires the socket to
@@ -82,9 +81,16 @@ export class GameSession {
   private hitPlayerAction(hit: WorldHit) {
     if (hit.kind !== 'player') return;
 
-    // todo: self cast skill
+    // todo: self-cast skill
     if (hit.player.id === this.selfId) return;
 
-    this.socket?.emit('attack', { targetId: hit.player.id, skillId: 'basic' });
+    const skill = this.playerPanel?.selectedSkill;
+    if (!skill) return;
+
+    // todo: non-instant cast skill
+    this.socket?.emit('attack', {
+      targetId: hit.player.id,
+      skillId: skill.id,
+    });
   }
 }
