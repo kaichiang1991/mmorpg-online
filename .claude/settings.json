@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -n '{hookSpecificOutput:{hookEventName:\"PreToolUse\",additionalContext:\"新增或修改檔案前，請先讀取並遵守 docs/naming-conventions.md 的命名慣例（kebab-case 檔名、.type 後綴模式等）。\"}}'"
+          }
+        ]
+      }
+    ]
+  }
+}
