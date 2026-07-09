@@ -1,5 +1,4 @@
 import { Container, Graphics, Text } from 'pixi.js';
-import gsap from 'gsap';
 import { SkillBarVo } from '../../domain/value-objects/skill-bar.vo';
 
 const SLOT_SIZE = 48;
@@ -10,7 +9,6 @@ const BAR_BOTTOM_MARGIN = 16;
 export default class UILayer {
   readonly container = new Container();
 
-  private readonly ctx = gsap.context(() => {});
   private skillBarContainer: Container = new Container();
 
   constructor() {
@@ -40,7 +38,8 @@ export default class UILayer {
       this.skillBarContainer.addChild(hotkey);
 
       const skill = skillBar.at(i);
-      if (skill.id !== '') {
+      if (!skill.isEmpty) {
+        // todo: 目前先用name代替, 之後換圖
         const name = new Text({
           text: skill.name,
           style: { fontSize: 11, fill: 0xffffff },

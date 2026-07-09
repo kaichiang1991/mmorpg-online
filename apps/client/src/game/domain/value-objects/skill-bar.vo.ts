@@ -1,6 +1,4 @@
-import { SkillId } from '@mmo/shared';
-
-type SkillIdWithEmpty = SkillId | '';
+import { SkillId, SkillIdWithEmpty } from '@mmo/shared';
 
 export class SkillVo {
   static empty(): SkillVo {
@@ -17,6 +15,10 @@ export class SkillVo {
   get isInstantCast(): boolean {
     return this._castingTimeMs === 0;
   }
+
+  get isEmpty(): boolean {
+    return this.id === '';
+  }
 }
 
 export const SKILL_MAPPING = new Map<SkillIdWithEmpty, SkillVo>([
@@ -29,6 +31,10 @@ export class SkillBarVo {
   static BAR_LENGTH = 10;
   static empty(): SkillBarVo {
     return new SkillBarVo([]);
+  }
+
+  static from(skillIds: SkillIdWithEmpty[]): SkillBarVo {
+    return new SkillBarVo(skillIds);
   }
 
   private elements: SkillVo[] = [];

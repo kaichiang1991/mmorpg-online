@@ -18,6 +18,8 @@ export const GAME_CONSTANTS = {
 /** Canonical skill ids — server domain and client display both key off these. */
 export const SKILL_IDS = ['basic', 'spear'] as const;
 export type SkillId = (typeof SKILL_IDS)[number];
+export type SkillIdWithEmpty = SkillId | '';
+
 /* ------------------------------------------------------------- REST auth */
 
 export interface RegisterRequest {
@@ -55,6 +57,9 @@ export interface WorldSnapshot {
 export interface WelcomePayload {
   selfId: string;
   map: { width: number; height: number };
+  player: {
+    skillIds: SkillIdWithEmpty[];
+  };
 }
 
 export interface MovePayload {

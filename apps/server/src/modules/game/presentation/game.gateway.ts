@@ -50,7 +50,14 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return;
     }
     this.game.join(socket.id, payload.username);
-    socket.emit('welcome', { selfId: socket.id, map: this.game.mapSize });
+    socket.emit('welcome', {
+      selfId: socket.id,
+      map: this.game.mapSize,
+      player: {
+        // todo: reconstitute from db
+        skillIds: ['basic'],
+      },
+    });
   }
 
   handleDisconnect(socket: GameSocket): void {
