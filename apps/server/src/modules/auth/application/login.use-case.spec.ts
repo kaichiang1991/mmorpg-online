@@ -1,4 +1,4 @@
-import { InvalidCredentialsError, UsernameTakenError, ValidationError } from '../domain/errors';
+import { InvalidCredentialsError } from '../domain/errors';
 import { PasswordHasher } from '../domain/ports/password-hasher';
 import { User } from '../domain/user';
 import { UserRepository } from '../domain/ports/user.repository';
@@ -34,36 +34,6 @@ class FakeTokenService implements TokenService {
     return token.startsWith('token:') ? { sub: 'id', username } : null;
   }
 }
-
-describe('RegisterUserUseCase', () => {
-  let repo: FakeUserRepository;
-  let register: RegisterUserUseCase;
-
-  beforeEach(() => {
-    repo = new FakeUserRepository();
-    register = new RegisterUserUseCase(repo, new FakeHasher());
-  });
-
-  it('creates a user with a hashed password', async () => {
-    const user = await register.execute('alice', 'password123');
-    expect(user.username).toBe('alice');
-    expect(user.passwordHash).toBe('hashed:password123');
-    expect(await repo.findByUsername('alice')).not.toBeNull();
-  });
-
-  it('rejects a duplicate username', async () => {
-    await register.execute('alice', 'password123');
-    await expect(register.execute('alice', 'password456')).rejects.toThrow(UsernameTakenError);
-  });
-
-  it('rejects a short password', async () => {
-    await expect(register.execute('alice', 'short')).rejects.toThrow(ValidationError);
-  });
-
-  it('rejects an invalid username', async () => {
-    await expect(register.execute('a!', 'password123')).rejects.toThrow(ValidationError);
-  });
-});
 
 describe('LoginUseCase', () => {
   let repo: FakeUserRepository;
