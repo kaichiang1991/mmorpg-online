@@ -70,10 +70,15 @@ describe('Player', () => {
   });
 
   describe('cast skill', () => {
-    it('throws if the skill is instant', () => {
+    it('initial casting vo is null', () => {
       const p = makePlayer();
-      const skill = makeSkill('basic');
-      expect(() => p.castSkill(skill)).toThrow();
+      expect(p.casting).toBeNull();
+    });
+
+    it('get casting vo when casting', () => {
+      const p = makePlayer();
+      p.castSkill(makeSkill('fireball'));
+      expect(p.casting).not.toBeNull();
     });
   });
 });

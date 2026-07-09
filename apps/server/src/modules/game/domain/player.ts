@@ -5,6 +5,7 @@ import { CooldownVo } from './value-objects/cooldown.vo';
 import { PositionVo } from './value-objects/position.vo';
 import { ResourcePoolVo } from './value-objects/resource-pool.vo';
 import { Skill } from './skills';
+import { CastingVo } from './value-objects/casting.vo';
 
 /** Pure domain entity: a player pawn in the world. No framework dependencies. */
 export class Player implements CombatUnit {
@@ -14,6 +15,8 @@ export class Player implements CombatUnit {
   private _hp: ResourcePoolVo;
   private _mp: ResourcePoolVo;
   private readonly _stats: CombatStatsVo;
+  // todo: by different skill
+  private _casting: CastingVo | null = null;
 
   constructor(
     readonly id: string,
@@ -64,6 +67,10 @@ export class Player implements CombatUnit {
     return this.target !== null;
   }
 
+  get casting(): CastingVo | null {
+    return this._casting;
+  }
+
   setTarget(target: PositionVo): void {
     this.target = target;
   }
@@ -91,6 +98,6 @@ export class Player implements CombatUnit {
   }
 
   castSkill(skill: Skill) {
-    if (skill.castTime === 0) throw new Error('skill cast time must be greater than 0');
+    this._casting = new CastingVo(skill, Date.now());
   }
 }
