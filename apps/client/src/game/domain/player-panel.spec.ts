@@ -38,5 +38,13 @@ describe('PlayerPanel', () => {
       panel.cancelSkillAt(0);
       expect(panel.selectSkillIndex).toBeUndefined();
     });
+
+    it('cancels select skill at not selected index throws', () => {
+      const panel = makePlayerPanel();
+      expect(() => panel.cancelSkillAt(0)).toThrow();
+
+      panel.selectSkillAt(0);
+      expect(() => panel.cancelSkillAt(1)).toThrow();
+    });
   });
 });
