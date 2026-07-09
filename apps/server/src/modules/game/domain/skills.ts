@@ -10,6 +10,7 @@ export interface Skill {
   readonly kind: DamageKind;
   readonly element: DamageElement;
   readonly mpCost: number;
+  readonly castTime: number; // ms；未設或 0 = 瞬發（普攻、瞬發技能）
   readonly hitCount?: number; // 多段攻擊/連擊的段數，預設視為 1
 }
 
@@ -21,6 +22,7 @@ export const BASIC_ATTACK: Skill = {
   kind: DamageKind.Physical,
   element: DamageElement.None,
   mpCost: 0,
+  castTime: 0,
 };
 
 export const SPEAR: Skill = {
@@ -31,6 +33,7 @@ export const SPEAR: Skill = {
   kind: DamageKind.Physical,
   element: DamageElement.None,
   mpCost: 10,
+  castTime: 0,
 };
 
 export const FIRE_BALL: Skill = {
@@ -41,4 +44,5 @@ export const FIRE_BALL: Skill = {
   kind: DamageKind.Magical,
   element: DamageElement.Fire,
   mpCost: 20,
+  castTime: 300,
 };

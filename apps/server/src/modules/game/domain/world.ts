@@ -72,6 +72,8 @@ export class World {
     if (distance > skill.range) return null;
 
     if (attacker.mp.remaining < skill.mpCost) return null;
+
+    if (skill.castTime > 0) return null;
     // todo: seperate try
     if (!attacker.tryAttack(now)) return null;
 
