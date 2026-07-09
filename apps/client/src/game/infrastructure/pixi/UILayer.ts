@@ -66,8 +66,10 @@ export default class UILayer {
   onSkillSelect(handler: (index: number) => void) {
     this.skillBarContainer.interactive = true;
     this.skillBarContainer.on('pointerdown', (event) => {
-      const index = Math.floor(event.data.global.x / (SLOT_SIZE + SLOT_GAP));
-      alert(index);
+      event.stopPropagation();
+      // global → bar-local; local space already accounts for position and pivot
+      const local = this.skillBarContainer.toLocal(event.global);
+      const index = Math.floor(local.x / (SLOT_SIZE + SLOT_GAP));
       handler(index);
     });
   }
