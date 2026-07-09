@@ -2,13 +2,13 @@
 
 > 狀態：`AttackResultVo`、`CombatStatsVo`、`CooldownVo` 已完成，其餘為待辦候選。
 > 範圍：`modules/game/domain` 的值物件盤點。
-> 慣例：VO class 一律以 `Vo` 結尾，放在 `domain/value-objects/`，不可變（`readonly`）、建構子驗不變式、無 identity。
+> 慣例：VO class 一律以 `Vo` 結尾，放在 `domain/value-objects/`，不可變（`readonly`）、建構子驗不變式、無 identity。檔名 kebab-case + `.vo` 後綴（見 `/docs/naming-conventions.md`），如 `AttackResultVo` → `attack-result.vo.ts`。
 
 ---
 
 ## 0. 已完成：`AttackResultVo`
 
-原 `Attack` class 改造而來（`value-objects/attackResultVo.ts`）。
+原 `Attack` class 改造而來（`value-objects/attack-result.vo.ts`）。
 
 - 不變式：`finalDamage` 必須為正整數（原本散在 `combat-resolver.ts` 的 `Math.max(1, floor(...))`，現由 VO 自守）。
 - 行為：`isCrit`（multipliers 內含 `crit` 來源）、`totalMultiplier`（全倍率連乘）。
@@ -39,7 +39,7 @@ export class PositionVo {
 
 ## 2. `CombatStatsVo` — 已完成
 
-`value-objects/combatStatsVo.ts`。`Player` 五個 public 可變欄位改為持有 `CombatStatsVo`，以 `get stats()` 對外暴露（`_hp`/`_mp` 同款 pattern）。
+`value-objects/combat-stats.vo.ts`。`Player` 五個 public 可變欄位改為持有 `CombatStatsVo`，以 `get stats()` 對外暴露（`_hp`/`_mp` 同款 pattern）。
 
 - 不變式：`0 ≤ critRate ≤ 1`，其餘屬性 `≥ 0` 且 finite。
 - `CombatStatsVo.from(combatant)` 從任意 `Combatant` 複製快照。
@@ -55,7 +55,7 @@ export class PositionVo {
 
 ## 3. `CooldownVo` — 已完成
 
-`value-objects/cooldownVo.ts`。`Player` 的 `lastAttackAt` 欄位改為持有 `CooldownVo`（`attackCooldown`），`tryAttack(now)` 改走 `isReady` / `consume`。
+`value-objects/cooldown.vo.ts`。`Player` 的 `lastAttackAt` 欄位改為持有 `CooldownVo`（`attackCooldown`），`tryAttack(now)` 改走 `isReady` / `consume`。
 
 - 不變式：`durationMs` 必須為 finite 且 `≥ 0`；`lastUsedAt` 不可為 NaN（預設 `NEGATIVE_INFINITY`，代表從未使用）。
 - 行為：`isReady(now)`（`now - lastUsedAt >= durationMs`）、`consume(now)` 回傳新實例。

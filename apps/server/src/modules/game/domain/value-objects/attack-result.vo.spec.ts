@@ -1,5 +1,5 @@
 import { DamageElement, DamageKind } from '../damage';
-import { AttackResultVo } from './attackResultVo';
+import { AttackResultVo } from './attack-result.vo';
 
 const makeAttackResultVo = () =>
   new AttackResultVo(320, DamageKind.Magical, DamageElement.Fire, [

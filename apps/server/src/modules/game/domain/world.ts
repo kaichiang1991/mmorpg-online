@@ -1,7 +1,7 @@
 import { GAME_CONSTANTS, PlayerSnapshot, WorldSnapshot } from '@mmo/shared';
 import { CombatResolver } from './combat-resolver';
-import { AttackResultVo } from './value-objects/attackResultVo';
-import { PositionVo } from './value-objects/positionVo';
+import { AttackResultVo } from './value-objects/attack-result.vo';
+import { PositionVo } from './value-objects/position.vo';
 import { Player } from './player';
 import { SkillFactory } from './skill-factory';
 

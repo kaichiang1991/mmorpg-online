@@ -1,7 +1,7 @@
 import { Combatant } from './combatant';
 import { DamageKind, Multiplier } from './damage';
 import { Skill } from './skills';
-import { AttackResultVo } from './value-objects/attackResultVo';
+import { AttackResultVo } from './value-objects/attack-result.vo';
 
 /** 純函式服務：跑完整傷害公式 */
 export class CombatResolver {

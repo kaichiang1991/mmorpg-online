@@ -1,9 +1,9 @@
 import { GAME_CONSTANTS } from '@mmo/shared';
 import { Combatant, CombatUnit, DEFAULT_COMBATANT } from './combatant';
-import { CombatStatsVo } from './value-objects/combatStatsVo';
-import { CooldownVo } from './value-objects/cooldownVo';
-import { PositionVo } from './value-objects/positionVo';
-import { ResourcePoolVo } from './value-objects/resourcePoolVo';
+import { CombatStatsVo } from './value-objects/combat-stats.vo';
+import { CooldownVo } from './value-objects/cooldown.vo';
+import { PositionVo } from './value-objects/position.vo';
+import { ResourcePoolVo } from './value-objects/resource-pool.vo';
 
 /** Pure domain entity: a player pawn in the world. No framework dependencies. */
 export class Player implements CombatUnit {

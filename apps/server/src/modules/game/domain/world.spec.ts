@@ -1,4 +1,4 @@
-import { PositionVo } from './value-objects/positionVo';
+import { PositionVo } from './value-objects/position.vo';
 import { World } from './world';
 
 describe('World', () => {

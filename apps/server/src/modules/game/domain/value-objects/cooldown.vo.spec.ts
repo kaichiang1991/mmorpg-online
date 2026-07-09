@@ -1,4 +1,4 @@
-import { CooldownVo } from './cooldownVo';
+import { CooldownVo } from './cooldown.vo';
 
 describe('CooldownVo', () => {
   it('should create an instance', () => {

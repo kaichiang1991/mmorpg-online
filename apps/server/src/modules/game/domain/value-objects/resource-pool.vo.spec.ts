@@ -1,4 +1,4 @@
-import { ResourcePoolVo } from './resourcePoolVo';
+import { ResourcePoolVo } from './resource-pool.vo';
 
 describe('ResourcePoolVo', () => {
   it('should create an instance', () => {

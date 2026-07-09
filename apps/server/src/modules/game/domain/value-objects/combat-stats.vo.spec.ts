@@ -1,4 +1,4 @@
-import { CombatStatsVo } from './combatStatsVo';
+import { CombatStatsVo } from './combat-stats.vo';
 
 describe('CombatStatsVo', () => {
   it('creates with valid stats', () => {

@@ -1,4 +1,4 @@
-import { PositionVo } from './positionVo';
+import { PositionVo } from './position.vo';
 
 describe('PositionVo', () => {
   describe('distanceTo', () => {

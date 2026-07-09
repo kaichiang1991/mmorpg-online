@@ -1,5 +1,5 @@
 import { Player } from './player';
-import { PositionVo } from './value-objects/positionVo';
+import { PositionVo } from './value-objects/position.vo';
 
 const makePlayer = () => new Player('p1', 'Alice', 0, 0, 100);
 describe('Player', () => {
