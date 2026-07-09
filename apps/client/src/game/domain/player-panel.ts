@@ -24,4 +24,8 @@ export class PlayerPanel {
   selectSkillAt(index: number) {
     this._selectSkillIndex = index;
   }
+
+  cancelSkillAt(index: number) {
+    if (this._selectSkillIndex === index) this._selectSkillIndex = undefined;
+  }
 }
