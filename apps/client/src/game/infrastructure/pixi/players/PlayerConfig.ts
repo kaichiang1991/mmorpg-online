@@ -1,5 +1,5 @@
 const warriorModules = import.meta.glob<{ default: string }>(
-  '../../../assets/characters/warrior_*.png',
+  '../../../../assets/characters/warrior_*.png',
   { eager: true },
 );
 

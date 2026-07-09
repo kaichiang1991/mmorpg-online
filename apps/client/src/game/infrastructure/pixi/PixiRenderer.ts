@@ -8,6 +8,7 @@ import { PlayerLayer } from './players/PlayerLayer';
 import { preloadPlayerAssets } from './players/PlayerSprite';
 import { PlayerPanel } from '../../domain/player-panel';
 import UILayer from './UILayer';
+import { preloadSkillAssets } from './SkillSprite';
 
 /**
  * Owns everything Pixi: canvas, layer composition, floor, camera.
@@ -36,6 +37,7 @@ export class PixiRenderer {
     await Promise.all([
       this.app.init({ resizeTo: window, background: '#1d2b1d', antialias: true, autoStart: false }),
       preloadPlayerAssets(),
+      preloadSkillAssets(),
     ]);
     if (this.destroyed) return; // destroyed during async init
     host.appendChild(this.app.canvas);

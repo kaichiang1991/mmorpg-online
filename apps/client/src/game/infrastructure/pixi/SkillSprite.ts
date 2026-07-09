@@ -1,4 +1,4 @@
-import { Container, Graphics, Text } from 'pixi.js';
+import { Assets, Container, Graphics, Text } from 'pixi.js';
 import { SkillVo } from '../../domain/value-objects/skill-bar.vo';
 
 export const SLOT_SIZE = 48;
@@ -6,7 +6,11 @@ export const SLOT_GAP = 4;
 const SLOT_RADIUS = 6;
 const SELECTED_COLOR = 0xffd700;
 
-// todo: load skill texture
+export const preloadSkillAssets = async (): Promise<void> => {
+  const allTextures: string[] = [];
+  await Assets.load(allTextures.map((url) => ({ src: url })));
+};
+
 export default class SkillSprite extends Container {
   private readonly selectedBorder: Graphics;
 
