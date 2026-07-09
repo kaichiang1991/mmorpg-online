@@ -2,12 +2,16 @@ import { Container, Graphics, Text } from 'pixi.js';
 import { SkillVo } from '../../domain/value-objects/skill-bar.vo';
 
 export const SLOT_SIZE = 48;
+export const SLOT_GAP = 4;
 const SLOT_RADIUS = 6;
 
 // todo: load skill texture
 export default class SkillSprite extends Container {
-  constructor(hotKey: string, skill: SkillVo) {
+  constructor(index: number, skill: SkillVo) {
     super();
+    this.label = 'skill';
+    this.interactive = true;
+    this.position.set(index * (SLOT_SIZE + SLOT_GAP), 0);
 
     const background = new Graphics()
       .roundRect(0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_RADIUS)
@@ -15,8 +19,9 @@ export default class SkillSprite extends Container {
       .stroke({ width: 1, color: 0xffffff, alpha: 0.35 });
     this.addChild(background);
 
+    // hotkey label: slots 0-8 → keys 1-9, slot 9 → key 0
     const hotKeyText = new Text({
-      text: hotKey,
+      text: `${(index + 1) % 10}`,
       style: { fontSize: 10, fill: 0xffffff, fontWeight: 'bold' },
     });
     hotKeyText.alpha = 0.6;
@@ -35,9 +40,10 @@ export default class SkillSprite extends Container {
     }
   }
 
-  setInteractive(interactive: boolean) {
-    this.interactive = interactive;
+  onClick(handler: () => void) {
+    this.on('pointerdown', (e) => {
+      e.stopPropagation();
+      handler();
+    });
   }
-
-  selected() {}
 }

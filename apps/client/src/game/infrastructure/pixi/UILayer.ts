@@ -1,14 +1,14 @@
 import { Container, Graphics, Text } from 'pixi.js';
 import { SkillBarVo } from '../../domain/value-objects/skill-bar.vo';
-import SkillSprite, { SLOT_SIZE } from './SkillSprite';
+import SkillSprite, { SLOT_GAP, SLOT_SIZE } from './SkillSprite';
 
-const SLOT_GAP = 4;
 const BAR_BOTTOM_MARGIN = 16;
 
 export default class UILayer {
   readonly container = new Container();
 
   private skillBarContainer: Container = new Container();
+  private skillSelectHandler?: (index: number) => void;
   private readonly debugBg = new Graphics();
   private readonly debugText = new Text({
     text: '',
@@ -43,15 +43,14 @@ export default class UILayer {
     this.skillBarContainer.interactive = true;
 
     for (let i = 0; i < skillBar.length; i++) {
-      // hotkey label: slots 0-8 → keys 1-9, slot 9 → key 0
-      const slot = new SkillSprite(`${(i + 1) % 10}`, skillBar.at(i));
-      slot.position.set(i * (SLOT_SIZE + SLOT_GAP), 0);
-      this.skillBarContainer.addChild(slot);
+      this.skillBarContainer.addChild(new SkillSprite(i, skillBar.at(i)));
     }
 
     // pivot at bar center so layout() positions it by its midpoint
     const barWidth = skillBar.length * SLOT_SIZE + (skillBar.length - 1) * SLOT_GAP;
     this.skillBarContainer.pivot.set(barWidth / 2, 0);
+
+    this.bindSkillSelect();
   }
 
   /** Anchors the skill bar bottom-center; call on init and every resize. */
@@ -63,12 +62,15 @@ export default class UILayer {
   }
 
   onSkillSelect(handler: (index: number) => void) {
-    this.skillBarContainer.on('pointerdown', (event) => {
-      event.stopPropagation();
-      // global → bar-local; local space already accounts for position and pivot
-      const local = this.skillBarContainer.toLocal(event.global);
-      const index = Math.floor(local.x / (SLOT_SIZE + SLOT_GAP));
-      handler(index);
-    });
+    this.skillSelectHandler = handler;
+    this.bindSkillSelect();
+  }
+
+  /** Rebinds onClick on current slots; initPlayerPanel recreates them so listeners are lost. */
+  private bindSkillSelect() {
+    if (!this.skillSelectHandler) return;
+    const handler = this.skillSelectHandler;
+    const slots = this.skillBarContainer.getChildrenByLabel('skill') as SkillSprite[];
+    slots.forEach((slot, index) => slot.onClick(() => handler(index)));
   }
 }
