@@ -7,13 +7,16 @@ export class SkillVo {
     return new SkillVo('', '', '');
   }
 
-  private readonly _castingTimeMs: number;
-
   constructor(
     public readonly id: SkillIdWithEmpty,
     public readonly name: string,
     public readonly imageUrl: string,
+    private readonly _castingTimeMs = 0,
   ) {}
+
+  get isInstantCast(): boolean {
+    return this._castingTimeMs === 0;
+  }
 }
 
 export const SKILL_MAPPING = new Map<SkillIdWithEmpty, SkillVo>([
