@@ -1,23 +1,11 @@
 import { Container, Graphics, Sprite, Text } from 'pixi.js';
-import type { SkillId } from '@mmo/shared';
 import { SkillVo } from '../../../domain/value-objects/skill-bar.vo';
-import { SKILL_EFFECT, SKILL_EFFECTS } from './SkillConfig';
+import { getSkillEffect } from './SkillConfig';
 
 export const SLOT_SIZE = 48;
 export const SLOT_GAP = 4;
 const SLOT_RADIUS = 6;
 const SELECTED_COLOR = 0xffd700;
-
-const LOADED_EFFECTS = new Map<SkillId, SKILL_EFFECT>();
-export const preloadSkillAssets = async (): Promise<void> => {
-  await Promise.all(
-    (Object.entries(SKILL_EFFECTS) as [SkillId, Promise<SKILL_EFFECT>][]).map(
-      async ([key, effect]) => {
-        LOADED_EFFECTS.set(key, await effect);
-      },
-    ),
-  );
-};
 
 export default class SkillSprite extends Container {
   private readonly selectedBorder: Graphics;
@@ -43,7 +31,7 @@ export default class SkillSprite extends Container {
     hotKeyText.position.set(4, 3);
     this.addChild(hotKeyText);
 
-    const effect = skill.id !== '' ? LOADED_EFFECTS.get(skill.id) : undefined;
+    const effect = skill.id !== '' ? getSkillEffect(skill.id) : undefined;
     if (effect) {
       const icon = Sprite.from(effect.icon);
       // contain-fit: scale down to fit inside the slot, keep aspect ratio

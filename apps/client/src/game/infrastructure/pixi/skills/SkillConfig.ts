@@ -48,3 +48,19 @@ export const SKILL_EFFECTS: Partial<Record<SkillId, Promise<SKILL_EFFECT>>> = {
   spear: SPEAR,
   fireball: FIREBALL,
 };
+
+const LOADED_EFFECTS = new Map<SkillId, SKILL_EFFECT>();
+
+/** Await once at boot (PixiRenderer.init); after that getSkillEffect is sync. */
+export const preloadSkillEffects = async (): Promise<void> => {
+  await Promise.all(
+    (Object.entries(SKILL_EFFECTS) as [SkillId, Promise<SKILL_EFFECT>][]).map(
+      async ([key, effect]) => {
+        LOADED_EFFECTS.set(key, await effect);
+      },
+    ),
+  );
+};
+
+/** Sync lookup; undefined until preloadSkillEffects resolves, or when the skill has no assets. */
+export const getSkillEffect = (id: SkillId): SKILL_EFFECT | undefined => LOADED_EFFECTS.get(id);

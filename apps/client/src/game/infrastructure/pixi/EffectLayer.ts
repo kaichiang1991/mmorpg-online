@@ -3,7 +3,7 @@ import { AnimatedSprite, Container, Graphics, Text } from 'pixi.js';
 import { ATTACK_TTL_MS, type ActiveAttack } from '../../domain/active-attacks';
 import type { Player } from '../../domain/player';
 import { SkillId } from '@mmo/shared';
-import { SKILL_EFFECTS } from './skills/SkillConfig';
+import { getSkillEffect } from './skills/SkillConfig';
 
 /** Visual lifetime in seconds — derived from the domain TTL, never the reverse. */
 const DURATION_S = ATTACK_TTL_MS / 1000;
@@ -122,9 +122,10 @@ export class EffectLayer {
       .to(g2, { alpha: 0, duration: duration * 0.6, ease: 'power2.in' }, duration * 0.4);
   }
 
-  private async castFireball(to: Player, duration: number): Promise<void> {
-    const CONFIG = await SKILL_EFFECTS['fireball'];
-    const animation = new AnimatedSprite(CONFIG!.frames ?? []);
+  private castFireball(to: Player, duration: number): void {
+    const config = getSkillEffect('fireball');
+    if (!config?.frames) return;
+    const animation = new AnimatedSprite(config.frames);
     animation.position.set(to.x, to.y);
     animation.anchor.set(0.5, 1);
     animation.scale.set(0.5);
