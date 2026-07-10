@@ -49,7 +49,12 @@ export class GameSession {
     });
 
     this.renderer.onWorldClick((x, y) => {
-      const players = this.interpolator.playersAt(performance.now());
+      const now = performance.now();
+      if (this.casters.isCastingAt(this.selfId!, now)) {
+        return;
+      }
+
+      const players = this.interpolator.playersAt(now);
       const hit = hitTestWorld(players, x, y);
       switch (hit.kind) {
         case 'ground':
