@@ -1,5 +1,6 @@
 import fireballPng from '../../../../assets/fireball/spritesheet.png';
 import fireballJson from '../../../../assets/fireball/spritesheet.json';
+import fireballIconPng from '../../../../assets/fireball/icon.png';
 import { Assets, Spritesheet, Texture } from 'pixi.js';
 
 export interface SKILL_EFFECT {
@@ -9,8 +10,11 @@ export interface SKILL_EFFECT {
 }
 
 const FIREBALL: Promise<SKILL_EFFECT> = (async () => {
-  const texture = await Assets.load<Texture>(fireballPng);
-  const fireballSheet = new Spritesheet(texture, fireballJson);
+  const [spriteTexture, iconTexture] = await Promise.all([
+    Assets.load<Texture>(fireballPng),
+    Assets.load<Texture>(fireballIconPng),
+  ]);
+  const fireballSheet = new Spritesheet(spriteTexture, fireballJson);
   await fireballSheet.parse();
 
   const frames = Object.values(fireballSheet.textures);
@@ -18,7 +22,7 @@ const FIREBALL: Promise<SKILL_EFFECT> = (async () => {
   return {
     spriteSheet: fireballSheet,
     frames,
-    icon: frames[0], // todo: 單獨icon
+    icon: iconTexture,
   };
 })();
 

@@ -39,7 +39,7 @@ export default class SkillSprite extends Container {
 
     if (!skill.isEmpty) {
       // todo: 根據skill.imageUrl換圖
-      const icon = Sprite.from(FIREBALL_CONFIG.frames[0]);
+      const icon = Sprite.from(FIREBALL_CONFIG.icon);
       // contain-fit: scale down to fit inside the slot, keep aspect ratio
       const scale = Math.min(SLOT_SIZE / icon.texture.width, SLOT_SIZE / icon.texture.height);
       icon.scale.set(scale);
