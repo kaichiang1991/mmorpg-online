@@ -2,6 +2,7 @@ import { GAME_CONSTANTS } from '@mmo/shared';
 import { AnimatedSprite, Assets, Container, Graphics, Text, Texture } from 'pixi.js';
 import type { Player } from '../../../domain/player';
 import { BAR_HEIGHT, BAR_WIDTH, BODY_HEIGHT, WARRIOR_MAP } from './PlayerConfig';
+import { CastProgress } from '../../../domain/active-casts';
 
 export const preloadPlayerAssets = async (): Promise<void> => {
   const allTextures = [...WARRIOR_MAP.entries()];
@@ -87,7 +88,7 @@ export class PlayerSprite extends Container {
   }
 
   /** Sync visuals to the latest player state; called every frame. */
-  update(p: Player): void {
+  update(p: Player, cast?: CastProgress): void {
     this.revert(p);
     this.position.set(p.x, p.y);
     this.hpBar.setPercentage(p.hp / GAME_CONSTANTS.MAX_HP);

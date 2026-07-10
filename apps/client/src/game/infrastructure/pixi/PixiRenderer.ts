@@ -9,6 +9,7 @@ import { preloadPlayerAssets } from './players/PlayerSprite';
 import { PlayerPanel } from '../../domain/player-panel';
 import UILayer from './UILayer';
 import { preloadSkillEffects } from './skills/SkillConfig';
+import { CastProgress } from '../../domain/active-casts';
 
 /**
  * Owns everything Pixi: canvas, layer composition, floor, camera.
@@ -98,8 +99,13 @@ export class PixiRenderer {
     this.ui.renderSelectedSkill(index);
   }
 
-  render(players: Player[], attacks: ActiveAttack[], selfId: string | null): void {
-    this.players.render(players, selfId);
+  render(
+    players: Player[],
+    attacks: ActiveAttack[],
+    casts: CastProgress[],
+    selfId: string | null,
+  ): void {
+    this.players.render(players, casts, selfId);
 
     const self = players.find((p) => p.id === selfId);
     if (self) this.followCamera(self.x, self.y);

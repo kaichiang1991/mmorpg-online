@@ -1,4 +1,4 @@
-import type { AttackResultPayload, WelcomePayload } from '@mmo/shared';
+import type { AttackResultPayload, CastBeginPayload, WelcomePayload } from '@mmo/shared';
 import { Interpolator } from '../domain/interpolator';
 import { connect, GameSocket } from '../infrastructure/network';
 import { PixiRenderer } from '../infrastructure/pixi/PixiRenderer';
@@ -6,6 +6,7 @@ import { ActiveAttackTracker } from '../domain/active-attacks';
 import { PlayerPanel } from '../domain/player-panel';
 import { SkillBarVo } from '../domain/value-objects/skill-bar.vo';
 import { hitTestWorld, WorldHit } from '../domain/world-hit-test';
+import { ActiveCastTracker } from '../domain/active-casts';
 
 /**
  * Application layer: orchestrates the game session. Wires the socket to
@@ -19,6 +20,7 @@ export class GameSession {
   private selfId: string | null = null;
   private destroyed = false;
   private readonly attackers = new ActiveAttackTracker();
+  private readonly casters = new ActiveCastTracker();
 
   private playerPanel: PlayerPanel | null = null;
 
@@ -40,6 +42,10 @@ export class GameSession {
 
     this.socket.on('attack', (event: AttackResultPayload) => {
       this.attackers.push(event, performance.now());
+    });
+
+    this.socket.on('castBegin', (event: CastBeginPayload) => {
+      this.casters.push(event, performance.now());
     });
 
     this.renderer.onWorldClick((x, y) => {
@@ -65,6 +71,7 @@ export class GameSession {
       this.renderer.render(
         this.interpolator.playersAt(now),
         this.attackers.activeAt(now),
+        this.casters.activeAt(now),
         this.selfId,
       );
       this.renderer.renderSelectedSkill(this.playerPanel?.selectSkillIndex);

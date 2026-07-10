@@ -1,6 +1,7 @@
 import { Container } from 'pixi.js';
 import type { Player } from '../../../domain/player';
 import { PlayerSprite } from './PlayerSprite';
+import { CastProgress } from '../../../domain/active-casts';
 
 /**
  * Draws player avatars. Stateful: keeps one sprite per player id and
@@ -11,7 +12,7 @@ export class PlayerLayer {
   readonly container = new Container();
   private readonly sprites = new Map<string, PlayerSprite>();
 
-  render(players: Player[], selfId: string | null): void {
+  render(players: Player[], casts: CastProgress[], selfId: string | null): void {
     const seen = new Set<string>();
 
     for (const p of players) {
