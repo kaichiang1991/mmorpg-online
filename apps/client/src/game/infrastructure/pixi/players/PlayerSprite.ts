@@ -24,10 +24,15 @@ class StatBar extends Container {
     },
   });
 
-  constructor(private readonly color: number) {
+  constructor(
+    private readonly color: number,
+    private isReversed: boolean = false,
+  ) {
     super();
+
+    const defaultColor = { r: 1, g: 1, b: 1, a: isReversed ? 0 : 1 };
     this.addChild(
-      new Graphics().roundRect(0, 0, BAR_WIDTH, BAR_HEIGHT, 1).fill(0xffffff),
+      new Graphics().roundRect(0, 0, BAR_WIDTH, BAR_HEIGHT, 1).fill(defaultColor),
       this.fill,
       this.valueDisplay,
     );
@@ -37,11 +42,13 @@ class StatBar extends Container {
   setPercentage(percentage: number): void {
     // todo: remain hp display
     percentage = Math.min(1, Math.max(0, percentage));
+
     if (percentage === this.lastPercentage) return; // Graphics redraw re-tessellates; skip when unchanged
     this.lastPercentage = percentage;
     this.fill.clear();
     if (percentage > 0) {
-      this.fill.roundRect(0, 0, BAR_WIDTH * percentage, BAR_HEIGHT, 1).fill(this.color);
+      const width = this.isReversed ? BAR_WIDTH * (1 - percentage) : BAR_WIDTH * percentage;
+      this.fill.roundRect(0, 0, width, BAR_HEIGHT, 1).fill(this.color);
     }
   }
 }
@@ -54,6 +61,7 @@ export class PlayerSprite extends Container {
   private readonly body: AnimatedSprite;
   private readonly hpBar = new StatBar(0xff0000);
   private readonly mpBar = new StatBar(0x3b82f6);
+  private readonly castingBar = new StatBar(0x00ff00, true);
 
   constructor(name: string, isSelf: boolean) {
     super();
@@ -84,7 +92,9 @@ export class PlayerSprite extends Container {
     this.hpBar.y = BODY_HEIGHT / 2;
     this.mpBar.y = BODY_HEIGHT / 2 + BAR_HEIGHT;
 
-    this.addChild(this.body, nameLabel, this.hpBar, this.mpBar);
+    this.castingBar.y = -BODY_HEIGHT + 10;
+
+    this.addChild(this.body, nameLabel, this.hpBar, this.mpBar, this.castingBar);
   }
 
   /** Sync visuals to the latest player state; called every frame. */
@@ -93,6 +103,7 @@ export class PlayerSprite extends Container {
     this.position.set(p.x, p.y);
     this.hpBar.setPercentage(p.hp / GAME_CONSTANTS.MAX_HP);
     this.mpBar.setPercentage(p.mp / GAME_CONSTANTS.MAX_MP);
+    cast && this.castingBar.setPercentage(cast.progress);
   }
 
   revert(player: Player) {
