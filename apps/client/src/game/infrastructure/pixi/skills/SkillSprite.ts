@@ -1,16 +1,21 @@
 import { Container, Graphics, Sprite, Text } from 'pixi.js';
-import { SkillVo } from '../../../domain/value-objects/skill-bar.vo';
-import * as CONFIG from './SkillConfig';
-import { SKILL_EFFECT } from './SkillConfig';
+import { SkillEffectKey, SkillVo } from '../../../domain/value-objects/skill-bar.vo';
+import { SKILL_EFFECT, SKILL_EFFECTS } from './SkillConfig';
 
 export const SLOT_SIZE = 48;
 export const SLOT_GAP = 4;
 const SLOT_RADIUS = 6;
 const SELECTED_COLOR = 0xffd700;
 
-let FIREBALL_CONFIG: SKILL_EFFECT;
+const LOADED_EFFECTS = new Map<SkillEffectKey, SKILL_EFFECT>();
 export const preloadSkillAssets = async (): Promise<void> => {
-  FIREBALL_CONFIG = await CONFIG.FIREBALL;
+  await Promise.all(
+    (Object.entries(SKILL_EFFECTS) as [SkillEffectKey, Promise<SKILL_EFFECT>][]).map(
+      async ([key, effect]) => {
+        LOADED_EFFECTS.set(key, await effect);
+      },
+    ),
+  );
 };
 
 export default class SkillSprite extends Container {
@@ -37,9 +42,9 @@ export default class SkillSprite extends Container {
     hotKeyText.position.set(4, 3);
     this.addChild(hotKeyText);
 
-    if (!skill.isEmpty) {
-      // todo: 根據skill.imageUrl換圖
-      const icon = Sprite.from(FIREBALL_CONFIG.icon);
+    const effect = skill.effectKey ? LOADED_EFFECTS.get(skill.effectKey) : undefined;
+    if (effect) {
+      const icon = Sprite.from(effect.icon);
       // contain-fit: scale down to fit inside the slot, keep aspect ratio
       const scale = Math.min(SLOT_SIZE / icon.texture.width, SLOT_SIZE / icon.texture.height);
       icon.scale.set(scale);

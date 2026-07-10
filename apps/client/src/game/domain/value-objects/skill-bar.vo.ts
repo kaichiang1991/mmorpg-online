@@ -1,5 +1,9 @@
 import { SkillId, SkillIdWithEmpty } from '@mmo/shared';
 
+/** Keys into the infrastructure-level skill effect config (textures, spritesheets). */
+export type SkillEffectKey = 'fireball';
+export type SkillEffectKeyWithEmpty = SkillEffectKey | '';
+
 export class SkillVo {
   static empty(): SkillVo {
     return new SkillVo('', '', '');
@@ -8,7 +12,7 @@ export class SkillVo {
   constructor(
     public readonly id: SkillIdWithEmpty,
     public readonly name: string,
-    public readonly imageUrl: string,
+    public readonly effectKey: SkillEffectKeyWithEmpty,
     private readonly _castingTimeMs = 0,
   ) {}
 
@@ -25,6 +29,7 @@ export const SKILL_MAPPING = new Map<SkillIdWithEmpty, SkillVo>([
   ['', SkillVo.empty()],
   ['basic', new SkillVo('basic', 'Attack', '')],
   ['spear', new SkillVo('spear', 'Spear', '')],
+  ['fireball', new SkillVo('fireball', 'Fireball', 'fireball', 300)],
 ]);
 
 export class SkillBarVo {
