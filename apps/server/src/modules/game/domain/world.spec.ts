@@ -1,6 +1,7 @@
 import { PositionVo } from './value-objects/position.vo';
 import { AttackOutcome, World } from './world';
 import { AttackResultVo } from './value-objects/attack-result.vo';
+import { FIRE_BALL } from './skills';
 
 function resolvedAttack(outcome: AttackOutcome): AttackResultVo {
   if (outcome.kind !== 'resolved') throw new Error(`expected 'resolved', got '${outcome.kind}'`);
@@ -133,8 +134,8 @@ describe('World', () => {
         expect(world.attack(a.id, b.id, 'fireball', 1000)).toEqual({
           kind: 'castStarted',
           skillId: 'fireball',
-          duration: 300,
-          endsAt: 1300, // now + castTime
+          duration: FIRE_BALL.castTime,
+          endsAt: 1000 + FIRE_BALL.castTime,
         });
       });
     });
@@ -147,19 +148,22 @@ describe('World', () => {
   });
 
   describe('cast resolution (tick)', () => {
+    const castAt = 1000;
+    const castEndsAt = castAt + FIRE_BALL.castTime;
+
     it('does not resolve before the cast time elapses', () => {
       const { world, a } = worldWithPair();
-      world.attack(a.id, 'b', 'fireball', 1000); // endsAt 1300
-      const events = world.tick(0.1, 1299);
+      world.attack(a.id, 'b', 'fireball', castAt);
+      const events = world.tick(0.1, castEndsAt - 1);
       expect(events).toEqual([]);
       expect(a.casting).not.toBeNull();
     });
 
     it('resolves the attack and clears casting once the cast time elapses', () => {
       const { world, a, b } = worldWithPair();
-      world.attack(a.id, b.id, 'fireball', 1000); // endsAt 1300
+      world.attack(a.id, b.id, 'fireball', castAt);
       const before = b.hp.remaining;
-      const events = world.tick(0.1, 1300);
+      const events = world.tick(0.1, castEndsAt);
 
       expect(events).toHaveLength(1);
       expect(events[0]).toMatchObject({
@@ -174,10 +178,10 @@ describe('World', () => {
 
     it('cancels the cast if the target left the world', () => {
       const { world, a, b } = worldWithPair();
-      world.attack(a.id, b.id, 'fireball', 1000); // endsAt 1300
+      world.attack(a.id, b.id, 'fireball', castAt);
       world.removePlayer(b.id);
 
-      const events = world.tick(0.1, 1300);
+      const events = world.tick(0.1, castEndsAt);
 
       expect(events).toEqual([{ type: 'castCancelled', casterId: a.id, reason: 'interrupted' }]);
       expect(a.casting).toBeNull();
@@ -185,13 +189,46 @@ describe('World', () => {
 
     it('cancels the cast if the target moved out of range', () => {
       const { world, a, b } = worldWithPair();
-      world.attack(a.id, b.id, 'fireball', 1000); // endsAt 1300, fireball range 500
+      world.attack(a.id, b.id, 'fireball', castAt); // fireball range 500
       b.position = new PositionVo(100 + 501, 100);
 
-      const events = world.tick(0.1, 1300);
+      const events = world.tick(0.1, castEndsAt);
 
       expect(events).toEqual([{ type: 'castCancelled', casterId: a.id, reason: 'interrupted' }]);
       expect(a.casting).toBeNull();
+    });
+  });
+
+  describe('move cancels cast', () => {
+    it('cancels the cast and reports it when the caster moves', () => {
+      const { world, a } = worldWithPair();
+      world.attack(a.id, 'b', 'fireball', 1000);
+
+      const event = world.setMoveTarget(a.id, 500, 500);
+
+      expect(event).toEqual({ type: 'castCancelled', casterId: a.id, reason: 'moved' });
+      expect(a.casting).toBeNull();
+    });
+
+    it('does not resolve the cancelled cast when its cast time elapses', () => {
+      const { world, a, b } = worldWithPair();
+      world.attack(a.id, b.id, 'fireball', 1000);
+      world.setMoveTarget(a.id, 500, 500);
+      const before = b.hp.remaining;
+
+      const events = world.tick(0.1, 1000 + FIRE_BALL.castTime);
+
+      expect(events).toEqual([]);
+      expect(b.hp.remaining).toBe(before);
+    });
+
+    it('returns no event when the mover is not casting', () => {
+      const { world, a } = worldWithPair();
+      expect(world.setMoveTarget(a.id, 500, 500)).toBeNull();
+    });
+
+    it('returns no event for an unknown player', () => {
+      expect(new World().setMoveTarget('ghost', 10, 10)).toBeNull();
     });
   });
 

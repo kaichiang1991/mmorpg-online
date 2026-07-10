@@ -75,7 +75,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     ) {
       return;
     }
-    this.game.setMoveTarget(socket.id, payload.x, payload.y);
+    const event = this.game.setMoveTarget(socket.id, payload.x, payload.y);
+    if (event) this.broadcast(event);
   }
 
   @SubscribeMessage('attack')

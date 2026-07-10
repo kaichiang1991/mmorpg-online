@@ -64,9 +64,20 @@ export class World {
     return this.players.size;
   }
 
-  /** Move intent from a client. Target is clamped inside the map. */
-  setMoveTarget(id: string, x: number, y: number): void {
-    this.players.get(id)?.setTarget(new PositionVo(x, y).clampTo(this.width, this.height));
+  /**
+   * Move intent from a client. Target is clamped inside the map.
+   * Moving cancels any cast in progress — the caller broadcasts the event.
+   */
+  setMoveTarget(id: string, x: number, y: number): WorldEvent | null {
+    const player = this.players.get(id);
+    if (!player) return null;
+
+    player.setTarget(new PositionVo(x, y).clampTo(this.width, this.height));
+    if (!player.casting) return null;
+
+    player.clearCasting();
+    this.castTargets.delete(id);
+    return { type: 'castCancelled', casterId: id, reason: 'moved' };
   }
 
   /**
