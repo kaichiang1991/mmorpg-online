@@ -1,14 +1,16 @@
-import { Assets, Container, Graphics, Text } from 'pixi.js';
-import { SkillVo } from '../../domain/value-objects/skill-bar.vo';
+import { Container, Graphics, Sprite, Text } from 'pixi.js';
+import { SkillVo } from '../../../domain/value-objects/skill-bar.vo';
+import * as CONFIG from './SkillConfig';
+import { SKILL_EFFECT } from './SkillConfig';
 
 export const SLOT_SIZE = 48;
 export const SLOT_GAP = 4;
 const SLOT_RADIUS = 6;
 const SELECTED_COLOR = 0xffd700;
 
+let FIREBALL_CONFIG: SKILL_EFFECT;
 export const preloadSkillAssets = async (): Promise<void> => {
-  const allTextures: string[] = [];
-  await Assets.load(allTextures.map((url) => ({ src: url })));
+  FIREBALL_CONFIG = await CONFIG.FIREBALL;
 };
 
 export default class SkillSprite extends Container {
@@ -36,14 +38,14 @@ export default class SkillSprite extends Container {
     this.addChild(hotKeyText);
 
     if (!skill.isEmpty) {
-      // todo: 目前先用name代替, 之後換圖 (skill.imageUrl)
-      const name = new Text({
-        text: skill.name,
-        style: { fontSize: 11, fill: 0xffffff },
-      });
-      name.anchor.set(0.5);
-      name.position.set(SLOT_SIZE / 2, SLOT_SIZE / 2);
-      this.addChild(name);
+      // todo: 根據skill.imageUrl換圖
+      const icon = Sprite.from(FIREBALL_CONFIG.frames[0]);
+      // contain-fit: scale down to fit inside the slot, keep aspect ratio
+      const scale = Math.min(SLOT_SIZE / icon.texture.width, SLOT_SIZE / icon.texture.height);
+      icon.scale.set(scale);
+      icon.anchor.set(0.5);
+      icon.position.set(SLOT_SIZE / 2, SLOT_SIZE / 2);
+      this.addChild(icon);
     }
 
     // added last so it draws above the slot content

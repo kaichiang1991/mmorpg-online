@@ -8,7 +8,7 @@ import { PlayerLayer } from './players/PlayerLayer';
 import { preloadPlayerAssets } from './players/PlayerSprite';
 import { PlayerPanel } from '../../domain/player-panel';
 import UILayer from './UILayer';
-import { preloadSkillAssets } from './SkillSprite';
+import { preloadSkillAssets } from './skills/SkillSprite';
 
 /**
  * Owns everything Pixi: canvas, layer composition, floor, camera.

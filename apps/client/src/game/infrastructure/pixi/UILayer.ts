@@ -1,6 +1,6 @@
 import { Container, Graphics, Text } from 'pixi.js';
 import { SkillBarVo } from '../../domain/value-objects/skill-bar.vo';
-import SkillSprite, { SLOT_GAP, SLOT_SIZE } from './SkillSprite';
+import SkillSprite, { SLOT_GAP, SLOT_SIZE } from './skills/SkillSprite';
 
 const BAR_BOTTOM_MARGIN = 16;
 
