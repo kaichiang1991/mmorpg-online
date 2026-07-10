@@ -1,6 +1,7 @@
 # 戰鬥系統設計（Combat System Design）
 
-> 狀態：設計定案，尚未實作。
+> 狀態：設計定案。骨架已實作（順序 1–3、6：型別、`AttackResultVo`、`CombatResolver`、`Player` 戰鬥屬性）。
+> 尚未實作：暴擊（順序 4）、屬性克制與抗性（順序 5）、buff/debuff（順序 7）——見第 7 節現況。
 > 範圍：`modules/game` 的傷害計算領域模型。
 > 風格前提：純 domain 物件、無框架依賴，與現有 `Player`、`World` 一致，且每一塊都能單獨寫單元測試。
 
@@ -134,21 +135,23 @@ export class CombatResolver {
 
 ## 6. 與現有程式碼的銜接
 
-- 目前 `attack.ts` 是 `class Attack { constructor(public readonly baseDamage: number) {} }`，`attack.spec.ts` 只驗 `baseDamage`。
-- 新設計中 `Attack` 的語意改變（從「攻擊定義」變「結算快照」），欄位也不同。**這是刻意的重構**，實作時 `attack.spec.ts` 需要一併改寫，不再是向後相容的加欄位。
-- `Player` 未來實作 `Combatant` 介面，逐步補上 `str`/`int`/`def`/`mdef` 等戰鬥屬性；移動相關邏輯維持不動。
+- ~~舊 `attack.ts` 改寫~~ 已完成：結算快照落地為 `value-objects/attack-result.vo.ts` 的 `AttackResultVo`（驗證 `finalDamage` 為正整數；`isCrit` / `totalMultiplier` 由 `multipliers` 推導）。
+- `Player` 已實作 `Combatant`（`str`/`int`/`def`/`mdef`/`critRate`，經 `CombatStatsVo`）；`resistances` 尚未加入。
+- 玩家出生屬性目前寫死在 `World.addPlayer`（掛 todo），`critRate` 一律 0——暴擊實作時一併處理。
 
 ---
 
-## 7. 建議實作順序
+## 7. 建議實作順序（含現況，2026-07-11）
 
-1. `DamageKind`、`DamageElement`、`Multiplier`、`Skill`、`Combatant` 型別（純型別，零風險）。
-2. 改寫 `Attack` 為結算快照 + 更新 `attack.spec.ts`。
-3. `CombatResolver.resolve` 骨架：先只做「攻擊力 + base × 技能倍率 − 減免」，寫測試。
-_4. 疊加暴擊（進 `multipliers`），寫測試。_
-5. 疊加屬性克制與抗性，寫測試。
-6. `Player implements Combatant`，補戰鬥屬性。
-7. buff/debuff、戰報輸出等後續擴充。
+1. ~~`DamageKind`、`DamageElement`、`Multiplier`、`Skill`、`Combatant` 型別~~（`damage.ts` / `skills.ts` / `combatant.ts`）。
+2. ~~改寫 `Attack` 為結算快照~~（`AttackResultVo` + spec）。
+3. ~~`CombatResolver.resolve` 骨架：「攻擊力 + base × 技能倍率 − 減免」~~（含測試）。
+4. **未做**：疊加暴擊（進 `multipliers`），寫測試。現況 resolver 不 roll 暴擊、`critRate` 一律 0、`isCrit` 恆為 false——client 飄字的暴擊表現也因此接不上。
+5. **未做**：疊加屬性克制與抗性，寫測試。現況 `element` 只隨結果傳遞、不參與計算，`Combatant` 無 `resistances`。
+6. ~~`Player implements Combatant`，補戰鬥屬性~~（`CombatStatsVo`）。
+7. **未做**：buff/debuff、戰報輸出等後續擴充。
+
+已知技債：`combat-resolver.spec.ts` 測資與現行 `Skill` 介面（`range` / `castTime` 必填）型別不合——`tsconfig.build.json` 排除 spec 所以 typecheck 靜默，遲早要修。`Skill.hitCount` 已定義但 resolver 未使用（多段攻擊在待議清單）。
 
 ---
 
