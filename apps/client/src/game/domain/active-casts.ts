@@ -46,16 +46,19 @@ export class ActiveCastTracker {
     this.casts.delete(casterId);
   }
 
-  /** Casts still channeling at `now`, with progress; finished ones are dropped for good. */
-  activeAt(now: number): CastProgress[] {
-    const alive: CastProgress[] = [];
+  /**
+   * Casts still channeling at `now`, keyed by casterId (a caster has at most
+   * one), with progress; finished ones are dropped for good.
+   */
+  activeAt(now: number): Map<string, CastProgress> {
+    const alive = new Map<string, CastProgress>();
     for (const [casterId, cast] of this.casts) {
       const progress = (now - cast.startedAt) / cast.duration;
       if (progress >= 1) {
         this.casts.delete(casterId);
         continue;
       }
-      alive.push({ ...cast, progress });
+      alive.set(casterId, { ...cast, progress });
     }
     return alive;
   }

@@ -12,13 +12,13 @@ export class PlayerLayer {
   readonly container = new Container();
   private readonly sprites = new Map<string, PlayerSprite>();
 
-  render(players: Player[], casts: CastProgress[], selfId: string | null): void {
+  render(players: Player[], casts: Map<string, CastProgress>, selfId: string | null): void {
     const seen = new Set<string>();
 
     for (const p of players) {
       seen.add(p.id);
       const sprite = this.sprites.get(p.id) ?? this.createSprite(p.id, p.name, p.id === selfId);
-      sprite.update(p);
+      sprite.update(p, casts.get(p.id));
     }
 
     // remove sprites for players no longer in the world

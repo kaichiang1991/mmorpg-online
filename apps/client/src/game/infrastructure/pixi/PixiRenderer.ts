@@ -102,7 +102,7 @@ export class PixiRenderer {
   render(
     players: Player[],
     attacks: ActiveAttack[],
-    casts: CastProgress[],
+    casts: Map<string, CastProgress>,
     selfId: string | null,
   ): void {
     this.players.render(players, casts, selfId);

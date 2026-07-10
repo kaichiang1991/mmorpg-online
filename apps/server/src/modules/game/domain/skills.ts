@@ -44,5 +44,5 @@ export const FIRE_BALL: Skill = {
   kind: DamageKind.Magical,
   element: DamageElement.Fire,
   mpCost: 20,
-  castTime: 300,
+  castTime: 1000,
 };
