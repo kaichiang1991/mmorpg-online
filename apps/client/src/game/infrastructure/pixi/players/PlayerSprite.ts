@@ -69,23 +69,19 @@ export class PlayerSprite extends Container {
     this.body.play();
 
     if (isSelf) {
-      // ground ring marking your own character
-      const ring = new Graphics()
-        .ellipse(0, BODY_HEIGHT / 2, 16, 6)
-        .stroke({ width: 2, color: 0x4a8cff, alpha: 0.9 });
-      this.addChild(ring);
       this.zIndex = 100;
     }
 
+    // gold name marks your own character
     const nameLabel = new Text({
       text: name,
-      style: { fontSize: 12, fill: 0xffffff, fontWeight: 'bold' },
+      style: { fontSize: 12, fill: isSelf ? 0xffd700 : 0xffffff, fontWeight: 'bold' },
     });
     nameLabel.anchor.set(0.5);
     nameLabel.y = -45;
 
-    this.hpBar.y = -35;
-    this.mpBar.y = -35 + BAR_HEIGHT;
+    this.hpBar.y = BODY_HEIGHT / 2;
+    this.mpBar.y = BODY_HEIGHT / 2 + BAR_HEIGHT;
 
     this.addChild(this.body, nameLabel, this.hpBar, this.mpBar);
   }
