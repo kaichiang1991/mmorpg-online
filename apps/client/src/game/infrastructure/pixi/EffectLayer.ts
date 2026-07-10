@@ -2,6 +2,7 @@ import gsap from 'gsap';
 import { Container, Graphics, Text } from 'pixi.js';
 import { ATTACK_TTL_MS, type ActiveAttack } from '../../domain/active-attacks';
 import type { Player } from '../../domain/player';
+import { SkillId } from '@mmo/shared';
 
 /** Visual lifetime in seconds — derived from the domain TTL, never the reverse. */
 const DURATION_S = ATTACK_TTL_MS / 1000;
@@ -41,7 +42,7 @@ export class EffectLayer {
       if (remaining <= 0) continue;
 
       this.ctx.add(() => {
-        this.spawnSlash(to, remaining);
+        this.spawnBySkillId(attack.skillId, to, remaining);
         this.spawnDamage(attack.damage, to, remaining);
       });
     }
@@ -57,6 +58,13 @@ export class EffectLayer {
   /** Impact crescent radius and angular span at the target. */
   private static readonly IMPACT_RADIUS = 28;
   private static readonly IMPACT_SPAN = Math.PI / 1.8;
+
+  private spawnBySkillId(skillId: SkillId, to: Player, duration: number): void {
+    switch (skillId) {
+      case 'basic':
+        return this.spawnSlash(to, duration);
+    }
+  }
 
   /**
    * Slash: a single straight stroke from the attacker through the target,
