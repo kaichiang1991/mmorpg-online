@@ -1,4 +1,9 @@
-import type { AttackResultPayload, CastBeginPayload, WelcomePayload } from '@mmo/shared';
+import type {
+  AttackResultPayload,
+  CastBeginPayload,
+  CastCancelPayload,
+  WelcomePayload,
+} from '@mmo/shared';
 import { Interpolator } from '../domain/interpolator';
 import { connect, GameSocket } from '../infrastructure/network';
 import { PixiRenderer } from '../infrastructure/pixi/PixiRenderer';
@@ -46,6 +51,10 @@ export class GameSession {
 
     this.socket.on('castBegin', (event: CastBeginPayload) => {
       this.casters.push(event, performance.now());
+    });
+
+    this.socket.on('castCancel', (event: CastCancelPayload) => {
+      this.casters.cancel(event.casterId);
     });
 
     this.renderer.onWorldClick((x, y) => {

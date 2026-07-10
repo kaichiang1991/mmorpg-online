@@ -103,7 +103,7 @@ export class PlayerSprite extends Container {
     this.position.set(p.x, p.y);
     this.hpBar.setPercentage(p.hp / GAME_CONSTANTS.MAX_HP);
     this.mpBar.setPercentage(p.mp / GAME_CONSTANTS.MAX_MP);
-    cast && this.castingBar.setPercentage(cast.progress);
+    this.castingBar.setPercentage(cast?.progress ?? 0);
   }
 
   revert(player: Player) {
