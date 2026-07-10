@@ -56,7 +56,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       map: this.game.mapSize,
       player: {
         // todo: reconstitute from db
-        skillIds: ['basic', '', 'spear'],
+        skillIds: ['basic', 'spear', 'fireball'],
       },
     });
   }

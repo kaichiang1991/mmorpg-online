@@ -5,7 +5,7 @@ const makeSkill = (overrides: Partial<InstanceType<typeof SkillVo>> = {}) =>
   new SkillVo(
     overrides.id ?? 'basic',
     overrides.name ?? 'Attack',
-    overrides.imageUrl ?? 'http://image',
+    overrides.effectKey ?? 'fireball',
   );
 
 describe('Skill', () => {
@@ -13,7 +13,7 @@ describe('Skill', () => {
     const skill = SkillVo.empty();
     expect(skill.id).toBe('');
     expect(skill.name).toBe('');
-    expect(skill.imageUrl).toBe('');
+    expect(skill.effectKey).toBe('');
     expect(skill.isInstantCast).toBe(true);
   });
 
@@ -21,7 +21,7 @@ describe('Skill', () => {
     const skill = makeSkill();
     expect(skill.id).toBe('basic');
     expect(skill.name).toBe('Attack');
-    expect(skill.imageUrl).toBe('http://image');
+    expect(skill.effectKey).toBe('fireball');
     expect(skill.isInstantCast).toBe(true);
   });
 });
