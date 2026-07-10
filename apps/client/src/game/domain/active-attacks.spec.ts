@@ -21,7 +21,7 @@ describe('ActiveAttackTracker', () => {
     const tracker = new ActiveAttackTracker();
     tracker.push(event(), 1000);
     expect(tracker.activeAt(1000)).toEqual([
-      { attackerId: 'a1', targetId: 't1', damage: 42, startedAt: 1000 },
+      { attackerId: 'a1', targetId: 't1', skillId: 'basic', damage: 42, startedAt: 1000 },
     ]);
   });
 

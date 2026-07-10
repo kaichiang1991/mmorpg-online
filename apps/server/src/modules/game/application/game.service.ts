@@ -4,6 +4,7 @@ import {
   CastBeginPayload,
   CastCancelPayload,
   GAME_CONSTANTS,
+  SkillId,
   WorldSnapshot,
 } from '@mmo/shared';
 import { AttackResultVo } from '../domain/value-objects/attack-result.vo';
@@ -69,12 +70,17 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
       case 'resolved':
         return {
           name: 'attack',
-          payload: this.toAttackPayload(playerId, targetId, skillId, outcome.attack),
+          payload: this.toAttackPayload(playerId, targetId, outcome.skillId, outcome.attack),
         };
       case 'castStarted':
         return {
           name: 'castBegin',
-          payload: this.toCastBeginPayload(playerId, skillId, outcome.duration, outcome.endsAt),
+          payload: this.toCastBeginPayload(
+            playerId,
+            outcome.skillId,
+            outcome.duration,
+            outcome.endsAt,
+          ),
         };
       case 'rejected':
         return null;
@@ -104,7 +110,7 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
   private toAttackPayload(
     attackerId: string,
     targetId: string,
-    skillId: string,
+    skillId: SkillId,
     attackVo: AttackResultVo,
   ): AttackResultPayload {
     // domain enums share the wire-format string values, hence the casts
@@ -122,7 +128,7 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
 
   private toCastBeginPayload(
     casterId: string,
-    skillId: string,
+    skillId: SkillId,
     duration: number,
     endsAt: number,
   ): CastBeginPayload {

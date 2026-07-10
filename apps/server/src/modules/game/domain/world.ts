@@ -1,4 +1,4 @@
-import { GAME_CONSTANTS, PlayerSnapshot, WorldSnapshot } from '@mmo/shared';
+import { GAME_CONSTANTS, PlayerSnapshot, SkillId, WorldSnapshot } from '@mmo/shared';
 import { CombatResolver } from './combat-resolver';
 import { AttackResultVo } from './value-objects/attack-result.vo';
 import { PositionVo } from './value-objects/position.vo';
@@ -6,8 +6,8 @@ import { Player } from './player';
 import { SkillFactory } from './skill-factory';
 
 export type AttackOutcome =
-  | { kind: 'resolved'; attack: AttackResultVo }
-  | { kind: 'castStarted'; skillId: string; duration: number; endsAt: number }
+  | { kind: 'resolved'; skillId: SkillId; attack: AttackResultVo }
+  | { kind: 'castStarted'; skillId: SkillId; duration: number; endsAt: number }
   | { kind: 'rejected' };
 
 export type CastCancelReason = 'moved' | 'interrupted' | 'died' | 'disconnected';
@@ -17,7 +17,7 @@ export type WorldEvent =
       type: 'attackResolved';
       attackerId: string;
       targetId: string;
-      skillId: string;
+      skillId: SkillId;
       attack: AttackResultVo;
     }
   | { type: 'castCancelled'; casterId: string; reason: CastCancelReason };
@@ -98,7 +98,7 @@ export class World {
       this.castTargets.set(attackerId, targetId);
       return {
         kind: 'castStarted',
-        skillId,
+        skillId: skill.id,
         duration: skill.castTime,
         endsAt: now + skill.castTime,
       };
@@ -106,7 +106,7 @@ export class World {
 
     const attack = this.combat.resolve(attacker.stats, target.stats, skill);
     target.injured(attack.finalDamage);
-    return { kind: 'resolved', attack };
+    return { kind: 'resolved', skillId: skill.id, attack };
   }
 
   /** Advance the simulation by dt seconds. */

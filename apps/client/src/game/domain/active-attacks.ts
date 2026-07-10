@@ -1,4 +1,4 @@
-import type { AttackResultPayload } from '@mmo/shared';
+import type { AttackResultPayload, SkillId } from '@mmo/shared';
 
 /**
  * How long an attack counts as "happening" on the client, in local-clock ms.
@@ -14,6 +14,7 @@ export const ATTACK_TTL_MS = 400;
 export interface ActiveAttack {
   attackerId: string;
   targetId: string;
+  skillId: SkillId;
   damage: number;
   /** local clock (same as interpolator's receivedAt / performance.now()) */
   startedAt: number;
@@ -32,6 +33,7 @@ export class ActiveAttackTracker {
     this.attacks.push({
       attackerId: event.attackerId,
       targetId: event.targetId,
+      skillId: event.skillId,
       damage: event.damage,
       startedAt: receivedAt,
     });

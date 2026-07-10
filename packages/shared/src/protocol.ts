@@ -86,7 +86,8 @@ export interface Multiplier {
 export interface AttackResultPayload {
   attackerId: string;
   targetId: string;
-  skillId: string;
+  /** Guaranteed valid: the server resolves the skill from its registry before emitting. */
+  skillId: SkillId;
   damage: number;
   /** Derived from the crit multiplier; stays false until CombatResolver rolls crit. */
   crit: boolean;
@@ -97,7 +98,8 @@ export interface AttackResultPayload {
 
 export interface CastBeginPayload {
   casterId: string;
-  skillId: string;
+  /** Guaranteed valid: the server resolves the skill from its registry before emitting. */
+  skillId: SkillId;
   duration: number; // ms，簡單版時鐘方案只用這個
   endsAt: number; // server epoch ms，完整版校正後使用
 }
