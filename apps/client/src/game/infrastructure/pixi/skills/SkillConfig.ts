@@ -1,5 +1,5 @@
 import { Assets, Spritesheet, Texture } from 'pixi.js';
-import type { SkillEffectKey } from '../../../domain/value-objects/skill-bar.vo';
+import type { SkillId } from '@mmo/shared';
 
 import attackIconPng from '../../../../assets/icons/attack.png';
 import fireballPng from '../../../../assets/fireball/spritesheet.png';
@@ -34,8 +34,8 @@ const FIREBALL: Promise<SKILL_EFFECT> = (async () => {
   };
 })();
 
-/** Effect assets keyed by SkillVo.effectKey; look up textures here at render time. */
-export const SKILL_EFFECTS: Record<SkillEffectKey, Promise<SKILL_EFFECT>> = {
-  attack: ATTACK,
+/** Effect assets keyed by skill id; Partial because not every skill has assets yet. */
+export const SKILL_EFFECTS: Partial<Record<SkillId, Promise<SKILL_EFFECT>>> = {
+  basic: ATTACK,
   fireball: FIREBALL,
 };
