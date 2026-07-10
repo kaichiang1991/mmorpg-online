@@ -1,8 +1,9 @@
 import gsap from 'gsap';
-import { Container, Graphics, Text } from 'pixi.js';
+import { AnimatedSprite, Container, Graphics, Text } from 'pixi.js';
 import { ATTACK_TTL_MS, type ActiveAttack } from '../../domain/active-attacks';
 import type { Player } from '../../domain/player';
 import { SkillId } from '@mmo/shared';
+import { SKILL_EFFECTS } from './skills/SkillConfig';
 
 /** Visual lifetime in seconds — derived from the domain TTL, never the reverse. */
 const DURATION_S = ATTACK_TTL_MS / 1000;
@@ -16,6 +17,7 @@ const DURATION_S = ATTACK_TTL_MS / 1000;
 export class EffectLayer {
   readonly container = new Container();
   private readonly slashLayer = new Container();
+  private readonly castingLayer = new Container();
   // separate layer keeps damage numbers above every slash
   private readonly damageLayer = new Container();
   private readonly ctx = gsap.context(() => {});
@@ -26,7 +28,7 @@ export class EffectLayer {
   private readonly spawned = new WeakSet<ActiveAttack>();
 
   constructor() {
-    this.container.addChild(this.slashLayer, this.damageLayer);
+    this.container.addChild(this.slashLayer, this.castingLayer, this.damageLayer);
   }
 
   render(attacks: ActiveAttack[], playersById: ReadonlyMap<string, Player>, now: number): void {
@@ -62,6 +64,12 @@ export class EffectLayer {
   private spawnBySkillId(skillId: SkillId, to: Player, duration: number): void {
     switch (skillId) {
       case 'basic':
+        return this.spawnSlash(to, duration);
+      case 'fireball':
+        return this.castFireball(to, duration);
+
+      default:
+        console.log('skill not implement');
         return this.spawnSlash(to, duration);
     }
   }
@@ -112,6 +120,43 @@ export class EffectLayer {
         0,
       )
       .to(g2, { alpha: 0, duration: duration * 0.6, ease: 'power2.in' }, duration * 0.4);
+  }
+
+  private async castFireball(to: Player, duration: number): Promise<void> {
+    const CONFIG = await SKILL_EFFECTS['fireball'];
+    const animation = new AnimatedSprite(CONFIG!.frames ?? []);
+    animation.position.set(to.x, to.y);
+    animation.anchor.set(0.5, 1);
+    animation.scale.set(0.5);
+    this.castingLayer.addChild(animation);
+
+    const fallDuration = duration * 0.9;
+    const scale = animation.scale.x;
+
+    gsap
+      .timeline({
+        onStart: () => {
+          animation.play();
+        },
+        onComplete: () => {
+          animation.destroy();
+        },
+      })
+      // Drop straight down with gravity-style acceleration (starts slow, speeds up).
+      .from(animation, { alpha: 0, y: '-=200', duration: fallDuration, ease: 'power2.in' })
+      // Impact squash on landing — flattens wide then snaps back, selling the weight of the hit.
+      .to(
+        animation.scale,
+        { x: scale * 1.4, y: scale * 0.6, duration: duration * 0.08, ease: 'power4.out' },
+        fallDuration,
+      )
+      .to(animation.scale, {
+        x: scale,
+        y: scale,
+        duration: duration * 0.18,
+        ease: 'back.out(2)',
+      })
+      .to(animation, { alpha: 0, duration: duration * 0.25 }, `-=${duration * 0.1}`);
   }
 
   /** Damage numbers ≥ this are shown in yellow instead of white. */
