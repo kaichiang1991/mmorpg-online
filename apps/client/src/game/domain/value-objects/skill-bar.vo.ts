@@ -1,7 +1,7 @@
 import { SkillId, SkillIdWithEmpty } from '@mmo/shared';
 
 /** Keys into the infrastructure-level skill effect config (textures, spritesheets). */
-export type SkillEffectKey = 'fireball';
+export type SkillEffectKey = 'attack' | 'fireball';
 export type SkillEffectKeyWithEmpty = SkillEffectKey | '';
 
 export class SkillVo {
@@ -27,7 +27,7 @@ export class SkillVo {
 
 export const SKILL_MAPPING = new Map<SkillIdWithEmpty, SkillVo>([
   ['', SkillVo.empty()],
-  ['basic', new SkillVo('basic', 'Attack', '')],
+  ['basic', new SkillVo('basic', 'Attack', 'attack')],
   ['spear', new SkillVo('spear', 'Spear', '')],
   ['fireball', new SkillVo('fireball', 'Fireball', 'fireball', 300)],
 ]);
