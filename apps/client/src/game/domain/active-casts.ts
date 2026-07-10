@@ -46,6 +46,12 @@ export class ActiveCastTracker {
     this.casts.delete(casterId);
   }
 
+  /** Is this caster still channeling at `now`? Query only — never mutates. */
+  isCastingAt(casterId: string, now: number): boolean {
+    const cast = this.casts.get(casterId);
+    return cast !== undefined && now - cast.startedAt < cast.duration;
+  }
+
   /**
    * Casts still channeling at `now`, keyed by casterId (a caster has at most
    * one), with progress; finished ones are dropped for good.

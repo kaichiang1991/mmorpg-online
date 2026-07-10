@@ -75,4 +75,30 @@ describe('ActiveCastTracker', () => {
     tracker.cancel('nobody');
     expect(tracker.activeAt(1000).size).toBe(1);
   });
+
+  describe('isCastingAt', () => {
+    it('answers true while the cast is channeling', () => {
+      const tracker = new ActiveCastTracker();
+      tracker.push(event('c1', 1000), 1000);
+      expect(tracker.isCastingAt('c1', 1000)).toBe(true);
+      expect(tracker.isCastingAt('c1', 1999)).toBe(true);
+    });
+
+    it('answers false once the duration elapses', () => {
+      const tracker = new ActiveCastTracker();
+      tracker.push(event('c1', 1000), 1000);
+      expect(tracker.isCastingAt('c1', 2000)).toBe(false);
+    });
+
+    it('answers false for an unknown caster', () => {
+      expect(new ActiveCastTracker().isCastingAt('nobody', 0)).toBe(false);
+    });
+
+    it('answers false after cancel', () => {
+      const tracker = new ActiveCastTracker();
+      tracker.push(event('c1'), 1000);
+      tracker.cancel('c1');
+      expect(tracker.isCastingAt('c1', 1000)).toBe(false);
+    });
+  });
 });
