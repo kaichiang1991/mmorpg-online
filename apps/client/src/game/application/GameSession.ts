@@ -51,7 +51,7 @@ export class GameSession {
     this.renderer.onWorldClick((x, y) => {
       const now = performance.now();
       if (this.casters.isCastingAt(this.selfId!, now)) {
-        return;
+        return this.socket?.emit('move', { x, y });
       }
 
       const players = this.interpolator.playersAt(now);
