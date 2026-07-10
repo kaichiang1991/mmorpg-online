@@ -44,8 +44,9 @@ export class EffectLayer {
       if (remaining <= 0) continue;
 
       this.ctx.add(() => {
-        this.spawnBySkillId(attack.skillId, to, remaining);
-        this.spawnDamage(attack.damage, to, remaining);
+        this.spawnBySkillId(attack.skillId, to, remaining, () =>
+          this.spawnDamage(attack.damage, to, remaining),
+        );
       });
     }
   }
@@ -61,16 +62,16 @@ export class EffectLayer {
   private static readonly IMPACT_RADIUS = 28;
   private static readonly IMPACT_SPAN = Math.PI / 1.8;
 
-  private spawnBySkillId(skillId: SkillId, to: Player, duration: number): void {
+  private spawnBySkillId(skillId: SkillId, to: Player, duration: number, callback: Function): void {
     switch (skillId) {
       case 'basic':
-        return this.spawnSlash(to, duration);
+        return this.spawnSlash(to, duration, callback);
       case 'fireball':
-        return this.castFireball(to, duration);
+        return this.castFireball(to, duration, callback);
 
       default:
         console.log('skill not implement');
-        return this.spawnSlash(to, duration);
+        return this.spawnSlash(to, duration, callback);
     }
   }
 
@@ -79,31 +80,38 @@ export class EffectLayer {
    * like one swipe of an axe — whipped out fast from the attacker's end,
    * then fading over the rest of its life.
    */
-  private spawnSlash(to: Player, duration: number): void {
+  private spawnSlash(to: Player, duration: number, callback: Function): void {
     const angle = EffectLayer.SLASH_ANGLE;
 
     // Impact crescent (劍影): a clean arc() curve, not the old arcTo() hook,
     // so the trajectory is one smooth cut instead of a jagged corner-round.
     // Rotated 90° off the swing direction so it slices across the target
     // rather than pointing along the blade's travel.
-    const g2 = new Graphics();
-    g2.arc(
-      0,
-      0,
-      EffectLayer.IMPACT_RADIUS,
-      -EffectLayer.IMPACT_SPAN / 2,
-      EffectLayer.IMPACT_SPAN / 2,
-    ).stroke({ width: 3, color: 0xffffff, cap: 'round' });
-    g2.position.set(to.x - 5, to.y - 10);
-    g2.rotation = angle - Math.PI / 2;
-    this.slashLayer.addChild(g2);
+    const graphics = new Graphics();
+    graphics
+      .arc(
+        0,
+        0,
+        EffectLayer.IMPACT_RADIUS,
+        -EffectLayer.IMPACT_SPAN / 2,
+        EffectLayer.IMPACT_SPAN / 2,
+      )
+      .stroke({ width: 3, color: 0xffffff, cap: 'round' });
+    graphics.position.set(to.x - 5, to.y - 10);
+    graphics.rotation = angle - Math.PI / 2;
+    this.slashLayer.addChild(graphics);
 
     // Icy flash that whips in then fades fast — a glint, not a lingering mark.
     const tintProxy = { t: 0 };
     gsap
-      .timeline({ onComplete: () => g2.destroy() })
+      .timeline({
+        onComplete: () => {
+          graphics.destroy();
+          callback();
+        },
+      })
       .fromTo(
-        g2.scale,
+        graphics.scale,
         { x: 0.5, y: 0.5 },
         { x: 1, y: 1, duration: duration * 0.2, ease: 'power4.out' },
         0,
@@ -114,15 +122,15 @@ export class EffectLayer {
           t: 1,
           duration: duration * 0.5,
           onUpdate: () => {
-            g2.tint = gsap.utils.interpolate('#14294d', '#ffffff', tintProxy.t);
+            graphics.tint = gsap.utils.interpolate('#14294d', '#ffffff', tintProxy.t);
           },
         },
         0,
       )
-      .to(g2, { alpha: 0, duration: duration * 0.6, ease: 'power2.in' }, duration * 0.4);
+      .to(graphics, { alpha: 0, duration: duration * 0.6, ease: 'power2.in' }, duration * 0.4);
   }
 
-  private castFireball(to: Player, duration: number): void {
+  private castFireball(to: Player, duration: number, callback: Function): void {
     const config = getSkillEffect('fireball');
     if (!config?.frames) return;
     const animation = new AnimatedSprite(config.frames);
@@ -141,6 +149,7 @@ export class EffectLayer {
         },
         onComplete: () => {
           animation.destroy();
+          callback();
         },
       })
       // Drop straight down with gravity-style acceleration (starts slow, speeds up).
