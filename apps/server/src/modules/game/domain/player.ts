@@ -10,13 +10,14 @@ import { CastingVo } from './value-objects/casting.vo';
 /** Pure domain entity: a player pawn in the world. No framework dependencies. */
 export class Player implements CombatUnit {
   private target: PositionVo | null = null;
-  private attackCooldown = new CooldownVo(GAME_CONSTANTS.ATTACK_COOLDOWN_MS);
   private _position: PositionVo;
   private _hp: ResourcePoolVo;
   private _mp: ResourcePoolVo;
   private readonly _stats: CombatStatsVo;
   // todo: by different skill
   private _casting: CastingVo | null = null;
+  private attackCooldown = new CooldownVo(GAME_CONSTANTS.ATTACK_COOLDOWN_MS);
+  private _cooldownMap = new Map<SkillId, CooldownVo>();
 
   constructor(
     readonly id: string,
@@ -99,6 +100,8 @@ export class Player implements CombatUnit {
 
   castSkill(skill: Skill, now: number) {
     this._casting = new CastingVo(skill, now);
+    const cooldown = CooldownVo.from(skill);
+    if (cooldown) this._cooldownMap.set(skill.id, cooldown);
   }
 
   clearCasting(): void {
@@ -106,6 +109,6 @@ export class Player implements CombatUnit {
   }
 
   getCooldownBySkill(skillId: SkillId): CooldownVo | undefined {
-    return undefined;
+    return this._cooldownMap.get(skillId);
   }
 }

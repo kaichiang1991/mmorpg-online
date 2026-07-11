@@ -11,6 +11,7 @@ export interface Skill {
   readonly element: DamageElement;
   readonly mpCost: number;
   readonly castTime: number; // ms；未設或 0 = 瞬發（普攻、瞬發技能）
+  readonly cooldown?: number;
   readonly hitCount?: number; // 多段攻擊/連擊的段數，預設視為 1
 }
 
@@ -45,4 +46,5 @@ export const FIRE_BALL: Skill = {
   element: DamageElement.Fire,
   mpCost: 20,
   castTime: 300,
+  cooldown: 1000,
 };
