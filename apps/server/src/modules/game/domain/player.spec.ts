@@ -102,4 +102,12 @@ describe('Player', () => {
       expect(p.getCooldownBySkill(skill.id)).not.toBeUndefined();
     });
   });
+
+  describe('try attack by skill', () => {
+    it('skill with no cool down returns true', () => {
+      const p = makePlayer();
+      const skill = makeSkill();
+      expect(p.tryAttackBySkill(skill, 0)).toBe(true);
+    });
+  });
 });
