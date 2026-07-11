@@ -83,8 +83,15 @@ describe('Player', () => {
   });
 
   describe('cast cool down', () => {
-    it('coll down is null when skill never cast', () => {
+    it('cool down is undefined when skill never cast', () => {
       const p = makePlayer();
+      expect(p.getCooldownBySkill('basic')).toBeUndefined();
+    });
+
+    it('cool down is category by skill', () => {
+      const p = makePlayer();
+      const skill = makeSkill('fireball');
+      p.castSkill(skill, 0);
       expect(p.getCooldownBySkill('basic')).toBeUndefined();
     });
   });
