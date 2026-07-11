@@ -100,12 +100,10 @@ describe('World', () => {
       expect(snap.players.find((p) => p.id === 'b')!.hp).toBe(b.hp.remaining);
     });
 
-    it('enforces the attack cooldown per attacker', () => {
+    it('has no cooldown — consecutive attacks resolve', () => {
       const { world } = worldWithPair();
       expect(world.attack('a', 'b', basicSkillId, 1000).kind).toBe('resolved');
-      expect(world.attack('a', 'b', basicSkillId, 1100).kind).toBe('rejected'); // still cooling down
-      expect(world.attack('a', 'b', basicSkillId, 1000 + 600).kind).toBe('resolved'); // cooldown over
-      expect(world.attack('b', 'a', basicSkillId, 1100).kind).toBe('resolved'); // b has own cooldown
+      expect(world.attack('a', 'b', basicSkillId, 1100).kind).toBe('resolved');
     });
   });
 
@@ -154,6 +152,14 @@ describe('World', () => {
       expect(world.attack('a', 'b', 'fireball', 1000 + FIRE_BALL.cooldown!).kind).toBe(
         'castStarted',
       );
+    });
+
+    it('tracks the cooldown per skill and per attacker', () => {
+      const { world } = worldWithPair();
+      expect(world.attack('a', 'b', 'fireball', 1000).kind).toBe('castStarted');
+      expect(world.attack('a', 'b', 'fireball', 1100).kind).toBe('rejected'); // still cooling down
+      expect(world.attack('a', 'b', 'spear', 1100).kind).toBe('resolved'); // other skill unaffected
+      expect(world.attack('b', 'a', 'fireball', 1100).kind).toBe('castStarted'); // b has own cooldown
     });
   });
 
