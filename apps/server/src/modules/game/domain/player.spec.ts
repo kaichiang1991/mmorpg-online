@@ -81,4 +81,11 @@ describe('Player', () => {
       expect(p.casting).not.toBeNull();
     });
   });
+
+  describe('cast cool down', () => {
+    it('coll down is null when skill never cast', () => {
+      const p = makePlayer();
+      expect(p.getCooldownBySkill('basic')).toBeUndefined();
+    });
+  });
 });
