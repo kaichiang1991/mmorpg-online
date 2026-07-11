@@ -1,4 +1,4 @@
-import { SkillId, SkillIdWithEmpty } from '@mmo/shared';
+import { SKILL_DEFINITIONS, SkillId, SkillIdWithEmpty } from '@mmo/shared';
 
 export class SkillVo {
   static empty(): SkillVo {
@@ -22,9 +22,9 @@ export class SkillVo {
 
 export const SKILL_MAPPING = new Map<SkillIdWithEmpty, SkillVo>([
   ['', SkillVo.empty()],
-  ['basic', new SkillVo('basic', 'Attack')],
-  ['spear', new SkillVo('spear', 'Spear')],
-  ['fireball', new SkillVo('fireball', 'Fireball', 300)],
+  ...Object.values(SKILL_DEFINITIONS).map(
+    (d) => [d.id, new SkillVo(d.id, d.name, d.castTime)] as const,
+  ),
 ]);
 
 export class SkillBarVo {
