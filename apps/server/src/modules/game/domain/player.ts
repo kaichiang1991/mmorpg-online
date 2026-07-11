@@ -1,4 +1,4 @@
-import { GAME_CONSTANTS } from '@mmo/shared';
+import { GAME_CONSTANTS, SkillId } from '@mmo/shared';
 import { Combatant, CombatUnit, DEFAULT_COMBATANT } from './combatant';
 import { CombatStatsVo } from './value-objects/combat-stats.vo';
 import { CooldownVo } from './value-objects/cooldown.vo';
@@ -103,5 +103,9 @@ export class Player implements CombatUnit {
 
   clearCasting(): void {
     this._casting = null;
+  }
+
+  getCooldownBySkill(skillId: SkillId) {
+    return undefined;
   }
 }
