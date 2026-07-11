@@ -145,6 +145,16 @@ describe('World', () => {
       expect(world.attack('a', 'b', 'no-such-skill', 1000)).toEqual({ kind: 'rejected' });
       expect(world.attack('a', 'b', '', 1000)).toEqual({ kind: 'rejected' });
     });
+
+    it('enforces the per-skill cooldown', () => {
+      const { world } = worldWithPair();
+      expect(world.attack('a', 'b', 'fireball', 1000).kind).toBe('castStarted');
+      // global attack cooldown has elapsed, fireball's own cooldown has not
+      expect(world.attack('a', 'b', 'fireball', 1000 + 600).kind).toBe('rejected');
+      expect(world.attack('a', 'b', 'fireball', 1000 + FIRE_BALL.cooldown!).kind).toBe(
+        'castStarted',
+      );
+    });
   });
 
   describe('cast resolution (tick)', () => {

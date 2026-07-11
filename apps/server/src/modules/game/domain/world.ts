@@ -99,8 +99,7 @@ export class World {
 
     if (attacker.mp.remaining < skill.mpCost) return { kind: 'rejected' };
 
-    // todo: seperate try
-    if (!attacker.tryAttack(now)) return { kind: 'rejected' };
+    if (!attacker.tryUseSkill(skill, now)) return { kind: 'rejected' };
 
     attacker.consumeMp(skill.mpCost);
 

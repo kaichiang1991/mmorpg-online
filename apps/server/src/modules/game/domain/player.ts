@@ -100,15 +100,20 @@ export class Player implements CombatUnit {
 
   castSkill(skill: Skill, now: number) {
     this._casting = new CastingVo(skill, now);
-    const cooldown = CooldownVo.from(skill);
-    if (cooldown) this._cooldownMap.set(skill.id, cooldown);
   }
 
   clearCasting(): void {
     this._casting = null;
   }
 
-  getCooldownBySkill(skillId: SkillId): CooldownVo | undefined {
-    return this._cooldownMap.get(skillId);
+  isSkillReady(skillId: SkillId, now: number): boolean {
+    return this._cooldownMap.get(skillId)?.isReady(now) ?? true;
+  }
+
+  tryUseSkill(skill: Skill, now: number): boolean {
+    if (!this.isSkillReady(skill.id, now)) return false;
+    const cooldown = CooldownVo.from(skill);
+    if (cooldown) this._cooldownMap.set(skill.id, cooldown.consume(now));
+    return true;
   }
 }

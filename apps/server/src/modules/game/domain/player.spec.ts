@@ -82,32 +82,37 @@ describe('Player', () => {
     });
   });
 
-  describe('cast cool down', () => {
-    it('cool down is undefined when skill never cast', () => {
-      const p = makePlayer();
-      expect(p.getCooldownBySkill('basic')).toBeUndefined();
+  describe('skill cooldown', () => {
+    it('a skill never used is ready', () => {
+      expect(makePlayer().isSkillReady('basic', 0)).toBe(true);
     });
 
-    it('cool down is skill by skill', () => {
+    it('tryUseSkill consumes the cooldown of that skill only', () => {
       const p = makePlayer();
-      const skill = makeSkill('fireball');
-      p.castSkill(skill, 0);
-      expect(p.getCooldownBySkill('basic')).toBeUndefined();
+      expect(p.tryUseSkill(makeSkill('fireball'), 0)).toBe(true);
+      expect(p.isSkillReady('fireball', 0)).toBe(false);
+      expect(p.isSkillReady('basic', 0)).toBe(true);
     });
 
-    it('cool down is defined when skill cast', () => {
+    it('rejects reuse until the cooldown elapses', () => {
       const p = makePlayer();
-      const skill = makeSkill('fireball');
-      p.castSkill(skill, 0);
-      expect(p.getCooldownBySkill(skill.id)).not.toBeUndefined();
+      const fireball = makeSkill('fireball');
+      p.tryUseSkill(fireball, 0);
+      expect(p.tryUseSkill(fireball, fireball.cooldown! - 1)).toBe(false);
+      expect(p.tryUseSkill(fireball, fireball.cooldown!)).toBe(true);
     });
-  });
 
-  describe('try attack by skill', () => {
-    it('skill with no cool down returns true', () => {
+    it('a skill without a cooldown is always usable', () => {
       const p = makePlayer();
-      const skill = makeSkill();
-      expect(p.tryAttackBySkill(skill, 0)).toBe(true);
+      const basic = makeSkill('basic');
+      expect(p.tryUseSkill(basic, 0)).toBe(true);
+      expect(p.tryUseSkill(basic, 0)).toBe(true);
+    });
+
+    it('castSkill does not start the cooldown', () => {
+      const p = makePlayer();
+      p.castSkill(makeSkill('fireball'), 0);
+      expect(p.isSkillReady('fireball', 0)).toBe(true);
     });
   });
 });
