@@ -14,9 +14,7 @@ export class Player implements CombatUnit {
   private _hp: ResourcePoolVo;
   private _mp: ResourcePoolVo;
   private readonly _stats: CombatStatsVo;
-  // todo: by different skill
   private _casting: CastingVo | null = null;
-  private attackCooldown = new CooldownVo(GAME_CONSTANTS.ATTACK_COOLDOWN_MS);
   private _cooldownMap = new Map<SkillId, CooldownVo>();
 
   constructor(
@@ -74,13 +72,6 @@ export class Player implements CombatUnit {
 
   setTarget(target: PositionVo): void {
     this.target = target;
-  }
-
-  /** Consumes the attack cooldown if it is ready; false while still cooling down. */
-  tryAttack(now: number): boolean {
-    if (!this.attackCooldown.isReady(now)) return false;
-    this.attackCooldown = this.attackCooldown.consume(now);
-    return true;
   }
 
   /** Advance toward the target by speed * dt seconds. Stops exactly on arrival. */
