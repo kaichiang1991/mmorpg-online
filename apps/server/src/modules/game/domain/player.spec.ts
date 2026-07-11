@@ -88,11 +88,18 @@ describe('Player', () => {
       expect(p.getCooldownBySkill('basic')).toBeUndefined();
     });
 
-    it('cool down is category by skill', () => {
+    it('cool down is skill by skill', () => {
       const p = makePlayer();
       const skill = makeSkill('fireball');
       p.castSkill(skill, 0);
       expect(p.getCooldownBySkill('basic')).toBeUndefined();
+    });
+
+    it('cool down is defined when skill cast', () => {
+      const p = makePlayer();
+      const skill = makeSkill('fireball');
+      p.castSkill(skill, 0);
+      expect(p.getCooldownBySkill(skill.id)).not.toBeUndefined();
     });
   });
 });

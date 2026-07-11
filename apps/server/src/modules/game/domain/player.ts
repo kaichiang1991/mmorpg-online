@@ -105,7 +105,7 @@ export class Player implements CombatUnit {
     this._casting = null;
   }
 
-  getCooldownBySkill(skillId: SkillId) {
+  getCooldownBySkill(skillId: SkillId): CooldownVo | undefined {
     return undefined;
   }
 }
