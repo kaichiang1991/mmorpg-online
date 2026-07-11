@@ -133,14 +133,27 @@ export class EffectLayer {
   private castFireball(to: Player, duration: number, callback: Function): void {
     const config = getSkillEffect('fireball');
     if (!config?.frames) return;
+
+    const ANGLE = 15;
     const animation = new AnimatedSprite(config.frames);
     animation.position.set(to.x, to.y);
     animation.anchor.set(0.5, 1);
     animation.scale.set(0.5);
+    animation.angle = ANGLE;
+
     this.castingLayer.addChild(animation);
 
     const fallDuration = duration * 0.9;
     const scale = animation.scale.x;
+
+    // Fall along the sprite's tilt so the flame trail lines up with the
+    // trajectory: displacement = FALL_DISTANCE * (-sin θ, cos θ) in screen
+    // coords (Pixi angle is clockwise, y points down), so the start sits
+    // up-right of the landing point and slides down-left onto it.
+    const FALL_DISTANCE = 200;
+    const rad = (ANGLE * Math.PI) / 180;
+    const fromX = FALL_DISTANCE * Math.sin(rad);
+    const fromY = FALL_DISTANCE * Math.cos(rad);
 
     gsap
       .timeline({
@@ -152,8 +165,14 @@ export class EffectLayer {
           callback();
         },
       })
-      // Drop straight down with gravity-style acceleration (starts slow, speeds up).
-      .from(animation, { alpha: 0, y: '-=200', duration: fallDuration, ease: 'power2.in' })
+      // Drop along the tilt with gravity-style acceleration (starts slow, speeds up).
+      .from(animation, {
+        alpha: 0,
+        x: `+=${fromX}`,
+        y: `-=${fromY}`,
+        duration: fallDuration,
+        ease: 'power2.in',
+      })
       // Impact squash on landing — flattens wide then snaps back, selling the weight of the hit.
       .to(
         animation.scale,
