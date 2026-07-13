@@ -23,6 +23,10 @@ export class SkillVo {
   get isReady(): boolean {
     return this._cooldownTimeMs <= 0;
   }
+
+  cooldownProcess(): number {
+    return;
+  }
 }
 
 export const SKILL_MAPPING = new Map<SkillIdWithEmpty, SkillVo>([
