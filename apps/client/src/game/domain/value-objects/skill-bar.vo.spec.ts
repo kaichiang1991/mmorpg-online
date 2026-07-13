@@ -34,6 +34,11 @@ describe('Skill', () => {
     const skill = makeSkill({ cooldownTimeMs: 0 });
     expect(skill.isReady).toBe(true);
   });
+
+  it('cooldown process is 1 when skill just cast', () => {
+    const skill = makeSkill({ cooldownTimeMs: 1000 });
+    expect(skill.cooldownProcess).toBe(1);
+  });
 });
 
 describe('SkillBar', () => {
