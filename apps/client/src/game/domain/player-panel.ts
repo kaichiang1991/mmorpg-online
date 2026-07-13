@@ -10,19 +10,20 @@ export class PlayerPanel {
     return this._skillBar;
   }
 
-  private _selectSkillIndex: number | undefined = undefined;
-  public get selectSkillIndex(): number | undefined {
-    return this._selectSkillIndex;
+  private _selectedSkillIndex: number | undefined = undefined;
+  public get selectedSkillIndex(): number | undefined {
+    return this._selectedSkillIndex;
   }
 
+  // todo: 也不一定要從skill bar拿
   public get selectedSkill(): SkillVo | undefined {
-    if (this._selectSkillIndex === undefined) return undefined;
-    return this._skillBar.at(this._selectSkillIndex);
+    if (this._selectedSkillIndex === undefined) return undefined;
+    return this._skillBar.at(this._selectedSkillIndex);
   }
 
   constructor({ skillBar }: { skillBar?: SkillBarVo }) {
     this._skillBar = skillBar ?? SkillBarVo.empty();
-    this._selectSkillIndex = undefined;
+    this._selectedSkillIndex = undefined;
   }
 
   insertSkillAt(skillId: SkillId, index: number) {
@@ -31,20 +32,19 @@ export class PlayerPanel {
 
   selectSkillAt(index: number) {
     if (this._skillBar.at(index).isEmpty) return;
-    this._selectSkillIndex = index;
+    this._selectedSkillIndex = index;
   }
 
   cancelSkillAt(index: number) {
-    if (this._selectSkillIndex !== index) throw new Error('cancelSkillAt: invalid index');
+    if (this._selectedSkillIndex !== index) throw new Error('cancelSkillAt: invalid index');
 
-    this._selectSkillIndex = undefined;
+    this._selectedSkillIndex = undefined;
   }
 
-  castSkillAt(index: number, now: number) {
-    const skill = this._skillBar.at(index);
-    if (skill.isEmpty) throw new Error('castSkillAt: invalid index');
+  castSkill(skillId: SkillIdWithEmpty, now: number) {
+    if (skillId === '') throw new Error('castSkill: cannot cast empty skill');
 
-    this._castStartTimes.set(skill.id, now);
+    this._castStartTimes.set(skillId, now);
   }
 
   skillProcesses(now: number): number[] {
