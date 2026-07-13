@@ -1,5 +1,6 @@
 import { PlayerPanel } from './player-panel';
 import { SkillBarVo } from './value-objects/skill-bar.vo';
+import { SKILL_DEFINITIONS } from '@mmo/shared';
 
 const makePlayerPanel = (skillBar?: SkillBarVo) => new PlayerPanel({ skillBar });
 
@@ -70,6 +71,13 @@ describe('PlayerPanel', () => {
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', index));
       panel.castSkillAt(index, 0);
       expect(panel.skillProcessAt(index, 0)).toBe(1);
+    });
+
+    it('skill process is 0.5 when skill cooldown is half', () => {
+      const index = 0;
+      const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', index)); // cooldown is 1000
+      panel.castSkillAt(index, 0);
+      expect(panel.skillProcessAt(index, SKILL_DEFINITIONS.fireball.cooldown! / 2)).toBe(0.5);
     });
   });
 });
