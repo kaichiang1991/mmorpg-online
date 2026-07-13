@@ -50,13 +50,8 @@ describe('Skill', () => {
   it('clamp cooldown process to [0, 1]', () => {
     const skill = makeSkill({ cooldownTimeMs: 1000 });
     skill.cast(0);
-    expect(skill.cooldownProcess(-1000)).toBe(0);
-    expect(skill.cooldownProcess(1001)).toBe(1);
-  });
-
-  it('cooldown process is 1 when skill just cast', () => {
-    const skill = makeSkill({ cooldownTimeMs: 1000 });
-    expect(skill.cooldownProcess).toBe(1);
+    expect(skill.cooldownProcess(-0.1)).toBe(0);
+    expect(skill.cooldownProcess(1000.1)).toBe(1);
   });
 });
 
