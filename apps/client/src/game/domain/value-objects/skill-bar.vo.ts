@@ -14,7 +14,7 @@ export class SkillVo {
     private readonly _castingTimeMs = 0,
     private readonly _cooldownTimeMs = 0,
   ) {
-    this._castStartTime = Infinity;
+    this._castStartTime = -Infinity;
   }
 
   get isInstantCast(): boolean {
