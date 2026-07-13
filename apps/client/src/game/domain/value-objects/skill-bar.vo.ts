@@ -92,4 +92,8 @@ export class SkillBarVo {
       this.elements.map((skill, index) => (index === at ? newSkillId : skill.id)),
     );
   }
+
+  castSkillAt(index: number, now: number) {
+    this.at(index).cast(now);
+  }
 }
