@@ -99,6 +99,10 @@ export class PixiRenderer {
     this.ui.renderSelectedSkill(index);
   }
 
+  renderSkillProcess(processes: number[]): void {
+    this.ui.renderSkillProcess(processes);
+  }
+
   render(
     players: Player[],
     attacks: ActiveAttack[],

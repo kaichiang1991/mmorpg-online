@@ -88,7 +88,10 @@ export class GameSession {
         this.casters.activeAt(now),
         this.selfId,
       );
-      this.renderer.renderSelectedSkill(this.playerPanel?.selectSkillIndex);
+      if (this.playerPanel) {
+        this.renderer.renderSelectedSkill(this.playerPanel.selectSkillIndex);
+        this.renderer.renderSkillProcess(this.playerPanel.skillProcesses(now));
+      }
       this.renderer.renderDebug({ selectSkillIndex: this.playerPanel?.selectSkillIndex });
     });
   }
