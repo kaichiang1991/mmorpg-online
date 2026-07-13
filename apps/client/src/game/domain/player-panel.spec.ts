@@ -24,26 +24,26 @@ describe('PlayerPanel', () => {
 
     it('default selectSkillIndex = undefined', () => {
       const panel = makePlayerPanel();
-      expect(panel.selectSkillIndex).toBeUndefined();
+      expect(panel.selectedSkillIndex).toBeUndefined();
     });
 
     it('cannot select empty skill', () => {
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('basic', 0));
       panel.selectSkillAt(1);
-      expect(panel.selectSkillIndex).toBeUndefined();
+      expect(panel.selectedSkillIndex).toBeUndefined();
     });
 
     it('can select skill by index', () => {
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('basic', 0));
       panel.selectSkillAt(0);
-      expect(panel.selectSkillIndex).toBe(0);
+      expect(panel.selectedSkillIndex).toBe(0);
     });
 
     it('can cancels select skill', () => {
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('basic', 0));
       panel.selectSkillAt(0);
       panel.cancelSkillAt(0);
-      expect(panel.selectSkillIndex).toBeUndefined();
+      expect(panel.selectedSkillIndex).toBeUndefined();
     });
 
     it('cancels select skill at not selected index throws', () => {
@@ -56,7 +56,7 @@ describe('PlayerPanel', () => {
 
     it('throws when cast empty skill', () => {
       const panel = makePlayerPanel();
-      expect(() => panel.castSkillAt(0, 0)).toThrow();
+      expect(() => panel.castSkill('', 0)).toThrow();
     });
 
     it('skill processes has one entry per slot', () => {
@@ -67,20 +67,20 @@ describe('PlayerPanel', () => {
     it('skill process is 1 when cast skill with no cooldown', () => {
       const index = 0;
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('basic', index));
-      panel.castSkillAt(index, 0);
+      panel.castSkill('basic', 0);
       expect(panel.skillProcesses(0)[index]).toBe(1);
     });
 
     it('skill process is 0 when cast skill needed cooldown', () => {
       const index = 0;
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', index));
-      panel.castSkillAt(index, 0);
+      panel.castSkill('fireball', 0);
       expect(panel.skillProcesses(0)[index]).toBe(0);
     });
 
     it('cooldown follows skill when placed into another slot', () => {
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
-      panel.castSkillAt(0, 0);
+      panel.castSkill('fireball', 0);
 
       panel.insertSkillAt('fireball', 1);
 
@@ -92,7 +92,7 @@ describe('PlayerPanel', () => {
     it('skill process is 0.5 when skill cooldown is half', () => {
       const index = 0;
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', index)); // cooldown is 1000
-      panel.castSkillAt(index, 0);
+      panel.castSkill('fireball', 0);
       expect(panel.skillProcesses(SKILL_DEFINITIONS.fireball.cooldown! / 2)[index]).toBe(0.5);
     });
   });

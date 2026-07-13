@@ -89,6 +89,10 @@ export default class UILayer {
     this.skillSlots.forEach((slot, i) => slot.setSelected(i === index));
   }
 
+  renderSkillProcess(processes: number[]) {
+    this.skillSlots.forEach((slot, index) => slot.renderProcess(processes[index] ?? 1));
+  }
+
   private get skillSlots(): SkillSprite[] {
     return this.skillBarContainer.getChildrenByLabel('skill') as SkillSprite[];
   }

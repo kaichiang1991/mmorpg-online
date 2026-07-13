@@ -6,9 +6,14 @@ export const SLOT_SIZE = 48;
 export const SLOT_GAP = 4;
 const SLOT_RADIUS = 6;
 const SELECTED_COLOR = 0xffd700;
+const COOLDOWN_COLOR = 0x2a2a2a;
+const COOLDOWN_ALPHA = 0.75;
+// reaches the slot corners; the rounded-rect mask crops it back inside the slot
+const COOLDOWN_RADIUS = (SLOT_SIZE * Math.SQRT2) / 2;
 
 export default class SkillSprite extends Container {
   private readonly selectedBorder: Graphics;
+  private readonly processGraphics: Graphics;
 
   constructor(index: number, skill: SkillVo) {
     super();
@@ -42,12 +47,18 @@ export default class SkillSprite extends Container {
       this.addChild(icon);
     }
 
-    // added last so it draws above the slot content
     this.selectedBorder = new Graphics()
       .roundRect(0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_RADIUS)
       .stroke({ width: 2, color: SELECTED_COLOR });
     this.selectedBorder.visible = false;
-    this.addChild(this.selectedBorder);
+
+    this.processGraphics = new Graphics();
+    const processMask = new Graphics()
+      .roundRect(0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_RADIUS)
+      .fill(0xffffff);
+    this.processGraphics.mask = processMask;
+
+    this.addChild(this.processGraphics, processMask, this.selectedBorder);
   }
 
   onClick(handler: () => void) {
@@ -59,5 +70,18 @@ export default class SkillSprite extends Container {
 
   setSelected(selected: boolean) {
     this.selectedBorder.visible = selected;
+  }
+
+  /** Pie overlay for the remaining cooldown: full at 0, sweeps away clockwise, gone at 1. */
+  renderProcess(process: number) {
+    this.processGraphics.clear();
+    if (process >= 1) return;
+
+    const startAngle = -Math.PI / 2 + process * Math.PI * 2;
+    this.processGraphics
+      .moveTo(SLOT_SIZE / 2, SLOT_SIZE / 2)
+      .arc(SLOT_SIZE / 2, SLOT_SIZE / 2, COOLDOWN_RADIUS, startAngle, (Math.PI * 3) / 2)
+      .closePath()
+      .fill({ color: COOLDOWN_COLOR, alpha: COOLDOWN_ALPHA });
   }
 }
