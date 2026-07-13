@@ -57,5 +57,12 @@ describe('PlayerPanel', () => {
       const panel = makePlayerPanel();
       expect(() => panel.castSkillAt(0)).toThrow();
     });
+
+    it('skill process is 1 when cast instant skill', () => {
+      const index = 0;
+      const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('basic', index));
+      panel.castSkillAt(index);
+      expect(panel.skillPrcessAt(index)).toBe(1);
+    });
   });
 });
