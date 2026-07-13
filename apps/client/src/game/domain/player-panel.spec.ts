@@ -58,9 +58,16 @@ describe('PlayerPanel', () => {
       expect(() => panel.castSkillAt(0, 0)).toThrow();
     });
 
-    it('skill process is 1 when cast instant skill', () => {
+    it('skill process is 1 when cast skill with no cooldown', () => {
       const index = 0;
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('basic', index));
+      panel.castSkillAt(index, 0);
+      expect(panel.skillProcessAt(index, 0)).toBe(1);
+    });
+
+    it('skill process is 0 when cast skill needed cooldown', () => {
+      const index = 0;
+      const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', index));
       panel.castSkillAt(index, 0);
       expect(panel.skillProcessAt(index, 0)).toBe(1);
     });
