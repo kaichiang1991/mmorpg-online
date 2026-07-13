@@ -55,14 +55,14 @@ describe('PlayerPanel', () => {
 
     it('throws when cast empty skill', () => {
       const panel = makePlayerPanel();
-      expect(() => panel.castSkillAt(0)).toThrow();
+      expect(() => panel.castSkillAt(0, 0)).toThrow();
     });
 
     it('skill process is 1 when cast instant skill', () => {
       const index = 0;
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('basic', index));
-      panel.castSkillAt(index);
-      expect(panel.skillPrcessAt(index)).toBe(1);
+      panel.castSkillAt(index, 0);
+      expect(panel.skillProcessAt(index, 0)).toBe(1);
     });
   });
 });

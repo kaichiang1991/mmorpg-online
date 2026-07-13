@@ -37,9 +37,13 @@ export class PlayerPanel {
     this._selectSkillIndex = undefined;
   }
 
-  castSkillAt(index: number) {
+  castSkillAt(index: number, now: number) {
     if (this._skillBar.at(index).isEmpty) throw new Error('castSkillAt: invalid index');
 
     return undefined;
+  }
+
+  skillProcessAt(index: number, now: number) {
+    return this._skillBar.at(index).cooldownProcess(now);
   }
 }
