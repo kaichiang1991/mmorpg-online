@@ -53,9 +53,9 @@ describe('PlayerPanel', () => {
       expect(() => panel.cancelSkillAt(1)).toThrow();
     });
 
-    it('returns undefined when cast empty skill', () => {
+    it('throws when cast empty skill', () => {
       const panel = makePlayerPanel();
-      expect(panel.castSkillAt(0)).toBeUndefined();
+      expect(() => panel.castSkillAt(0)).toThrow();
     });
   });
 });
