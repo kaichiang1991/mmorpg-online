@@ -9,6 +9,7 @@ export class SkillVo {
     public readonly id: SkillIdWithEmpty,
     public readonly name: string,
     private readonly _castingTimeMs = 0,
+    private readonly _cooldownTimeMs = 0,
   ) {}
 
   get isInstantCast(): boolean {
@@ -18,12 +19,14 @@ export class SkillVo {
   get isEmpty(): boolean {
     return this.id === '';
   }
+
+
 }
 
 export const SKILL_MAPPING = new Map<SkillIdWithEmpty, SkillVo>([
   ['', SkillVo.empty()],
   ...Object.values(SKILL_DEFINITIONS).map(
-    (d) => [d.id, new SkillVo(d.id, d.name, d.castTime)] as const,
+    (d) => [d.id, new SkillVo(d.id, d.name, d.castTime, d.cooldown)] as const,
   ),
 ]);
 

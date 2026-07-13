@@ -1,8 +1,19 @@
 import { SkillBarVo, SkillVo } from './skill-bar.vo';
-import { SKILL_IDS } from '@mmo/shared';
+import { SKILL_IDS, SkillId } from '@mmo/shared';
 
-const makeSkill = (overrides: Partial<InstanceType<typeof SkillVo>> = {}) =>
-  new SkillVo(overrides.id ?? 'basic', overrides.name ?? 'Attack');
+type SkillCtor = {
+  id: SkillId;
+  name: string;
+  castingTimeMs: number;
+  cooldownTimeMs: number;
+};
+const makeSkill = (overrides: Partial<SkillCtor> = {}) =>
+  new SkillVo(
+    overrides.id ?? 'basic',
+    overrides.name ?? 'Attack',
+    overrides.castingTimeMs ?? 0,
+    overrides.cooldownTimeMs ?? 0,
+  );
 
 describe('Skill', () => {
   it('creates an empty skill', () => {
@@ -17,6 +28,11 @@ describe('Skill', () => {
     expect(skill.id).toBe('basic');
     expect(skill.name).toBe('Attack');
     expect(skill.isInstantCast).toBe(true);
+  });
+
+  it('isReady when cooldown is 0', () => {
+    const skill = makeSkill({ cooldownTimeMs: 0 });
+    expect(skill.isReady).toBe(true);
   });
 });
 
