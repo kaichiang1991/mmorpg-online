@@ -59,25 +59,41 @@ describe('PlayerPanel', () => {
       expect(() => panel.castSkillAt(0, 0)).toThrow();
     });
 
+    it('skill processes has one entry per slot', () => {
+      const panel = makePlayerPanel();
+      expect(panel.skillProcesses(0)).toHaveLength(SkillBarVo.BAR_LENGTH);
+    });
+
     it('skill process is 1 when cast skill with no cooldown', () => {
       const index = 0;
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('basic', index));
       panel.castSkillAt(index, 0);
-      expect(panel.skillProcessAt(index, 0)).toBe(1);
+      expect(panel.skillProcesses(0)[index]).toBe(1);
     });
 
     it('skill process is 0 when cast skill needed cooldown', () => {
       const index = 0;
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', index));
       panel.castSkillAt(index, 0);
-      expect(panel.skillProcessAt(index, 0)).toBe(1);
+      expect(panel.skillProcesses(0)[index]).toBe(0);
+    });
+
+    it('cooldown follows skill when placed into another slot', () => {
+      const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
+      panel.castSkillAt(0, 0);
+
+      panel.insertSkillAt('fireball', 1);
+
+      const processes = panel.skillProcesses(0);
+      expect(processes[0]).toBe(0); // original slot keeps cooling
+      expect(processes[1]).toBe(0); // same skill in new slot shares the cooldown
     });
 
     it('skill process is 0.5 when skill cooldown is half', () => {
       const index = 0;
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', index)); // cooldown is 1000
       panel.castSkillAt(index, 0);
-      expect(panel.skillProcessAt(index, SKILL_DEFINITIONS.fireball.cooldown! / 2)).toBe(0.5);
+      expect(panel.skillProcesses(SKILL_DEFINITIONS.fireball.cooldown! / 2)[index]).toBe(0.5);
     });
   });
 });

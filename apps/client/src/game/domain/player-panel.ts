@@ -1,8 +1,11 @@
 import { SkillBarVo, SkillVo } from './value-objects/skill-bar.vo';
-import { SkillId } from '@mmo/shared';
+import { SkillId, SkillIdWithEmpty } from '@mmo/shared';
 
 export class PlayerPanel {
   private _skillBar: SkillBarVo;
+
+  /** cooldown keyed by skill id, not slot: moving a skill must not reset or fork its cooldown */
+  private readonly _castStartTimes = new Map<SkillIdWithEmpty, number>();
   public get skillBar(): SkillBarVo {
     return this._skillBar;
   }
@@ -38,12 +41,15 @@ export class PlayerPanel {
   }
 
   castSkillAt(index: number, now: number) {
-    if (this._skillBar.at(index).isEmpty) throw new Error('castSkillAt: invalid index');
+    const skill = this._skillBar.at(index);
+    if (skill.isEmpty) throw new Error('castSkillAt: invalid index');
 
-    this._skillBar.castSkillAt(index, now);
+    this._castStartTimes.set(skill.id, now);
   }
 
-  skillProcessAt(index: number, now: number) {
-    return this._skillBar.at(index).cooldownProcess(now);
+  skillProcesses(now: number): number[] {
+    return this._skillBar.map((skill) =>
+      skill.cooldownProcess(this._castStartTimes.get(skill.id) ?? -Infinity, now),
+    );
   }
 }

@@ -6,16 +6,12 @@ export class SkillVo {
     return new SkillVo('', '');
   }
 
-  private _castStartTime: number;
-
   constructor(
     public readonly id: SkillIdWithEmpty,
     public readonly name: string,
     private readonly _castingTimeMs = 0,
     private readonly _cooldownTimeMs = 0,
-  ) {
-    this._castStartTime = -Infinity;
-  }
+  ) {}
 
   get isInstantCast(): boolean {
     return this._castingTimeMs === 0;
@@ -29,23 +25,17 @@ export class SkillVo {
     return this._cooldownTimeMs <= 0;
   }
 
-  cast(now: number) {
-    if (this._cooldownTimeMs === 0) return;
-    this._castStartTime = now;
-  }
-
-  cooldownProcess(at: number): number {
-    const progress = (at - this._castStartTime) / this._cooldownTimeMs;
-    return gsap.utils.clamp(0, 1, progress);
+  cooldownProcess(castStartTime: number, at: number): number {
+    if (this._cooldownTimeMs <= 0) return 1;
+    return gsap.utils.clamp(0, 1, (at - castStartTime) / this._cooldownTimeMs);
   }
 }
 
-export const SKILL_MAPPING = new Map<SkillIdWithEmpty, SkillVo>([
-  ['', SkillVo.empty()],
-  ...Object.values(SKILL_DEFINITIONS).map(
-    (d) => [d.id, new SkillVo(d.id, d.name, d.castTime, d.cooldown)] as const,
-  ),
-]);
+const createSkill = (skillId: SkillIdWithEmpty): SkillVo => {
+  if (skillId === '') return SkillVo.empty();
+  const d = SKILL_DEFINITIONS[skillId];
+  return new SkillVo(d.id, d.name, d.castTime, d.cooldown);
+};
 
 export class SkillBarVo {
   static BAR_LENGTH = 10;
@@ -65,7 +55,7 @@ export class SkillBarVo {
 
     this.elements = Array.from({ length: SkillBarVo.BAR_LENGTH }, (_, i) => i).map((i) => {
       const skillId = skillIds.at(i) ?? '';
-      return SKILL_MAPPING.get(skillId)!;
+      return createSkill(skillId);
     });
   }
 
@@ -81,6 +71,10 @@ export class SkillBarVo {
     return this.elements.every(predict);
   }
 
+  map<T>(fn: (skill: SkillVo, index: number) => T): T[] {
+    return this.elements.map(fn);
+  }
+
   at(index: number): SkillVo {
     if (index < 0 || index >= SkillBarVo.BAR_LENGTH)
       throw new Error(`SkillBar index out of range: ${index}`);
@@ -91,9 +85,5 @@ export class SkillBarVo {
     return new SkillBarVo(
       this.elements.map((skill, index) => (index === at ? newSkillId : skill.id)),
     );
-  }
-
-  castSkillAt(index: number, now: number) {
-    this.at(index).cast(now);
   }
 }

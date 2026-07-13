@@ -35,28 +35,30 @@ describe('Skill', () => {
     expect(skill.isReady).toBe(true);
   });
 
-  it('set cooldown process to 0 when skill cast', () => {
+  it('cooldown process is 0 right after cast', () => {
     const skill = makeSkill({ cooldownTimeMs: 1000 });
-    skill.cast(0);
-    expect(skill.cooldownProcess(0)).toBe(0);
+    expect(skill.cooldownProcess(0, 0)).toBe(0);
   });
 
-  it('set cooldown process to 1 when time pass exactly as cooldownMs', () => {
+  it('cooldown process is 1 when time pass exactly as cooldownMs', () => {
     const skill = makeSkill({ cooldownTimeMs: 1000 });
-    skill.cast(0);
-    expect(skill.cooldownProcess(1000)).toBe(1);
+    expect(skill.cooldownProcess(0, 1000)).toBe(1);
   });
 
   it('clamp cooldown process to [0, 1]', () => {
     const skill = makeSkill({ cooldownTimeMs: 1000 });
-    skill.cast(0);
-    expect(skill.cooldownProcess(-0.1)).toBe(0);
-    expect(skill.cooldownProcess(1000.1)).toBe(1);
+    expect(skill.cooldownProcess(0, -0.1)).toBe(0);
+    expect(skill.cooldownProcess(0, 1000.1)).toBe(1);
   });
 
   it('cooldown process is 1 when skill never casted', () => {
     const skill = makeSkill({ cooldownTimeMs: 1000 });
-    expect(skill.cooldownProcess(0)).toBe(1);
+    expect(skill.cooldownProcess(-Infinity, 0)).toBe(1);
+  });
+
+  it('cooldown process is 1 for skill without cooldown', () => {
+    const skill = makeSkill({ cooldownTimeMs: 0 });
+    expect(skill.cooldownProcess(0, 0)).toBe(1);
   });
 });
 
