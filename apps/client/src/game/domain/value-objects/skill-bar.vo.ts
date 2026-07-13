@@ -1,4 +1,5 @@
 import { SKILL_DEFINITIONS, SkillId, SkillIdWithEmpty } from '@mmo/shared';
+import gsap from 'gsap';
 
 export class SkillVo {
   static empty(): SkillVo {
@@ -34,7 +35,8 @@ export class SkillVo {
   }
 
   cooldownProcess(at: number): number {
-    return (at - this._castStartTime) / this._cooldownTimeMs;
+    const progress = (at - this._castStartTime) / this._cooldownTimeMs;
+    return gsap.utils.clamp(0, 1, progress);
   }
 }
 
