@@ -5,12 +5,16 @@ export class SkillVo {
     return new SkillVo('', '');
   }
 
+  private _castStartTime: number;
+
   constructor(
     public readonly id: SkillIdWithEmpty,
     public readonly name: string,
     private readonly _castingTimeMs = 0,
     private readonly _cooldownTimeMs = 0,
-  ) {}
+  ) {
+    this._castStartTime = Infinity;
+  }
 
   get isInstantCast(): boolean {
     return this._castingTimeMs === 0;
@@ -24,8 +28,13 @@ export class SkillVo {
     return this._cooldownTimeMs <= 0;
   }
 
-  cooldownProcess(): number {
-    return;
+  cast(now: number) {
+    if (this._cooldownTimeMs === 0) return;
+    this._castStartTime = now;
+  }
+
+  cooldownProcess(at: number): number {
+    return (at - this._castStartTime) / this._cooldownTimeMs;
   }
 }
 
