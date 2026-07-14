@@ -119,5 +119,10 @@ describe('PlayerPanel', () => {
       panel.castSkill('fireball', 0);
       expect(panel.isSelectedSkillReady(SKILL_DEFINITIONS['fireball'].cooldown!)).toBe(true);
     });
+
+    it('tryUseSkill returns false when no skill selected', () => {
+      const panel = makePlayerPanel();
+      expect(panel.tryUseSkill(0)).toBe(false);
+    });
   });
 });
