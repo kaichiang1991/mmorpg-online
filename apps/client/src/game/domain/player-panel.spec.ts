@@ -100,9 +100,10 @@ describe('PlayerPanel', () => {
       expect(panel.isSelectedSkillReady(0)).toBe(false);
     });
 
-    it('isSelectedSkillReady returns false when selected skill is not casted', () => {
-      const panel = makePlayerPanel();
-      expect(panel.isSelectedSkillReady(0)).toBe(false);
+    it('isSelectedSkillReady returns tue when selected skill is not casted', () => {
+      const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
+      panel.selectSkillAt(0);
+      expect(panel.isSelectedSkillReady(0)).toBe(true);
     });
 
     it('isSelectedSkillReady returns false when selected skill just cast', () => {

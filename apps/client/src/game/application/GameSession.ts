@@ -116,7 +116,7 @@ export class GameSession {
     // todo: player 沒有需要的mp
 
     const now = performance.now();
-    if (this.playerPanel?.isSkillInCooldown(skill, now)) return;
+    if (!this.playerPanel?.isSelectedSkillReady(now)) return;
 
     this.socket?.emit('attack', {
       targetId: hit.player.id,

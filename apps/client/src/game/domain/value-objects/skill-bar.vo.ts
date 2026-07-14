@@ -26,7 +26,7 @@ export class SkillVo {
     return gsap.utils.clamp(0, 1, (at - castStartTime) / this._cooldownTimeMs);
   }
 
-  coolDownIsReady(castStartAt: number, now: number): boolean {
+  cooldownIsReady(castStartAt: number, now: number): boolean {
     return this.cooldownProcess(castStartAt, now) === 1;
   }
 }

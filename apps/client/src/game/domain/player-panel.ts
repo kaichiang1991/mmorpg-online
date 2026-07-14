@@ -55,15 +55,11 @@ export class PlayerPanel {
     );
   }
 
-  isSkillInCooldown(skill: SkillVo, now: number): boolean {
-    return skill.cooldownProcess(this._castStartTimes.get(skill.id) ?? -Infinity, now) < 1;
-  }
-
   isSelectedSkillReady(now: number) {
     if (!this._selectedSkill) return false;
 
-    return this._selectedSkill.coolDownIsReady(
-      this._castStartTimes.get(this._selectedSkill.id)!,
+    return this._selectedSkill.cooldownIsReady(
+      this._castStartTimes.get(this._selectedSkill.id) ?? -Infinity,
       now,
     );
   }
