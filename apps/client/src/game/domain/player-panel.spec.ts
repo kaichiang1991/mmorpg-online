@@ -120,29 +120,6 @@ describe('PlayerPanel', () => {
       expect(panel.isSelectedSkillReady(SKILL_DEFINITIONS['fireball'].cooldown!)).toBe(true);
     });
 
-    describe('mp', () => {
-      it('canAffordSelectedSkill returns false when no skill selected', () => {
-        const panel = makePlayerPanel();
-        expect(panel.canAffordSelectedSkill).toBe(false);
-      });
-
-      it('canAffordSelectedSkill returns false when not enough mp', () => {
-        const panel = makePlayerPanel();
-        panel.syncMp(0);
-        panel.syncSkillCosts({ fireball: 10 } as Record<SkillId, number>);
-        panel.selectSkillAt(0);
-        expect(panel.canAffordSelectedSkill).toBe(false);
-      });
-
-      it('canAffordSelectedSkill returns true when mp is just enough', () => {
-        const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
-        panel.syncMp(10);
-        panel.syncSkillCosts({ fireball: 10 } as Record<SkillId, number>);
-        panel.selectSkillAt(0);
-        expect(panel.canAffordSelectedSkill).toBe(true);
-      });
-    });
-
     describe('try use skill', () => {
       it('returns false when no skill selected', () => {
         const panel = makePlayerPanel();
@@ -164,7 +141,25 @@ describe('PlayerPanel', () => {
 
       it('returns false when selected skill cost more mp than current', () => {
         const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
+        panel.syncMp(0);
+        panel.syncSkillCosts({ fireball: 10 } as Record<SkillId, number>);
         panel.selectSkillAt(0);
+        expect(panel.tryUseSkill(0)).toBe(false);
+      });
+
+      it('returns true when mp is just enough', () => {
+        const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
+        panel.syncMp(10);
+        panel.syncSkillCosts({ fireball: 10 } as Record<SkillId, number>);
+        panel.selectSkillAt(0);
+        expect(panel.tryUseSkill(0)).toBe(true);
+      });
+
+      it('returns true when skill cost is unknown (no pre-check without server data)', () => {
+        const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
+        panel.syncMp(0);
+        panel.selectSkillAt(0);
+        expect(panel.tryUseSkill(0)).toBe(true);
       });
     });
   });

@@ -20,7 +20,7 @@ export class PlayerPanel {
     });
   }
 
-  get canAffordSelectedSkill(): boolean {
+  private get canAffordSelectedSkill(): boolean {
     if (!this._selectedSkill?.hasSkill()) return false;
     const cost = this._skillCosts.get(this._selectedSkill.id) ?? 0;
     return this._mp >= cost;
@@ -85,7 +85,6 @@ export class PlayerPanel {
   tryUseSkill(now: number) {
     if (!this._selectedSkill) return false;
 
-    const isReady = this.isSelectedSkillReady(now);
-    return isReady;
+    return this.isSelectedSkillReady(now) && this.canAffordSelectedSkill;
   }
 }
