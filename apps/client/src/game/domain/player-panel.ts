@@ -63,4 +63,8 @@ export class PlayerPanel {
       now,
     );
   }
+
+  tryUseSkill(now: number) {
+    return false;
+  }
 }
