@@ -2,7 +2,29 @@ import { SkillBarVo, SkillVo } from './value-objects/skill-bar.vo';
 import { SkillId, SkillIdWithEmpty } from '@mmo/shared';
 
 export class PlayerPanel {
+  static from(props: { skillBar: SkillBarVo }): PlayerPanel {
+    return new PlayerPanel(props);
+  }
+
   private _skillBar: SkillBarVo;
+  private _mp: number = 0;
+  private _skillCosts = new Map<SkillId, number>();
+
+  syncMp(mp: number) {
+    this._mp = mp;
+  }
+
+  syncSkillCosts(costs: Record<SkillId, number>) {
+    Object.entries(costs).forEach(([skillId, cost]) => {
+      this._skillCosts.set(skillId as SkillId, cost);
+    });
+  }
+
+  get canAffordSelectedSkill(): boolean {
+    if (!this._selectedSkill?.hasSkill()) return false;
+    const cost = this._skillCosts.get(this._selectedSkill.id) ?? 0;
+    return this._mp >= cost;
+  }
 
   /** cooldown keyed by skill id, not slot: moving a skill must not reset or fork its cooldown */
   private readonly _castStartTimes = new Map<SkillIdWithEmpty, number>();
@@ -18,10 +40,6 @@ export class PlayerPanel {
 
   public get selectedSkillId(): SkillId | null {
     return this._selectedSkill?.hasSkill() ? this._selectedSkill.id : null;
-  }
-
-  static from(props: { skillBar: SkillBarVo }): PlayerPanel {
-    return new PlayerPanel(props);
   }
 
   private constructor({ skillBar }: { skillBar?: SkillBarVo }) {

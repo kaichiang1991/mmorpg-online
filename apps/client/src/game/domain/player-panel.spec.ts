@@ -1,6 +1,6 @@
 import { PlayerPanel } from './player-panel';
 import { SkillBarVo } from './value-objects/skill-bar.vo';
-import { SKILL_DEFINITIONS } from '@mmo/shared';
+import { SKILL_DEFINITIONS, SkillId } from '@mmo/shared';
 
 const makePlayerPanel = (skillBar?: SkillBarVo) =>
   PlayerPanel.from({ skillBar: skillBar ?? SkillBarVo.empty() });
@@ -118,6 +118,21 @@ describe('PlayerPanel', () => {
       panel.selectSkillAt(0);
       panel.castSkill('fireball', 0);
       expect(panel.isSelectedSkillReady(SKILL_DEFINITIONS['fireball'].cooldown!)).toBe(true);
+    });
+
+    describe('mp', () => {
+      it('canAffordSelectedSkill returns false when no skill selected', () => {
+        const panel = makePlayerPanel();
+        expect(panel.canAffordSelectedSkill).toBe(false);
+      });
+
+      it('canAffordSelectedSkill returns false when not enough mp', () => {
+        const panel = makePlayerPanel();
+        panel.syncMp(0);
+        panel.syncSkillCosts({ fireball: 10 } as Record<SkillId, number>);
+        panel.selectSkillAt(0);
+        expect(panel.canAffordSelectedSkill).toBe(false);
+      });
     });
 
     describe('try use skill', () => {

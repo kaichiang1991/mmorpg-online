@@ -43,6 +43,10 @@ export class GameSession {
 
     this.socket.on('snapshot', (snapshot) => {
       this.interpolator.push(snapshot, performance.now());
+      const self = snapshot.players.find((player) => player.id === this.selfId);
+      if (self) {
+        this.playerPanel?.syncMp(self.mp);
+      }
     });
 
     this.socket.on('attack', (event: AttackResultPayload) => {
