@@ -20,7 +20,7 @@ export class PlayerPanel {
     });
   }
 
-  private get canAffordSelectedSkill(): boolean {
+  private canAffordSelectedSkill(): boolean {
     if (!this._selectedSkill?.hasSkill()) return false;
     const cost = this._skillCosts.get(this._selectedSkill.id) ?? 0;
     return this._mp >= cost;
@@ -73,7 +73,7 @@ export class PlayerPanel {
     );
   }
 
-  isSelectedSkillReady(now: number) {
+  private isSelectedSkillReady(now: number) {
     if (!this._selectedSkill) return false;
 
     return this._selectedSkill.cooldownIsReady(
@@ -82,9 +82,12 @@ export class PlayerPanel {
     );
   }
 
-  tryUseSkill(now: number) {
-    if (!this._selectedSkill) return false;
+  tryUseSkill(now: number): boolean {
+    if (!this._selectedSkill?.hasSkill()) return false;
+    if (!this.isSelectedSkillReady(now)) return false;
+    if (!this.canAffordSelectedSkill()) return false;
 
-    return this.isSelectedSkillReady(now) && this.canAffordSelectedSkill;
+    this._castStartTimes.set(this._selectedSkill.id, now);
+    return true;
   }
 }

@@ -117,10 +117,8 @@ export class GameSession {
     const skill = this.playerPanel?.selectedSkill;
     if (!skill) return;
 
-    // todo: player 沒有需要的mp
-
     const now = performance.now();
-    if (!this.playerPanel?.isSelectedSkillReady(now)) return;
+    if (!this.playerPanel?.tryUseSkill(now)) return;
 
     this.socket?.emit('attack', {
       targetId: hit.player.id,

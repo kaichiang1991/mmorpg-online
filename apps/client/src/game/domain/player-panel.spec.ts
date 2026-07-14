@@ -95,31 +95,6 @@ describe('PlayerPanel', () => {
       expect(panel.selectedSkillId).toBe('basic');
     });
 
-    it('isSelectedSkillReady returns false when no skill selected', () => {
-      const panel = makePlayerPanel();
-      expect(panel.isSelectedSkillReady(0)).toBe(false);
-    });
-
-    it('isSelectedSkillReady returns tue when selected skill is not casted', () => {
-      const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
-      panel.selectSkillAt(0);
-      expect(panel.isSelectedSkillReady(0)).toBe(true);
-    });
-
-    it('isSelectedSkillReady returns false when selected skill just cast', () => {
-      const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
-      panel.selectSkillAt(0);
-      panel.castSkill('fireball', 0);
-      expect(panel.isSelectedSkillReady(0)).toBe(false);
-    });
-
-    it('isSelectedSkillReady returns true when selected skill cooldown over', () => {
-      const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
-      panel.selectSkillAt(0);
-      panel.castSkill('fireball', 0);
-      expect(panel.isSelectedSkillReady(SKILL_DEFINITIONS['fireball'].cooldown!)).toBe(true);
-    });
-
     describe('try use skill', () => {
       it('returns false when no skill selected', () => {
         const panel = makePlayerPanel();
@@ -130,6 +105,13 @@ describe('PlayerPanel', () => {
         const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
         panel.selectSkillAt(0);
         expect(panel.tryUseSkill(0)).toBe(true);
+      });
+
+      it('returns false when selected skill just cast', () => {
+        const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
+        panel.selectSkillAt(0);
+        panel.castSkill('fireball', 0);
+        expect(panel.tryUseSkill(0)).toBe(false);
       });
 
       it('returns true when selected skill cooldown over', () => {
