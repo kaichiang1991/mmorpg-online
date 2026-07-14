@@ -131,6 +131,13 @@ describe('PlayerPanel', () => {
         panel.selectSkillAt(0);
         expect(panel.tryUseSkill(0)).toBe(true);
       });
+
+      it('returns true when selected skill cooldown over', () => {
+        const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
+        panel.selectSkillAt(0);
+        panel.castSkill('fireball', 0);
+        expect(panel.tryUseSkill(SKILL_DEFINITIONS['fireball'].cooldown!)).toBe(true);
+      });
     });
   });
 });
