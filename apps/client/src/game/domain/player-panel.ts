@@ -60,6 +60,13 @@ export class PlayerPanel {
   }
 
   isSelectedSkillReady(now: number) {
-    return false;
+    if (!this._selectedSkill) return false;
+
+    return (
+      this._selectedSkill.cooldownProcess(
+        this._castStartTimes.get(this._selectedSkill.id) ?? -Infinity,
+        now,
+      ) === 1
+    );
   }
 }
