@@ -30,11 +30,6 @@ describe('Skill', () => {
     expect(skill.isInstantCast).toBe(true);
   });
 
-  it('isReady when cooldown is 0', () => {
-    const skill = makeSkill({ cooldownTimeMs: 0 });
-    expect(skill.isReady).toBe(true);
-  });
-
   it('cooldown process is 0 right after cast', () => {
     const skill = makeSkill({ cooldownTimeMs: 1000 });
     expect(skill.cooldownProcess(0, 0)).toBe(0);

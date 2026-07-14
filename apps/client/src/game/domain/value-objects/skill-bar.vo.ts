@@ -21,13 +21,13 @@ export class SkillVo {
     return this.id !== '';
   }
 
-  get isReady(): boolean {
-    return this._cooldownTimeMs <= 0;
-  }
-
   cooldownProcess(castStartTime: number, at: number): number {
     if (this._cooldownTimeMs <= 0) return 1;
     return gsap.utils.clamp(0, 1, (at - castStartTime) / this._cooldownTimeMs);
+  }
+
+  coolDownIsReady(castStartAt: number, now: number): boolean {
+    return this.cooldownProcess(castStartAt, now) === 1;
   }
 }
 
