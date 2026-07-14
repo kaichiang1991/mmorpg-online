@@ -95,6 +95,11 @@ describe('PlayerPanel', () => {
       expect(panel.selectedSkillId).toBe('basic');
     });
 
+    it('isSelectedSkillReady returns false when no skill selected', () => {
+      const panel = makePlayerPanel();
+      expect(panel.isSelectedSkillReady(0)).toBe(false);
+    });
+
     it('get selected skill cooldown is over', () => {
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
       expect(panel.isSelectedSkillReady(0)).toBe(true);
