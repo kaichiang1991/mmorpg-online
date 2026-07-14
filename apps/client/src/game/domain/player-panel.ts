@@ -2,6 +2,11 @@ import { SkillBarVo, SkillVo } from './value-objects/skill-bar.vo';
 import { SkillId, SkillIdWithEmpty } from '@mmo/shared';
 
 export class PlayerPanel {
+  private _selectSkillId: SkillId | null = null;
+  public get selectedSkillId(): SkillId | null {
+    return this._selectSkillId;
+  }
+
   private _skillBar: SkillBarVo;
 
   /** cooldown keyed by skill id, not slot: moving a skill must not reset or fork its cooldown */
