@@ -60,6 +60,6 @@ export class PlayerPanel {
   }
 
   isSelectedSkillReady(now: number) {
-    return undefined;
+    return false;
   }
 }
