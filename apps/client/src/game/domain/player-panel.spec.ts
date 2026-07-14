@@ -120,9 +120,17 @@ describe('PlayerPanel', () => {
       expect(panel.isSelectedSkillReady(SKILL_DEFINITIONS['fireball'].cooldown!)).toBe(true);
     });
 
-    it('tryUseSkill returns false when no skill selected', () => {
-      const panel = makePlayerPanel();
-      expect(panel.tryUseSkill(0)).toBe(false);
+    describe('try use skill', () => {
+      it('tryUseSkill returns false when no skill selected', () => {
+        const panel = makePlayerPanel();
+        expect(panel.tryUseSkill(0)).toBe(false);
+      });
+
+      it('tryUseSkill returns true when selected skill is not casted', () => {
+        const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
+        panel.selectSkillAt(0);
+        expect(panel.tryUseSkill(0)).toBe(true);
+      });
     });
   });
 });
