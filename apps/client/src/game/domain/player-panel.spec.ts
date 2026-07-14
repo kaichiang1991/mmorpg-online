@@ -101,5 +101,11 @@ describe('PlayerPanel', () => {
       const panel = makePlayerPanel();
       expect(panel.selectedSkillId).toBeNull();
     });
+
+    it('select skill at skill bar', () => {
+      const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('basic', 0));
+      panel.selectSkillAt(0);
+      expect(panel.selectedSkillId).toBe('basic');
+    });
   });
 });
