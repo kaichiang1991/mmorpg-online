@@ -2,7 +2,8 @@ import { PlayerPanel } from './player-panel';
 import { SkillBarVo } from './value-objects/skill-bar.vo';
 import { SKILL_DEFINITIONS } from '@mmo/shared';
 
-const makePlayerPanel = (skillBar?: SkillBarVo) => new PlayerPanel({ skillBar });
+const makePlayerPanel = (skillBar?: SkillBarVo) =>
+  PlayerPanel.from({ skillBar: skillBar ?? SkillBarVo.empty() });
 
 describe('PlayerPanel', () => {
   describe('Skills', () => {

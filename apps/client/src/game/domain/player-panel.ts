@@ -21,7 +21,11 @@ export class PlayerPanel {
     return this._skillBar.at(this._selectedSkillIndex);
   }
 
-  constructor({ skillBar }: { skillBar?: SkillBarVo }) {
+  static from(props: { skillBar: SkillBarVo }): PlayerPanel {
+    return new PlayerPanel(props);
+  }
+
+  private constructor({ skillBar }: { skillBar?: SkillBarVo }) {
     this._skillBar = skillBar ?? SkillBarVo.empty();
     this._selectedSkillIndex = undefined;
   }

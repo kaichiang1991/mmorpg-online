@@ -37,7 +37,7 @@ export class GameSession {
     this.socket.on('welcome', (payload: WelcomePayload) => {
       this.selfId = payload.selfId;
       this.renderer.setMap(payload.map);
-      this.playerPanel = new PlayerPanel({ skillBar: SkillBarVo.from(payload.player.skillIds) });
+      this.playerPanel = PlayerPanel.from({ skillBar: SkillBarVo.from(payload.player.skillIds) });
       this.renderer.setUI(this.playerPanel);
     });
 
@@ -110,6 +110,8 @@ export class GameSession {
 
     const skill = this.playerPanel?.selectedSkill;
     if (!skill) return;
+
+    // todo: player 沒有需要的mp
 
     const now = performance.now();
     if (this.playerPanel?.isSkillInCooldown(skill, now)) return;
