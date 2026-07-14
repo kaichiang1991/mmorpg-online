@@ -2,11 +2,6 @@ import { SkillBarVo, SkillVo } from './value-objects/skill-bar.vo';
 import { SkillId, SkillIdWithEmpty } from '@mmo/shared';
 
 export class PlayerPanel {
-  private _selectSkillId: SkillId | null = null;
-  public get selectedSkillId(): SkillId | null {
-    return this._selectSkillId;
-  }
-
   private _skillBar: SkillBarVo;
 
   /** cooldown keyed by skill id, not slot: moving a skill must not reset or fork its cooldown */
@@ -15,15 +10,14 @@ export class PlayerPanel {
     return this._skillBar;
   }
 
-  private _selectedSkillIndex: number | undefined = undefined;
-  public get selectedSkillIndex(): number | undefined {
-    return this._selectedSkillIndex;
+  /** selection is a skill, not a slot: the same skill in two slots is one selection */
+  private _selectedSkill: SkillVo | null = null;
+  public get selectedSkill(): SkillVo | null {
+    return this._selectedSkill;
   }
 
-  // todo: 也不一定要從skill bar拿
-  public get selectedSkill(): SkillVo | undefined {
-    if (this._selectedSkillIndex === undefined) return undefined;
-    return this._skillBar.at(this._selectedSkillIndex);
+  public get selectedSkillId(): SkillId | null {
+    return this._selectedSkill?.hasSkill() ? this._selectedSkill.id : null;
   }
 
   static from(props: { skillBar: SkillBarVo }): PlayerPanel {
@@ -32,7 +26,6 @@ export class PlayerPanel {
 
   private constructor({ skillBar }: { skillBar?: SkillBarVo }) {
     this._skillBar = skillBar ?? SkillBarVo.empty();
-    this._selectedSkillIndex = undefined;
   }
 
   insertSkillAt(skillId: SkillId, index: number) {
@@ -43,13 +36,11 @@ export class PlayerPanel {
     const skill = this._skillBar.at(index);
     if (!skill.hasSkill()) return;
 
-    this._selectSkillId = skill.id;
+    this._selectedSkill = skill;
   }
 
-  cancelSkillAt(index: number) {
-    if (this._selectedSkillIndex !== index) throw new Error('cancelSkillAt: invalid index');
-
-    this._selectedSkillIndex = undefined;
+  cancelSelect() {
+    this._selectedSkill = null;
   }
 
   castSkill(skillId: SkillIdWithEmpty, now: number) {

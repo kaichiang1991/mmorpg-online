@@ -12,12 +12,15 @@ const COOLDOWN_ALPHA = 0.75;
 const COOLDOWN_RADIUS = (SLOT_SIZE * Math.SQRT2) / 2;
 
 export default class SkillSprite extends Container {
+  readonly skillId: SkillVo['id'];
+
   private readonly selectedBorder: Graphics;
   private readonly processGraphics: Graphics;
 
   constructor(index: number, skill: SkillVo) {
     super();
     this.label = 'skill';
+    this.skillId = skill.id;
     this.interactive = true;
     this.position.set(index * (SLOT_SIZE + SLOT_GAP), 0);
 

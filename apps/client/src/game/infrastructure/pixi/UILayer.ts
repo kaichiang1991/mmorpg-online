@@ -1,4 +1,5 @@
 import { Container, Graphics, Text } from 'pixi.js';
+import { SkillId } from '@mmo/shared';
 import { SkillBarVo } from '../../domain/value-objects/skill-bar.vo';
 import SkillSprite, { SLOT_GAP, SLOT_SIZE } from './skills/SkillSprite';
 
@@ -84,9 +85,9 @@ export default class UILayer {
     this.skillSlots.forEach((slot, index) => slot.onClick(() => handler(index)));
   }
 
-  /** Highlights the slot at `index`, clearing all others; undefined clears everything. */
-  renderSelectedSkill(index: number | undefined): void {
-    this.skillSlots.forEach((slot, i) => slot.setSelected(i === index));
+  /** Highlights every slot holding `skillId` (same skill in two slots is one selection); null clears everything. */
+  renderSelectedSkill(skillId: SkillId | null): void {
+    this.skillSlots.forEach((slot) => slot.setSelected(skillId !== null && slot.skillId === skillId));
   }
 
   renderSkillProcess(processes: number[]) {

@@ -74,8 +74,10 @@ export class GameSession {
     });
 
     this.renderer.onSkillSelect((index: number) => {
-      if (index === this.playerPanel?.selectedSkillIndex)
-        return this.playerPanel.cancelSkillAt(index);
+      const skill = this.playerPanel?.skillBar.at(index);
+      if (!skill?.hasSkill()) return;
+
+      if (skill.id === this.playerPanel?.selectedSkillId) return this.playerPanel.cancelSelect();
 
       this.playerPanel?.selectSkillAt(index);
     });
@@ -89,10 +91,10 @@ export class GameSession {
         this.selfId,
       );
       if (this.playerPanel) {
-        this.renderer.renderSelectedSkill(this.playerPanel.selectedSkillIndex);
+        this.renderer.renderSelectedSkill(this.playerPanel.selectedSkillId);
         this.renderer.renderSkillProcess(this.playerPanel.skillProcesses(now));
       }
-      this.renderer.renderDebug({ selectSkillIndex: this.playerPanel?.selectedSkillIndex });
+      this.renderer.renderDebug({ selectedSkillId: this.playerPanel?.selectedSkillId });
     });
   }
 

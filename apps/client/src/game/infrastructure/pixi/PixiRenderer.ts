@@ -1,5 +1,6 @@
 import gsap from 'gsap';
 import { Application, Container, Graphics } from 'pixi.js';
+import { SkillId } from '@mmo/shared';
 import type { ActiveAttack } from '../../domain/active-attacks';
 import { cameraOffset } from '../../domain/camera';
 import type { Player } from '../../domain/player';
@@ -95,8 +96,8 @@ export class PixiRenderer {
     this.ui.renderDebug(values);
   }
 
-  renderSelectedSkill(index: number | undefined): void {
-    this.ui.renderSelectedSkill(index);
+  renderSelectedSkill(skillId: SkillId | null): void {
+    this.ui.renderSelectedSkill(skillId);
   }
 
   renderSkillProcess(processes: number[]): void {

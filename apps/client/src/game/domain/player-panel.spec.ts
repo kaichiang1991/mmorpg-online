@@ -23,36 +23,23 @@ describe('PlayerPanel', () => {
       expect(panel.skillBar.at(0).id).toBe('basic');
     });
 
-    it('default selectSkillIndex = undefined', () => {
-      const panel = makePlayerPanel();
-      expect(panel.selectedSkillIndex).toBeUndefined();
-    });
-
     it('cannot select empty skill', () => {
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('basic', 0));
       panel.selectSkillAt(1);
-      expect(panel.selectedSkillIndex).toBeUndefined();
+      expect(panel.selectedSkillId).toBeNull();
     });
 
-    it('can select skill by index', () => {
+    it('can cancel selected skill', () => {
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('basic', 0));
       panel.selectSkillAt(0);
-      expect(panel.selectedSkillIndex).toBe(0);
+      panel.cancelSelect();
+      expect(panel.selectedSkillId).toBeNull();
     });
 
-    it('can cancels select skill', () => {
-      const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('basic', 0));
-      panel.selectSkillAt(0);
-      panel.cancelSkillAt(0);
-      expect(panel.selectedSkillIndex).toBeUndefined();
-    });
-
-    it('cancels select skill at not selected index throws', () => {
-      const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('basic', 0));
-      expect(() => panel.cancelSkillAt(0)).toThrow();
-
-      panel.selectSkillAt(0);
-      expect(() => panel.cancelSkillAt(1)).toThrow();
+    it('cancel without selection is a no-op', () => {
+      const panel = makePlayerPanel();
+      expect(() => panel.cancelSelect()).not.toThrow();
+      expect(panel.selectedSkillId).toBeNull();
     });
 
     it('throws when cast empty skill', () => {
