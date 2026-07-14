@@ -65,6 +65,9 @@ export class PlayerPanel {
   }
 
   tryUseSkill(now: number) {
-    return false;
+    if (!this._selectedSkill) return false;
+
+    const isReady = this.isSelectedSkillReady(now);
+    return isReady;
   }
 }
