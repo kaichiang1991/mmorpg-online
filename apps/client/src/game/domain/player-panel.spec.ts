@@ -135,7 +135,7 @@ describe('PlayerPanel', () => {
       });
 
       it('canAffordSelectedSkill returns true when mp is just enough', () => {
-        const panel = makePlayerPanel();
+        const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
         panel.syncMp(10);
         panel.syncSkillCosts({ fireball: 10 } as Record<SkillId, number>);
         panel.selectSkillAt(0);
