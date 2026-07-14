@@ -94,5 +94,10 @@ describe('PlayerPanel', () => {
       panel.selectSkillAt(0);
       expect(panel.selectedSkillId).toBe('basic');
     });
+
+    it('get selected skill cooldown is over', () => {
+      const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
+      expect(panel.isSelectedSkillReady(0)).toBe(true);
+    });
   });
 });
