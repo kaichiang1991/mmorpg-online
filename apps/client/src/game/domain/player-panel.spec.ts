@@ -96,5 +96,10 @@ describe('PlayerPanel', () => {
       panel.castSkill('fireball', 0);
       expect(panel.skillProcesses(SKILL_DEFINITIONS.fireball.cooldown! / 2)[index]).toBe(0.5);
     });
+
+    it('default select skill id is null', () => {
+      const panel = makePlayerPanel();
+      expect(panel.selectedSkillId).toBeNull();
+    });
   });
 });

@@ -116,7 +116,6 @@ export class GameSession {
     const now = performance.now();
     if (this.playerPanel?.isSkillInCooldown(skill, now)) return;
 
-    // todo: non-instant cast skill
     this.socket?.emit('attack', {
       targetId: hit.player.id,
       skillId: skill.id,
