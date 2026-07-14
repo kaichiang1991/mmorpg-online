@@ -17,8 +17,8 @@ export class SkillVo {
     return this._castingTimeMs === 0;
   }
 
-  get isEmpty(): boolean {
-    return this.id === '';
+  hasSkill(): this is SkillVo & { readonly id: SkillId } {
+    return this.id !== '';
   }
 
   get isReady(): boolean {

@@ -40,8 +40,10 @@ export class PlayerPanel {
   }
 
   selectSkillAt(index: number) {
-    if (this._skillBar.at(index).isEmpty) return;
-    this._selectedSkillIndex = index;
+    const skill = this._skillBar.at(index);
+    if (!skill.hasSkill()) return;
+
+    this._selectSkillId = skill.id;
   }
 
   cancelSkillAt(index: number) {
