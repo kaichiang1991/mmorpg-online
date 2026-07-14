@@ -100,9 +100,16 @@ describe('PlayerPanel', () => {
       expect(panel.isSelectedSkillReady(0)).toBe(false);
     });
 
-    it('get selected skill cooldown is over', () => {
+    it('isSelectedSkillReady returns false when selected skill just cast', () => {
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
-      expect(panel.isSelectedSkillReady(0)).toBe(true);
+      panel.castSkill('fireball', 0);
+      expect(panel.isSelectedSkillReady(0)).toBe(false);
+    });
+
+    it('isSelectedSkillReady returns true when selected skill cooldown over', () => {
+      const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
+      panel.castSkill('fireball', 0);
+      expect(panel.isSelectedSkillReady(SKILL_DEFINITIONS['fireball'].cooldown!)).toBe(true);
     });
   });
 });
