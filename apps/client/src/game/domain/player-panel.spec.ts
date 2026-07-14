@@ -133,6 +133,14 @@ describe('PlayerPanel', () => {
         panel.selectSkillAt(0);
         expect(panel.canAffordSelectedSkill).toBe(false);
       });
+
+      it('canAffordSelectedSkill returns true when mp is just enough', () => {
+        const panel = makePlayerPanel();
+        panel.syncMp(10);
+        panel.syncSkillCosts({ fireball: 10 } as Record<SkillId, number>);
+        panel.selectSkillAt(0);
+        expect(panel.canAffordSelectedSkill).toBe(true);
+      });
     });
 
     describe('try use skill', () => {
@@ -152,6 +160,11 @@ describe('PlayerPanel', () => {
         panel.selectSkillAt(0);
         panel.castSkill('fireball', 0);
         expect(panel.tryUseSkill(SKILL_DEFINITIONS['fireball'].cooldown!)).toBe(true);
+      });
+
+      it('returns false when selected skill cost more mp than current', () => {
+        const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
+        panel.selectSkillAt(0);
       });
     });
   });
