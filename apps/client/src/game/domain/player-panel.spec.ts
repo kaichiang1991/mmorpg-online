@@ -42,11 +42,6 @@ describe('PlayerPanel', () => {
       expect(panel.selectedSkillId).toBeNull();
     });
 
-    it('throws when cast empty skill', () => {
-      const panel = makePlayerPanel();
-      expect(() => panel.castSkill('', 0)).toThrow();
-    });
-
     it('skill processes has one entry per slot', () => {
       const panel = makePlayerPanel();
       expect(panel.skillProcesses(0)).toHaveLength(SkillBarVo.BAR_LENGTH);
@@ -55,20 +50,23 @@ describe('PlayerPanel', () => {
     it('skill process is 1 when cast skill with no cooldown', () => {
       const index = 0;
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('basic', index));
-      panel.castSkill('basic', 0);
+      panel.selectSkillAt(index);
+      panel.tryUseSkill(0);
       expect(panel.skillProcesses(0)[index]).toBe(1);
     });
 
     it('skill process is 0 when cast skill needed cooldown', () => {
       const index = 0;
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', index));
-      panel.castSkill('fireball', 0);
+      panel.selectSkillAt(index);
+      panel.tryUseSkill(0);
       expect(panel.skillProcesses(0)[index]).toBe(0);
     });
 
     it('cooldown follows skill when placed into another slot', () => {
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
-      panel.castSkill('fireball', 0);
+      panel.selectSkillAt(0);
+      panel.tryUseSkill(0);
 
       panel.insertSkillAt('fireball', 1);
 
@@ -80,7 +78,8 @@ describe('PlayerPanel', () => {
     it('skill process is 0.5 when skill cooldown is half', () => {
       const index = 0;
       const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', index)); // cooldown is 1000
-      panel.castSkill('fireball', 0);
+      panel.selectSkillAt(index);
+      panel.tryUseSkill(0);
       expect(panel.skillProcesses(SKILL_DEFINITIONS.fireball.cooldown! / 2)[index]).toBe(0.5);
     });
 
@@ -110,14 +109,14 @@ describe('PlayerPanel', () => {
       it('returns false when selected skill just cast', () => {
         const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
         panel.selectSkillAt(0);
-        panel.castSkill('fireball', 0);
-        expect(panel.tryUseSkill(0)).toBe(false);
+        expect(panel.tryUseSkill(0)).toBe(true); // first use writes the cooldown
+        expect(panel.tryUseSkill(0)).toBe(false); // still cooling
       });
 
       it('returns true when selected skill cooldown over', () => {
         const panel = makePlayerPanel(SkillBarVo.empty().insertSkillAt('fireball', 0));
         panel.selectSkillAt(0);
-        panel.castSkill('fireball', 0);
+        panel.tryUseSkill(0);
         expect(panel.tryUseSkill(SKILL_DEFINITIONS['fireball'].cooldown!)).toBe(true);
       });
 

@@ -124,7 +124,5 @@ export class GameSession {
       targetId: hit.player.id,
       skillId: skill.id,
     });
-
-    this.playerPanel?.castSkill(skill.id, now);
   }
 }

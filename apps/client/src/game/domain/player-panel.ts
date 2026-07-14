@@ -61,12 +61,6 @@ export class PlayerPanel {
     this._selectedSkill = null;
   }
 
-  castSkill(skillId: SkillIdWithEmpty, now: number) {
-    if (skillId === '') throw new Error('castSkill: cannot cast empty skill');
-
-    this._castStartTimes.set(skillId, now);
-  }
-
   skillProcesses(now: number): number[] {
     return this._skillBar.map((skill) =>
       skill.cooldownProcess(this._castStartTimes.get(skill.id) ?? -Infinity, now),
