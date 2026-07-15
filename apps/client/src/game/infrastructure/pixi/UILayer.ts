@@ -49,7 +49,7 @@ export default class UILayer {
 
   initPlayerPanel(skillBar: SkillBarVo) {
     this.skillBar.init(skillBar);
-    this.sidePanel.renderSkills([skillBar.at(0)]);
+    this.sidePanel.init();
   }
 
   /** Anchors the skill bar bottom-center and the side panel right-center; call on init and every resize. */

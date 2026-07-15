@@ -1,8 +1,9 @@
 import gsap from 'gsap';
-import { Container, Graphics, Sprite, Text } from 'pixi.js';
+import { Container, Graphics, Point, Sprite, Text } from 'pixi.js';
 import { SkillId } from '@mmo/shared';
 import { SkillVo } from '../../domain/value-objects/skill-bar.vo';
 import { getSkillEffect } from './skills/SkillConfig';
+import SkillPanel from './skill-panel';
 
 const PANEL_WIDTH = 200;
 const PANEL_HEIGHT = 260;
@@ -57,7 +58,7 @@ export default class SidePanel extends Container {
       .stroke({ width: 1, color: 0xffffff, alpha: 0.35 });
     this.tabArrow = new Text({
       text: '▶',
-      anchor: 0.5,
+      anchor: new Point(0, 0.5),
       style: { fontSize: 12, fill: 0xffffff },
     });
     this.tabArrow.position.set(TAB_WIDTH / 2, TAB_HEIGHT / 2);
@@ -75,6 +76,10 @@ export default class SidePanel extends Container {
   /** Kills in-flight collapse tweens; the display tree is torn down by Pixi's destroy(). */
   dispose(): void {
     gsap.killTweensOf(this);
+  }
+
+  init() {
+    new SkillPanel().addTriggerTo(this.entries);
   }
 
   /** Replaces the listed skills; empty slots are skipped. */
