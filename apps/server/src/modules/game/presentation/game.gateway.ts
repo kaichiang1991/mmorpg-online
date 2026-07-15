@@ -57,6 +57,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       player: {
         // todo: reconstitute from db
         skillIds: ['basic', 'spear', 'fireball'],
+        skillCosts: this.game.skillMpCosts(socket.id),
       },
     });
   }

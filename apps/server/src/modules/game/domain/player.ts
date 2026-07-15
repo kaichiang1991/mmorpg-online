@@ -89,6 +89,11 @@ export class Player implements CombatUnit {
     this._mp = this._mp.decrease(cost);
   }
 
+  /** todo: Computed mp cost for this player; buffs/equipment modifiers hook in here. */
+  mpCostOf(skill: Skill): number {
+    return skill.mpCost;
+  }
+
   castSkill(skill: Skill, now: number) {
     this._casting = new CastingVo(skill, now);
   }

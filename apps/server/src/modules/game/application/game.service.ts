@@ -55,6 +55,10 @@ export class GameService implements OnModuleInit, OnModuleDestroy {
     this.world.removePlayer(playerId);
   }
 
+  skillMpCosts(playerId: string): Record<SkillId, number> {
+    return this.world.skillMpCosts(playerId);
+  }
+
   setMoveTarget(playerId: string, x: number, y: number): GameEvent | null {
     const event = this.world.setMoveTarget(playerId, x, y);
     return event ? this.toGameEvent(event) : null;

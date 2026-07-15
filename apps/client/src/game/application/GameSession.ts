@@ -2,10 +2,8 @@ import type {
   AttackResultPayload,
   CastBeginPayload,
   CastCancelPayload,
-  SkillId,
   WelcomePayload,
 } from '@mmo/shared';
-import { SKILL_DEFINITIONS } from '@mmo/shared';
 import { Interpolator } from '../domain/interpolator';
 import { connect, GameSocket } from '../infrastructure/network';
 import { PixiRenderer } from '../infrastructure/pixi/PixiRenderer';
@@ -40,11 +38,7 @@ export class GameSession {
       this.selfId = payload.selfId;
       this.renderer.setMap(payload.map);
       this.playerPanel = PlayerPanel.from({ skillBar: SkillBarVo.from(payload.player.skillIds) });
-      this.playerPanel.syncSkillCosts(
-        Object.fromEntries(
-          Object.values(SKILL_DEFINITIONS).map((definition) => [definition.id, definition.mpCost]),
-        ) as Record<SkillId, number>,
-      );
+      this.playerPanel.syncSkillCosts(payload.player.skillCosts);
       this.renderer.setUI(this.playerPanel);
     });
 

@@ -60,6 +60,18 @@ export class World {
     return this.players.get(id);
   }
 
+  /** Per-player computed mp costs for every known skill; empty for unknown players. */
+  skillMpCosts(playerId: string): Record<SkillId, number> {
+    const costs = {} as Record<SkillId, number>;
+    const player = this.players.get(playerId);
+    if (!player) return costs;
+
+    for (const skill of this.skills.all()) {
+      costs[skill.id] = player.mpCostOf(skill);
+    }
+    return costs;
+  }
+
   get playerCount(): number {
     return this.players.size;
   }
@@ -97,11 +109,12 @@ export class World {
     const distance = attacker.position.distanceTo(target.position);
     if (distance > skill.range) return { kind: 'rejected' };
 
-    if (attacker.mp.remaining < skill.mpCost) return { kind: 'rejected' };
+    const mpCost = attacker.mpCostOf(skill);
+    if (attacker.mp.remaining < mpCost) return { kind: 'rejected' };
 
     if (!attacker.tryUseSkill(skill, now)) return { kind: 'rejected' };
 
-    attacker.consumeMp(skill.mpCost);
+    attacker.consumeMp(mpCost);
 
     if (skill.castTime > 0) {
       attacker.castSkill(skill, now);

@@ -9,4 +9,8 @@ export class SkillFactory {
   get(id: string): Skill | undefined {
     return this.skills.get(id);
   }
+
+  all(): readonly Skill[] {
+    return [...this.skills.values()];
+  }
 }

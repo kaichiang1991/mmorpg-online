@@ -58,6 +58,7 @@ export interface WelcomePayload {
   map: { width: number; height: number };
   player: {
     skillIds: SkillIdWithEmpty[];
+    skillCosts: Record<SkillId, number>;
   };
 }
 
