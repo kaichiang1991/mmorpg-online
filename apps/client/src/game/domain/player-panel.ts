@@ -68,7 +68,7 @@ export class PlayerPanel {
   }
 
   private isSelectedSkillReady(now: number) {
-    if (!this._selectedSkill) return false;
+    if (!this._selectedSkill?.hasSkill()) return false;
 
     return this._selectedSkill.cooldownIsReady(
       this._castStartTimes.get(this._selectedSkill.id) ?? -Infinity,

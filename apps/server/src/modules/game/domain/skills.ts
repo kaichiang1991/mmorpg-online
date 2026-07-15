@@ -7,7 +7,6 @@ export interface Skill extends SkillDefinition {
   readonly multiplier: number; // 技能本身的倍率
   readonly kind: DamageKind;
   readonly element: DamageElement;
-  readonly mpCost: number;
   readonly hitCount?: number; // 多段攻擊/連擊的段數，預設視為 1
 }
 
@@ -17,7 +16,6 @@ export const BASIC_ATTACK: Skill = {
   multiplier: 1,
   kind: DamageKind.Physical,
   element: DamageElement.None,
-  mpCost: 0,
 };
 
 export const SPEAR: Skill = {
@@ -26,7 +24,6 @@ export const SPEAR: Skill = {
   multiplier: 1.2,
   kind: DamageKind.Physical,
   element: DamageElement.None,
-  mpCost: 10,
 };
 
 export const FIRE_BALL: Skill = {
@@ -35,5 +32,4 @@ export const FIRE_BALL: Skill = {
   multiplier: 1.5,
   kind: DamageKind.Magical,
   element: DamageElement.Fire,
-  mpCost: 20,
 };
