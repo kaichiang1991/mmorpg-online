@@ -1,15 +1,18 @@
 import { Container, Graphics, Text } from 'pixi.js';
 import { SkillId } from '@mmo/shared';
 import { SkillBarVo } from '../../domain/value-objects/skill-bar.vo';
-import SkillSprite, { SLOT_GAP, SLOT_SIZE } from './skills/SkillSprite';
+import SkillBar from './skills/skill-bar';
+import { SLOT_SIZE } from './skills/SkillSprite';
+import SidePanel from './side-panel';
 
 const BAR_BOTTOM_MARGIN = 16;
 
 export default class UILayer {
   readonly container = new Container();
 
-  private skillBarContainer: Container = new Container();
-  private skillSelectHandler?: (index: number) => void;
+  private readonly skillBar = new SkillBar();
+  private readonly sidePanel = new SidePanel();
+
   private readonly debugBg = new Graphics();
   private readonly debugText = new Text({
     text: '',
@@ -17,23 +20,17 @@ export default class UILayer {
     style: { fontSize: 12, fill: 0xffffff, fontFamily: 'monospace' },
   });
 
-  // hotkey → slot index: keys 1-9 → slots 0-8, key 0 → slot 9 (inverse of the slot label)
-  private readonly handleKeyDown = (e: KeyboardEvent) => {
-    if (e.repeat || !/^[0-9]$/.test(e.key)) return;
-    this.skillSelectHandler?.((Number(e.key) + 9) % 10);
-  };
-
   constructor() {
     const debugPanel = new Container();
     debugPanel.position.set(8, 8);
     this.debugText.position.set(6, 4);
     debugPanel.addChild(this.debugBg, this.debugText);
-    this.container.addChild(this.skillBarContainer, debugPanel);
-    window.addEventListener('keydown', this.handleKeyDown);
+    this.container.addChild(this.skillBar, this.sidePanel, debugPanel);
   }
 
   destroy(): void {
-    window.removeEventListener('keydown', this.handleKeyDown);
+    this.skillBar.dispose();
+    this.sidePanel.dispose();
   }
 
   /** Debug panel at top-left: prints each entry as `key: value`, one per line. */
@@ -51,50 +48,25 @@ export default class UILayer {
   }
 
   initPlayerPanel(skillBar: SkillBarVo) {
-    this.skillBarContainer.removeChildren().forEach((child) => child.destroy({ children: true }));
-    this.skillBarContainer.interactive = true;
-
-    for (let i = 0; i < skillBar.length; i++) {
-      this.skillBarContainer.addChild(new SkillSprite(i, skillBar.at(i)));
-    }
-
-    // pivot at bar center so layout() positions it by its midpoint
-    const barWidth = skillBar.length * SLOT_SIZE + (skillBar.length - 1) * SLOT_GAP;
-    this.skillBarContainer.pivot.set(barWidth / 2, 0);
-
-    this.bindSkillSelect();
+    this.skillBar.init(skillBar);
+    this.sidePanel.renderSkills([skillBar.at(0)]);
   }
 
-  /** Anchors the skill bar bottom-center; call on init and every resize. */
+  /** Anchors the skill bar bottom-center and the side panel right-center; call on init and every resize. */
   layout(screenWidth: number, screenHeight: number): void {
-    this.skillBarContainer.position.set(
-      screenWidth / 2,
-      screenHeight - SLOT_SIZE - BAR_BOTTOM_MARGIN,
-    );
+    this.skillBar.position.set(screenWidth / 2, screenHeight - SLOT_SIZE - BAR_BOTTOM_MARGIN);
+    this.sidePanel.layout(screenWidth, screenHeight);
   }
 
   onSkillSelect(handler: (index: number) => void) {
-    this.skillSelectHandler = handler;
-    this.bindSkillSelect();
+    this.skillBar.onSkillSelect(handler);
   }
 
-  /** Rebinds onClick on current slots; initPlayerPanel recreates them so listeners are lost. */
-  private bindSkillSelect() {
-    if (!this.skillSelectHandler) return;
-    const handler = this.skillSelectHandler;
-    this.skillSlots.forEach((slot, index) => slot.onClick(() => handler(index)));
-  }
-
-  /** Highlights every slot holding `skillId` (same skill in two slots is one selection); null clears everything. */
   renderSelectedSkill(skillId: SkillId | null): void {
-    this.skillSlots.forEach((slot) => slot.setSelected(skillId !== null && slot.skillId === skillId));
+    this.skillBar.renderSelectedSkill(skillId);
   }
 
   renderSkillProcess(processes: number[]) {
-    this.skillSlots.forEach((slot, index) => slot.renderProcess(processes[index] ?? 1));
-  }
-
-  private get skillSlots(): SkillSprite[] {
-    return this.skillBarContainer.getChildrenByLabel('skill') as SkillSprite[];
+    this.skillBar.renderProcess(processes);
   }
 }
