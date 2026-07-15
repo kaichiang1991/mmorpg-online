@@ -8,6 +8,15 @@ export interface Player {
   name: string;
   x: number;
   y: number;
+  /**
+   * Server-authoritative heading (unit vector). During the stop segment the
+   * interpolator keeps the previous heading so facing stays valid while the
+   * sprite slides to its final position; use `moving` to pick the animation.
+   */
+  dirX: number;
+  dirY: number;
+  /** True while the interpolated position is actually changing this segment. */
+  moving: boolean;
   hp: number;
   mp: number;
 }

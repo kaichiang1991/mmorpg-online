@@ -42,6 +42,21 @@ describe('Player', () => {
       expect(p.isMoving).toBe(false);
     });
 
+    it('reports a unit direction toward the target while moving', () => {
+      const p = makePlayer();
+      p.setTarget(new PositionVo(300, 400)); // 3-4-5 triangle
+      expect(p.direction.x).toBeCloseTo(0.6);
+      expect(p.direction.y).toBeCloseTo(0.8);
+    });
+
+    it('reports the ZERO direction while standing still and after arrival', () => {
+      const p = makePlayer();
+      expect(p.direction.isZero).toBe(true);
+      p.setTarget(new PositionVo(30, 40));
+      p.advance(1); // arrives
+      expect(p.direction.isZero).toBe(true);
+    });
+
     it('a new target overrides the previous one', () => {
       const p = makePlayer();
       p.setTarget(new PositionVo(1000, 0));

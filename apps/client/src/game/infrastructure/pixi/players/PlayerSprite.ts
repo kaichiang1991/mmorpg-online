@@ -1,7 +1,14 @@
 import { GAME_CONSTANTS } from '@mmo/shared';
 import { AnimatedSprite, Assets, Container, Graphics, Text, Texture } from 'pixi.js';
 import type { Player } from '../../../domain/player';
-import { BAR_HEIGHT, BAR_WIDTH, BODY_HEIGHT, WARRIOR_MAP } from './PlayerConfig';
+import {
+  BAR_HEIGHT,
+  BAR_WIDTH,
+  BODY_HEIGHT,
+  IDLE_ANIMATION_SPEED,
+  WALK_ANIMATION_SPEED,
+  WARRIOR_MAP,
+} from './PlayerConfig';
 import { CastProgress } from '../../../domain/active-casts';
 
 export const preloadPlayerAssets = async (): Promise<void> => {
@@ -59,6 +66,10 @@ class StatBar extends Container {
  */
 export class PlayerSprite extends Container {
   private readonly body: AnimatedSprite;
+  private readonly idleTextures: Texture[];
+  private readonly walkTextures: Texture[];
+  private readonly bodyScale: number;
+  private moving = false;
   private readonly hpBar = new StatBar(0xff0000);
   private readonly mpBar = new StatBar(0x3b82f6);
   private readonly castingBar = new StatBar(0x00ff00, true);
@@ -66,15 +77,16 @@ export class PlayerSprite extends Container {
   constructor(name: string, isSelf: boolean) {
     super();
 
-    const idleTextures: string[] = [];
-    for (const key of WARRIOR_MAP.keys()) {
-      if (/idle/.test(key)) idleTextures.push(key);
-    }
+    this.idleTextures = texturesMatching(/idle/);
+    // no dedicated walk assets yet — reuse idle so the state machine is ready
+    const walk = texturesMatching(/walk/);
+    this.walkTextures = walk.length > 0 ? walk : this.idleTextures;
 
-    this.body = new AnimatedSprite(idleTextures.map((alias) => Texture.from(alias)));
+    this.body = new AnimatedSprite(this.idleTextures);
     this.body.anchor.set(0.5);
-    this.body.scale.set(BODY_HEIGHT / this.body.texture.height);
-    this.body.animationSpeed = 0.05;
+    this.bodyScale = BODY_HEIGHT / this.body.texture.height;
+    this.body.scale.set(this.bodyScale);
+    this.body.animationSpeed = IDLE_ANIMATION_SPEED;
     this.body.play();
 
     if (isSelf) {
@@ -99,17 +111,33 @@ export class PlayerSprite extends Container {
 
   /** Sync visuals to the latest player state; called every frame. */
   update(p: Player, cast?: CastProgress): void {
-    this.revert(p);
+    this.face(p.dirX);
+    this.setMoving(p.moving);
     this.position.set(p.x, p.y);
     this.hpBar.setPercentage(p.hp / GAME_CONSTANTS.MAX_HP);
     this.mpBar.setPercentage(p.mp / GAME_CONSTANTS.MAX_MP);
     this.castingBar.setPercentage(cast?.progress ?? 0);
   }
 
-  revert(player: Player) {
-    if (player.x === this.position.x) return;
+  /** Flip toward the heading; keep the last facing while dirX is 0. */
+  private face(dirX: number): void {
+    if (dirX === 0) return;
+    this.body.scale.x = Math.sign(dirX) * this.bodyScale;
+  }
 
-    if (player.x < this.position.x) this.body.scale.x = -1;
-    else this.body.scale.x = 1;
+  private setMoving(moving: boolean): void {
+    if (moving === this.moving) return;
+    this.moving = moving;
+    this.body.textures = moving ? this.walkTextures : this.idleTextures;
+    this.body.animationSpeed = moving ? WALK_ANIMATION_SPEED : IDLE_ANIMATION_SPEED;
+    this.body.play(); // assigning textures stops the sprite
   }
 }
+
+const texturesMatching = (pattern: RegExp): Texture[] => {
+  const textures: Texture[] = [];
+  for (const key of WARRIOR_MAP.keys()) {
+    if (pattern.test(key)) textures.push(Texture.from(key));
+  }
+  return textures;
+};

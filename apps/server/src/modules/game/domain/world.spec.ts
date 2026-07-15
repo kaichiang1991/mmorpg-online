@@ -258,4 +258,31 @@ describe('World', () => {
     expect(Number.isInteger(snap.players[0].x)).toBe(true);
     expect(Number.isInteger(snap.players[0].y)).toBe(true);
   });
+
+  describe('snapshot direction', () => {
+    it('is zero for a standing player', () => {
+      const world = new World();
+      world.addPlayer('p1', 'Alice');
+      expect(world.snapshot(0).players[0]).toMatchObject({ dirX: 0, dirY: 0 });
+    });
+
+    it('reports the quantized unit heading while moving', () => {
+      const world = new World(1600, 1200);
+      const p = world.addPlayer('p1', 'Alice');
+      p.position = new PositionVo(100, 100);
+      world.setMoveTarget('p1', 400, 500); // 3-4-5 triangle from (100,100)
+      const { dirX, dirY } = world.snapshot(0).players[0];
+      expect(dirX).toBe(0.6);
+      expect(dirY).toBe(0.8);
+    });
+
+    it('returns to zero after arrival', () => {
+      const world = new World(1600, 1200);
+      const p = world.addPlayer('p1', 'Alice');
+      p.position = new PositionVo(100, 100);
+      world.setMoveTarget('p1', 110, 100);
+      for (let i = 0; i < 10; i++) world.tick(0.1, 0); // plenty of time to arrive
+      expect(world.snapshot(0).players[0]).toMatchObject({ dirX: 0, dirY: 0 });
+    });
+  });
 });
