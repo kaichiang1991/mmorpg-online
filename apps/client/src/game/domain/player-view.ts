@@ -59,11 +59,16 @@ export class PlayerViewBuilder {
     attacks: readonly ActiveAttack[],
     selfId: string | null,
   ): PlayerView[] {
+    const attackById = new Map(attacks.map((a) => [a.attackerId, a.targetId]));
     const attacking = new Set(attacks.map((a) => a.attackerId));
     const seen = new Set<string>();
     const views = players.map((p): PlayerView => {
       seen.add(p.id);
-      if (p.dirX !== 0 || p.dirY !== 0) this.facing.set(p.id, facingOf(p.dirX, p.dirY));
+      const attackTargetId = attackById.get(p.id);
+      const target = players.find((p) => p.id === attackTargetId);
+      if (target) {
+        this.facing.set(p.id, facingOf(target.x - p.x, target.y - p.y));
+      } else if (p.dirX !== 0 || p.dirY !== 0) this.facing.set(p.id, facingOf(p.dirX, p.dirY));
 
       return {
         id: p.id,
