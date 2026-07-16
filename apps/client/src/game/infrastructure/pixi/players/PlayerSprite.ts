@@ -1,21 +1,21 @@
 import { AnimatedSprite, Assets, Container, Graphics, Spritesheet, Text, Texture } from 'pixi.js';
 import type { Facing8, PlayerAnimation, PlayerView } from '../../../domain/player-view';
 import {
+  ANIMATION_SPEED,
+  ATTACK_SHEET,
   BAR_HEIGHT,
   BAR_WIDTH,
   BODY_HEIGHT,
   type CharacterSheet,
-  IDLE_ANIMATION_SPEED,
   IDLE_SHEET,
   SHEET_FRAMES_PER_ROW,
   SHEET_ROW_ORDER,
-  WALK_ANIMATION_SPEED,
   WALK_SHEET,
 } from './PlayerConfig';
 
 type DirectionalTextures = Map<Facing8, Texture[]>;
 
-/** frame_000.. sorted by name; each row of SHEET_FRAMES_PER_ROW is one facing. */
+/** frame_000 sorted by name; each row of SHEET_FRAMES_PER_ROW is one facing. */
 const loadDirectionalSheet = async (sheet: CharacterSheet): Promise<DirectionalTextures> => {
   const texture = await Assets.load<Texture>(sheet.url);
   const parsed = new Spritesheet(texture, sheet.data);
@@ -38,12 +38,14 @@ const loadDirectionalSheet = async (sheet: CharacterSheet): Promise<DirectionalT
 const textures = new Map<PlayerAnimation, DirectionalTextures>();
 
 export const preloadPlayerAssets = async (): Promise<void> => {
-  const [idle, walk] = await Promise.all([
+  const [idle, walk, attack] = await Promise.all([
     loadDirectionalSheet(IDLE_SHEET),
     loadDirectionalSheet(WALK_SHEET),
+    loadDirectionalSheet(ATTACK_SHEET),
   ]);
   textures.set('idle', idle);
   textures.set('walk', walk);
+  textures.set('attack', attack);
 };
 
 const texturesFor = (animation: PlayerAnimation, facing: Facing8): Texture[] =>
@@ -111,7 +113,7 @@ export class PlayerSprite extends Container {
 
     this.body = new AnimatedSprite(texturesFor(this.animation, this.facing));
     this.body.anchor.set(0.5);
-    this.body.animationSpeed = IDLE_ANIMATION_SPEED;
+    this.body.animationSpeed = ANIMATION_SPEED['idle'];
     this.fitBody();
     this.body.play();
 
@@ -150,7 +152,7 @@ export class PlayerSprite extends Container {
     this.facing = facing;
 
     this.body.textures = texturesFor(animation, facing);
-    this.body.animationSpeed = animation === 'walk' ? WALK_ANIMATION_SPEED : IDLE_ANIMATION_SPEED;
+    this.body.animationSpeed = ANIMATION_SPEED[this.animation];
     this.fitBody();
     this.body.play(); // assigning textures stops the sprite
   }

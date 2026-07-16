@@ -2,7 +2,7 @@ import { GAME_CONSTANTS } from '@mmo/shared';
 import type { CastProgress } from './active-casts';
 import type { Player } from './player';
 
-export type PlayerAnimation = 'idle' | 'walk';
+export type PlayerAnimation = 'idle' | 'walk' | 'attack';
 
 /** Eight-way facing, named by screen direction (y grows downward). */
 export type Facing8 =
