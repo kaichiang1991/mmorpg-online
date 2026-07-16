@@ -82,6 +82,17 @@ describe('PlayerViewBuilder', () => {
       expect(views.map((v) => v.facing)).toEqual(['left', 'down']);
     });
 
+    it('get facing when attack on other player', () => {
+      const builder = new PlayerViewBuilder();
+      const views = builder.build(
+        [player({ id: 'p1', x: 0, y: 0 }), player({ id: 'target', x: 10, y: 0 })],
+        noCasts,
+        [attackBy('p1')],
+        null,
+      );
+      expect(views[0].facing).toBe('right');
+    });
+
     it('forgets facing for players who left', () => {
       const builder = new PlayerViewBuilder();
       build(builder, player({ dirX: -1 }));
@@ -136,7 +147,10 @@ describe('PlayerViewBuilder', () => {
     it('takes cast progress from the matching cast, defaulting to 0', () => {
       const builder = new PlayerViewBuilder();
       const casts = new Map<string, CastProgress>([
-        ['p1', { casterId: 'p1', skillId: 'fireball', startedAt: 0, duration: 1000, progress: 0.4 }],
+        [
+          'p1',
+          { casterId: 'p1', skillId: 'fireball', startedAt: 0, duration: 1000, progress: 0.4 },
+        ],
       ]);
       expect(builder.build([player()], casts, noAttacks, null)[0].castPct).toBe(0.4);
       expect(build(builder, player()).castPct).toBe(0);
