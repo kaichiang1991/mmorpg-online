@@ -153,6 +153,7 @@ export class PlayerSprite extends Container {
 
     this.body.textures = texturesFor(animation, facing);
     this.body.animationSpeed = ANIMATION_SPEED[this.animation];
+    this.body.loop = this.animation !== 'attack';
     this.fitBody();
     this.body.play(); // assigning textures stops the sprite
   }
