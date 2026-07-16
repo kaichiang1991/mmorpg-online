@@ -59,34 +59,39 @@ export class PlayerViewBuilder {
     attacks: readonly ActiveAttack[],
     selfId: string | null,
   ): PlayerView[] {
+    const playerById = new Map(players.map((p) => [p.id, p]));
     const attackById = new Map(attacks.map((a) => [a.attackerId, a.targetId]));
-    const attacking = new Set(attacks.map((a) => a.attackerId));
-    const seen = new Set<string>();
-    const views = players.map((p): PlayerView => {
-      seen.add(p.id);
-      const attackTargetId = attackById.get(p.id);
-      const target = players.find((p) => p.id === attackTargetId);
-      if (target) {
-        this.facing.set(p.id, facingOf(target.x - p.x, target.y - p.y));
-      } else if (p.dirX !== 0 || p.dirY !== 0) this.facing.set(p.id, facingOf(p.dirX, p.dirY));
 
-      return {
+    // facing: heading first, then attackers override to face their target
+    for (const p of players) {
+      if (p.dirX !== 0 || p.dirY !== 0) this.facing.set(p.id, facingOf(p.dirX, p.dirY));
+    }
+    for (const [attackerId, targetId] of attackById) {
+      const attacker = playerById.get(attackerId);
+      const target = playerById.get(targetId);
+      if (attacker && target) {
+        this.facing.set(attackerId, facingOf(target.x - attacker.x, target.y - attacker.y));
+      }
+    }
+
+    const views = players.map(
+      (p): PlayerView => ({
         id: p.id,
         name: p.name,
         x: p.x,
         y: p.y,
         facing: this.facing.get(p.id) ?? 'down',
-        animation: attacking.has(p.id) ? 'attack' : p.moving ? 'walk' : 'idle',
+        animation: attackById.has(p.id) ? 'attack' : p.moving ? 'walk' : 'idle',
         hpPct: p.hp / GAME_CONSTANTS.MAX_HP,
         mpPct: p.mp / GAME_CONSTANTS.MAX_MP,
         castPct: casts.get(p.id)?.progress ?? 0,
         isSelf: p.id === selfId,
-      };
-    });
+      }),
+    );
 
     // forget players who left, so the map doesn't grow forever
     for (const id of this.facing.keys()) {
-      if (!seen.has(id)) this.facing.delete(id);
+      if (!playerById.has(id)) this.facing.delete(id);
     }
     return views;
   }
