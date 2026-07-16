@@ -4,38 +4,50 @@ import {
   BAR_HEIGHT,
   BAR_WIDTH,
   BODY_HEIGHT,
+  type CharacterSheet,
   IDLE_ANIMATION_SPEED,
+  IDLE_SHEET,
+  SHEET_FRAMES_PER_ROW,
+  SHEET_ROW_ORDER,
   WALK_ANIMATION_SPEED,
-  WALK_FRAMES_PER_ROW,
-  WALK_ROW_ORDER,
   WALK_SHEET,
-  WARRIOR_MAP,
 } from './PlayerConfig';
 
-/** Populated once by preloadPlayerAssets; sprites only read from it. */
-const walkTextures = new Map<Facing8, Texture[]>();
+type DirectionalTextures = Map<Facing8, Texture[]>;
 
-export const preloadPlayerAssets = async (): Promise<void> => {
-  const allTextures = [...WARRIOR_MAP.entries()];
-  const [, sheetTexture] = await Promise.all([
-    Assets.load(allTextures.map(([alias, url]) => ({ alias, src: url }))),
-    Assets.load<Texture>(WALK_SHEET.url),
-  ]);
+/** frame_000.. sorted by name; each row of SHEET_FRAMES_PER_ROW is one facing. */
+const loadDirectionalSheet = async (sheet: CharacterSheet): Promise<DirectionalTextures> => {
+  const texture = await Assets.load<Texture>(sheet.url);
+  const parsed = new Spritesheet(texture, sheet.data);
+  await parsed.parse();
 
-  const sheet = new Spritesheet(sheetTexture, WALK_SHEET.data);
-  await sheet.parse();
-
-  // frame_000..003 is the first row, and so on — one row per facing
-  const frames = Object.keys(sheet.textures)
+  const frames = Object.keys(parsed.textures)
     .sort()
-    .map((name) => sheet.textures[name]);
-  WALK_ROW_ORDER.forEach((facing, row) => {
-    walkTextures.set(
+    .map((name) => parsed.textures[name]);
+  const byFacing: DirectionalTextures = new Map();
+  SHEET_ROW_ORDER.forEach((facing, row) => {
+    byFacing.set(
       facing,
-      frames.slice(row * WALK_FRAMES_PER_ROW, (row + 1) * WALK_FRAMES_PER_ROW),
+      frames.slice(row * SHEET_FRAMES_PER_ROW, (row + 1) * SHEET_FRAMES_PER_ROW),
     );
   });
+  return byFacing;
 };
+
+/** Populated once by preloadPlayerAssets; sprites only read from it. */
+const textures = new Map<PlayerAnimation, DirectionalTextures>();
+
+export const preloadPlayerAssets = async (): Promise<void> => {
+  const [idle, walk] = await Promise.all([
+    loadDirectionalSheet(IDLE_SHEET),
+    loadDirectionalSheet(WALK_SHEET),
+  ]);
+  textures.set('idle', idle);
+  textures.set('walk', walk);
+};
+
+const texturesFor = (animation: PlayerAnimation, facing: Facing8): Texture[] =>
+  textures.get(animation)?.get(facing) ?? [Texture.EMPTY];
 
 /** One horizontal stat bar: white track, colored fill sized by percentage. */
 class StatBar extends Container {
@@ -88,7 +100,6 @@ class StatBar extends Container {
  */
 export class PlayerSprite extends Container {
   private readonly body: AnimatedSprite;
-  private readonly idleTextures: Texture[];
   private animation: PlayerAnimation = 'idle';
   private facing: Facing8 = 'down';
   private readonly hpBar = new StatBar(0xff0000);
@@ -98,9 +109,7 @@ export class PlayerSprite extends Container {
   constructor(name: string, isSelf: boolean) {
     super();
 
-    this.idleTextures = texturesMatching(/idle/);
-
-    this.body = new AnimatedSprite(this.idleTextures);
+    this.body = new AnimatedSprite(texturesFor(this.animation, this.facing));
     this.body.anchor.set(0.5);
     this.body.animationSpeed = IDLE_ANIMATION_SPEED;
     this.fitBody();
@@ -140,30 +149,14 @@ export class PlayerSprite extends Container {
     this.animation = animation;
     this.facing = facing;
 
-    // walk frames are per-facing; idle art has one direction only
-    this.body.textures =
-      animation === 'walk' ? (walkTextures.get(facing) ?? this.idleTextures) : this.idleTextures;
+    this.body.textures = texturesFor(animation, facing);
     this.body.animationSpeed = animation === 'walk' ? WALK_ANIMATION_SPEED : IDLE_ANIMATION_SPEED;
     this.fitBody();
     this.body.play(); // assigning textures stops the sprite
   }
 
-  /**
-   * Idle and walk sources differ in resolution (49x78 vs 120x160), so the
-   * scale is recomputed from the current texture to keep BODY_HEIGHT on
-   * screen. The single-direction idle art is mirrored when facing left.
-   */
+  /** Sheets may differ in resolution; keep BODY_HEIGHT on screen. */
   private fitBody(): void {
-    const scale = BODY_HEIGHT / this.body.texture.height;
-    const mirror = this.animation === 'idle' && this.facing.includes('left') ? -1 : 1;
-    this.body.scale.set(mirror * scale, scale);
+    this.body.scale.set(BODY_HEIGHT / this.body.texture.height);
   }
 }
-
-const texturesMatching = (pattern: RegExp): Texture[] => {
-  const textures: Texture[] = [];
-  for (const key of WARRIOR_MAP.keys()) {
-    if (pattern.test(key)) textures.push(Texture.from(key));
-  }
-  return textures;
-};
