@@ -1,6 +1,5 @@
-import { GAME_CONSTANTS } from '@mmo/shared';
 import { AnimatedSprite, Assets, Container, Graphics, Text, Texture } from 'pixi.js';
-import type { Player } from '../../../domain/player';
+import type { PlayerAnimation, PlayerView } from '../../../domain/player-view';
 import {
   BAR_HEIGHT,
   BAR_WIDTH,
@@ -9,7 +8,6 @@ import {
   WALK_ANIMATION_SPEED,
   WARRIOR_MAP,
 } from './PlayerConfig';
-import { CastProgress } from '../../../domain/active-casts';
 
 export const preloadPlayerAssets = async (): Promise<void> => {
   const allTextures = [...WARRIOR_MAP.entries()];
@@ -62,14 +60,14 @@ class StatBar extends Container {
 
 /**
  * One player's avatar: body, name label, hp/mp bars. Owns its look only —
- * lifecycle (create/destroy) and click wiring belong to PlayerLayer.
+ * what to show (facing, animation, percentages) arrives precomputed in the
+ * PlayerView; lifecycle (create/destroy) and click wiring belong to PlayerLayer.
  */
 export class PlayerSprite extends Container {
   private readonly body: AnimatedSprite;
-  private readonly idleTextures: Texture[];
-  private readonly walkTextures: Texture[];
+  private readonly texturesByAnimation: Record<PlayerAnimation, Texture[]>;
   private readonly bodyScale: number;
-  private moving = false;
+  private animation: PlayerAnimation = 'idle';
   private readonly hpBar = new StatBar(0xff0000);
   private readonly mpBar = new StatBar(0x3b82f6);
   private readonly castingBar = new StatBar(0x00ff00, true);
@@ -77,12 +75,12 @@ export class PlayerSprite extends Container {
   constructor(name: string, isSelf: boolean) {
     super();
 
-    this.idleTextures = texturesMatching(/idle/);
+    const idle = texturesMatching(/idle/);
     // no dedicated walk assets yet — reuse idle so the state machine is ready
     const walk = texturesMatching(/walk/);
-    this.walkTextures = walk.length > 0 ? walk : this.idleTextures;
+    this.texturesByAnimation = { idle, walk: walk.length > 0 ? walk : idle };
 
-    this.body = new AnimatedSprite(this.idleTextures);
+    this.body = new AnimatedSprite(idle);
     this.body.anchor.set(0.5);
     this.bodyScale = BODY_HEIGHT / this.body.texture.height;
     this.body.scale.set(this.bodyScale);
@@ -109,27 +107,21 @@ export class PlayerSprite extends Container {
     this.addChild(this.body, nameLabel, this.hpBar, this.mpBar, this.castingBar);
   }
 
-  /** Sync visuals to the latest player state; called every frame. */
-  update(p: Player, cast?: CastProgress): void {
-    this.face(p.dirX);
-    this.setMoving(p.moving);
-    this.position.set(p.x, p.y);
-    this.hpBar.setPercentage(p.hp / GAME_CONSTANTS.MAX_HP);
-    this.mpBar.setPercentage(p.mp / GAME_CONSTANTS.MAX_MP);
-    this.castingBar.setPercentage(cast?.progress ?? 0);
+  /** Sync visuals to the latest view; called every frame. */
+  update(view: PlayerView): void {
+    this.body.scale.x = view.facing * this.bodyScale;
+    this.setAnimation(view.animation);
+    this.position.set(view.x, view.y);
+    this.hpBar.setPercentage(view.hpPct);
+    this.mpBar.setPercentage(view.mpPct);
+    this.castingBar.setPercentage(view.castPct);
   }
 
-  /** Flip toward the heading; keep the last facing while dirX is 0. */
-  private face(dirX: number): void {
-    if (dirX === 0) return;
-    this.body.scale.x = Math.sign(dirX) * this.bodyScale;
-  }
-
-  private setMoving(moving: boolean): void {
-    if (moving === this.moving) return;
-    this.moving = moving;
-    this.body.textures = moving ? this.walkTextures : this.idleTextures;
-    this.body.animationSpeed = moving ? WALK_ANIMATION_SPEED : IDLE_ANIMATION_SPEED;
+  private setAnimation(animation: PlayerAnimation): void {
+    if (animation === this.animation) return;
+    this.animation = animation;
+    this.body.textures = this.texturesByAnimation[animation];
+    this.body.animationSpeed = animation === 'walk' ? WALK_ANIMATION_SPEED : IDLE_ANIMATION_SPEED;
     this.body.play(); // assigning textures stops the sprite
   }
 }

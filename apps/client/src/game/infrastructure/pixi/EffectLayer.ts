@@ -1,7 +1,7 @@
 import gsap from 'gsap';
 import { AnimatedSprite, Container, Graphics, Text } from 'pixi.js';
 import { ATTACK_TTL_MS, type ActiveAttack } from '../../domain/active-attacks';
-import type { Player } from '../../domain/player';
+import type { PlayerView } from '../../domain/player-view';
 import { SkillId } from '@mmo/shared';
 import { getSkillEffect } from './skills/SkillConfig';
 
@@ -31,7 +31,7 @@ export class EffectLayer {
     this.container.addChild(this.slashLayer, this.castingLayer, this.damageLayer);
   }
 
-  render(attacks: ActiveAttack[], playersById: ReadonlyMap<string, Player>, now: number): void {
+  render(attacks: ActiveAttack[], playersById: ReadonlyMap<string, PlayerView>, now: number): void {
     for (const attack of attacks) {
       if (this.spawned.has(attack)) continue;
 
@@ -62,7 +62,7 @@ export class EffectLayer {
   private static readonly IMPACT_RADIUS = 28;
   private static readonly IMPACT_SPAN = Math.PI / 1.8;
 
-  private spawnBySkillId(skillId: SkillId, to: Player, duration: number, callback: Function): void {
+  private spawnBySkillId(skillId: SkillId, to: PlayerView, duration: number, callback: Function): void {
     switch (skillId) {
       case 'basic':
         return this.spawnSlash(to, duration, callback);
@@ -80,7 +80,7 @@ export class EffectLayer {
    * like one swipe of an axe — whipped out fast from the attacker's end,
    * then fading over the rest of its life.
    */
-  private spawnSlash(to: Player, duration: number, callback: Function): void {
+  private spawnSlash(to: PlayerView, duration: number, callback: Function): void {
     const angle = EffectLayer.SLASH_ANGLE;
 
     // Impact crescent (劍影): a clean arc() curve, not the old arcTo() hook,
@@ -130,7 +130,7 @@ export class EffectLayer {
       .to(graphics, { alpha: 0, duration: duration * 0.6, ease: 'power2.in' }, duration * 0.4);
   }
 
-  private castFireball(to: Player, duration: number, callback: Function): void {
+  private castFireball(to: PlayerView, duration: number, callback: Function): void {
     const config = getSkillEffect('fireball');
     if (!config?.frames) return;
 
@@ -197,7 +197,7 @@ export class EffectLayer {
    * RO-style damage number: pops in oversized with an overshoot bounce,
    * floats straight up, and fades out over the last 40% of its life.
    */
-  private spawnDamage(damage: number, target: Player, duration: number): void {
+  private spawnDamage(damage: number, target: PlayerView, duration: number): void {
     const isBigDamage = damage >= EffectLayer.BIG_DAMAGE_THRESHOLD;
     const text = new Text({
       text: String(damage),

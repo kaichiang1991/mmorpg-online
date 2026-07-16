@@ -12,6 +12,7 @@ import { PlayerPanel } from '../domain/player-panel';
 import { SkillBarVo } from '../domain/value-objects/skill-bar.vo';
 import { hitTestWorld, WorldHit } from '../domain/world-hit-test';
 import { ActiveCastTracker } from '../domain/active-casts';
+import { PlayerViewBuilder } from '../domain/player-view';
 
 /**
  * Application layer: orchestrates the game session. Wires the socket to
@@ -26,6 +27,7 @@ export class GameSession {
   private destroyed = false;
   private readonly attackers = new ActiveAttackTracker();
   private readonly casters = new ActiveCastTracker();
+  private readonly playerViews = new PlayerViewBuilder();
 
   private playerPanel: PlayerPanel | null = null;
 
@@ -89,12 +91,12 @@ export class GameSession {
 
     this.renderer.onTick(() => {
       const now = performance.now();
-      this.renderer.render(
+      const views = this.playerViews.build(
         this.interpolator.playersAt(now),
-        this.attackers.activeAt(now),
         this.casters.activeAt(now),
         this.selfId,
       );
+      this.renderer.render(views, this.attackers.activeAt(now));
       if (this.playerPanel) {
         this.renderer.renderSelectedSkill(this.playerPanel.selectedSkillId);
         this.renderer.renderSkillProcess(this.playerPanel.skillProcesses(now));

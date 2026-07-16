@@ -3,14 +3,13 @@ import { Application, Container, Graphics } from 'pixi.js';
 import { SkillId } from '@mmo/shared';
 import type { ActiveAttack } from '../../domain/active-attacks';
 import { cameraOffset } from '../../domain/camera';
-import type { Player } from '../../domain/player';
+import type { PlayerView } from '../../domain/player-view';
 import { EffectLayer } from './EffectLayer';
 import { PlayerLayer } from './players/PlayerLayer';
 import { preloadPlayerAssets } from './players/PlayerSprite';
 import { PlayerPanel } from '../../domain/player-panel';
 import UILayer from './UILayer';
 import { preloadSkillEffects } from './skills/SkillConfig';
-import { CastProgress } from '../../domain/active-casts';
 
 /**
  * Owns everything Pixi: canvas, layer composition, floor, camera.
@@ -104,18 +103,13 @@ export class PixiRenderer {
     this.ui.renderSkillProcess(processes);
   }
 
-  render(
-    players: Player[],
-    attacks: ActiveAttack[],
-    casts: Map<string, CastProgress>,
-    selfId: string | null,
-  ): void {
-    this.players.render(players, casts, selfId);
+  render(views: PlayerView[], attacks: ActiveAttack[]): void {
+    this.players.render(views);
 
-    const self = players.find((p) => p.id === selfId);
+    const self = views.find((v) => v.isSelf);
     if (self) this.followCamera(self.x, self.y);
 
-    const byId = new Map(players.map((p) => [p.id, p]));
+    const byId = new Map(views.map((v) => [v.id, v]));
     this.effects.render(attacks, byId, performance.now());
   }
 
