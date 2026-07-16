@@ -1,4 +1,5 @@
 import { GAME_CONSTANTS } from '@mmo/shared';
+import type { ActiveAttack } from './active-attacks';
 import type { CastProgress } from './active-casts';
 import type { Player } from './player';
 
@@ -55,8 +56,10 @@ export class PlayerViewBuilder {
   build(
     players: Player[],
     casts: ReadonlyMap<string, CastProgress>,
+    attacks: readonly ActiveAttack[],
     selfId: string | null,
   ): PlayerView[] {
+    const attacking = new Set(attacks.map((a) => a.attackerId));
     const seen = new Set<string>();
     const views = players.map((p): PlayerView => {
       seen.add(p.id);
@@ -68,7 +71,7 @@ export class PlayerViewBuilder {
         x: p.x,
         y: p.y,
         facing: this.facing.get(p.id) ?? 'down',
-        animation: p.moving ? 'walk' : 'idle',
+        animation: attacking.has(p.id) ? 'attack' : p.moving ? 'walk' : 'idle',
         hpPct: p.hp / GAME_CONSTANTS.MAX_HP,
         mpPct: p.mp / GAME_CONSTANTS.MAX_MP,
         castPct: casts.get(p.id)?.progress ?? 0,

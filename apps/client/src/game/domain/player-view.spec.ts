@@ -1,4 +1,5 @@
 import { GAME_CONSTANTS } from '@mmo/shared';
+import type { ActiveAttack } from './active-attacks';
 import type { CastProgress } from './active-casts';
 import { facingOf, PlayerViewBuilder } from './player-view';
 import type { Player } from './player';
@@ -17,9 +18,18 @@ const player = (overrides: Partial<Player> = {}): Player => ({
 });
 
 const noCasts = new Map<string, CastProgress>();
+const noAttacks: ActiveAttack[] = [];
+
+const attackBy = (attackerId: string): ActiveAttack => ({
+  attackerId,
+  targetId: 'target',
+  skillId: 'fireball',
+  damage: 10,
+  startedAt: 0,
+});
 
 const build = (builder: PlayerViewBuilder, p: Player, selfId: string | null = null) =>
-  builder.build([p], noCasts, selfId)[0];
+  builder.build([p], noCasts, noAttacks, selfId)[0];
 
 const DIAGONAL = Math.SQRT1_2; // unit-vector component at 45°
 
@@ -66,6 +76,7 @@ describe('PlayerViewBuilder', () => {
       const views = builder.build(
         [player({ id: 'a', dirX: -1 }), player({ id: 'b', dirY: 1 })],
         noCasts,
+        noAttacks,
         null,
       );
       expect(views.map((v) => v.facing)).toEqual(['left', 'down']);
@@ -74,7 +85,7 @@ describe('PlayerViewBuilder', () => {
     it('forgets facing for players who left', () => {
       const builder = new PlayerViewBuilder();
       build(builder, player({ dirX: -1 }));
-      builder.build([], noCasts, null); // p1 left the world
+      builder.build([], noCasts, noAttacks, null); // p1 left the world
       expect(build(builder, player()).facing).toBe('down');
     });
   });
@@ -84,6 +95,31 @@ describe('PlayerViewBuilder', () => {
       const builder = new PlayerViewBuilder();
       expect(build(builder, player({ moving: true })).animation).toBe('walk');
       expect(build(builder, player({ moving: false })).animation).toBe('idle');
+    });
+
+    it('attacks while an active attack names the player as attacker', () => {
+      const views = new PlayerViewBuilder().build([player()], noCasts, [attackBy('p1')], null);
+      expect(views[0].animation).toBe('attack');
+    });
+
+    it('attack wins over walk', () => {
+      const views = new PlayerViewBuilder().build(
+        [player({ moving: true })],
+        noCasts,
+        [attackBy('p1')],
+        null,
+      );
+      expect(views[0].animation).toBe('attack');
+    });
+
+    it('being the target does not trigger the attack animation', () => {
+      const views = new PlayerViewBuilder().build(
+        [player()],
+        noCasts,
+        [{ ...attackBy('someone-else'), targetId: 'p1' }],
+        null,
+      );
+      expect(views[0].animation).toBe('idle');
     });
   });
 
@@ -102,7 +138,7 @@ describe('PlayerViewBuilder', () => {
       const casts = new Map<string, CastProgress>([
         ['p1', { casterId: 'p1', skillId: 'fireball', startedAt: 0, duration: 1000, progress: 0.4 }],
       ]);
-      expect(builder.build([player()], casts, null)[0].castPct).toBe(0.4);
+      expect(builder.build([player()], casts, noAttacks, null)[0].castPct).toBe(0.4);
       expect(build(builder, player()).castPct).toBe(0);
     });
   });
@@ -111,6 +147,7 @@ describe('PlayerViewBuilder', () => {
     const views = new PlayerViewBuilder().build(
       [player({ id: 'me' }), player({ id: 'other' })],
       noCasts,
+      noAttacks,
       'me',
     );
     expect(views.map((v) => v.isSelf)).toEqual([true, false]);
