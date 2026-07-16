@@ -1,17 +1,40 @@
-import { AnimatedSprite, Assets, Container, Graphics, Text, Texture } from 'pixi.js';
-import type { PlayerAnimation, PlayerView } from '../../../domain/player-view';
+import { AnimatedSprite, Assets, Container, Graphics, Spritesheet, Text, Texture } from 'pixi.js';
+import type { Facing8, PlayerAnimation, PlayerView } from '../../../domain/player-view';
 import {
   BAR_HEIGHT,
   BAR_WIDTH,
   BODY_HEIGHT,
   IDLE_ANIMATION_SPEED,
   WALK_ANIMATION_SPEED,
+  WALK_FRAMES_PER_ROW,
+  WALK_ROW_ORDER,
+  WALK_SHEET,
   WARRIOR_MAP,
 } from './PlayerConfig';
 
+/** Populated once by preloadPlayerAssets; sprites only read from it. */
+const walkTextures = new Map<Facing8, Texture[]>();
+
 export const preloadPlayerAssets = async (): Promise<void> => {
   const allTextures = [...WARRIOR_MAP.entries()];
-  await Assets.load(allTextures.map(([alias, url]) => ({ alias, src: url })));
+  const [, sheetTexture] = await Promise.all([
+    Assets.load(allTextures.map(([alias, url]) => ({ alias, src: url }))),
+    Assets.load<Texture>(WALK_SHEET.url),
+  ]);
+
+  const sheet = new Spritesheet(sheetTexture, WALK_SHEET.data);
+  await sheet.parse();
+
+  // frame_000..003 is the first row, and so on — one row per facing
+  const frames = Object.keys(sheet.textures)
+    .sort()
+    .map((name) => sheet.textures[name]);
+  WALK_ROW_ORDER.forEach((facing, row) => {
+    walkTextures.set(
+      facing,
+      frames.slice(row * WALK_FRAMES_PER_ROW, (row + 1) * WALK_FRAMES_PER_ROW),
+    );
+  });
 };
 
 /** One horizontal stat bar: white track, colored fill sized by percentage. */
@@ -65,9 +88,9 @@ class StatBar extends Container {
  */
 export class PlayerSprite extends Container {
   private readonly body: AnimatedSprite;
-  private readonly texturesByAnimation: Record<PlayerAnimation, Texture[]>;
-  private readonly bodyScale: number;
+  private readonly idleTextures: Texture[];
   private animation: PlayerAnimation = 'idle';
+  private facing: Facing8 = 'down';
   private readonly hpBar = new StatBar(0xff0000);
   private readonly mpBar = new StatBar(0x3b82f6);
   private readonly castingBar = new StatBar(0x00ff00, true);
@@ -75,16 +98,12 @@ export class PlayerSprite extends Container {
   constructor(name: string, isSelf: boolean) {
     super();
 
-    const idle = texturesMatching(/idle/);
-    // no dedicated walk assets yet — reuse idle so the state machine is ready
-    const walk = texturesMatching(/walk/);
-    this.texturesByAnimation = { idle, walk: walk.length > 0 ? walk : idle };
+    this.idleTextures = texturesMatching(/idle/);
 
-    this.body = new AnimatedSprite(idle);
+    this.body = new AnimatedSprite(this.idleTextures);
     this.body.anchor.set(0.5);
-    this.bodyScale = BODY_HEIGHT / this.body.texture.height;
-    this.body.scale.set(this.bodyScale);
     this.body.animationSpeed = IDLE_ANIMATION_SPEED;
+    this.fitBody();
     this.body.play();
 
     if (isSelf) {
@@ -109,20 +128,35 @@ export class PlayerSprite extends Container {
 
   /** Sync visuals to the latest view; called every frame. */
   update(view: PlayerView): void {
-    this.body.scale.x = view.facing * this.bodyScale;
-    this.setAnimation(view.animation);
+    this.setPose(view.animation, view.facing);
     this.position.set(view.x, view.y);
     this.hpBar.setPercentage(view.hpPct);
     this.mpBar.setPercentage(view.mpPct);
     this.castingBar.setPercentage(view.castPct);
   }
 
-  private setAnimation(animation: PlayerAnimation): void {
-    if (animation === this.animation) return;
+  private setPose(animation: PlayerAnimation, facing: Facing8): void {
+    if (animation === this.animation && facing === this.facing) return;
     this.animation = animation;
-    this.body.textures = this.texturesByAnimation[animation];
+    this.facing = facing;
+
+    // walk frames are per-facing; idle art has one direction only
+    this.body.textures =
+      animation === 'walk' ? (walkTextures.get(facing) ?? this.idleTextures) : this.idleTextures;
     this.body.animationSpeed = animation === 'walk' ? WALK_ANIMATION_SPEED : IDLE_ANIMATION_SPEED;
+    this.fitBody();
     this.body.play(); // assigning textures stops the sprite
+  }
+
+  /**
+   * Idle and walk sources differ in resolution (49x78 vs 120x160), so the
+   * scale is recomputed from the current texture to keep BODY_HEIGHT on
+   * screen. The single-direction idle art is mirrored when facing left.
+   */
+  private fitBody(): void {
+    const scale = BODY_HEIGHT / this.body.texture.height;
+    const mirror = this.animation === 'idle' && this.facing.includes('left') ? -1 : 1;
+    this.body.scale.set(mirror * scale, scale);
   }
 }
 

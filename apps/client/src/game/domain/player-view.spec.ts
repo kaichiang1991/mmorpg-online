@@ -1,6 +1,6 @@
 import { GAME_CONSTANTS } from '@mmo/shared';
 import type { CastProgress } from './active-casts';
-import { PlayerViewBuilder } from './player-view';
+import { facingOf, PlayerViewBuilder } from './player-view';
 import type { Player } from './player';
 
 const player = (overrides: Partial<Player> = {}): Player => ({
@@ -21,39 +21,61 @@ const noCasts = new Map<string, CastProgress>();
 const build = (builder: PlayerViewBuilder, p: Player, selfId: string | null = null) =>
   builder.build([p], noCasts, selfId)[0];
 
+const DIAGONAL = Math.SQRT1_2; // unit-vector component at 45°
+
+describe('facingOf', () => {
+  it.each([
+    [0, 1, 'down'],
+    [0, -1, 'up'],
+    [1, 0, 'right'],
+    [-1, 0, 'left'],
+    [DIAGONAL, DIAGONAL, 'down-right'],
+    [-DIAGONAL, DIAGONAL, 'down-left'],
+    [DIAGONAL, -DIAGONAL, 'up-right'],
+    [-DIAGONAL, -DIAGONAL, 'up-left'],
+  ] as const)('maps heading (%f, %f) to %s', (dirX, dirY, expected) => {
+    expect(facingOf(dirX, dirY)).toBe(expected);
+  });
+
+  it('snaps a heading between octants to the nearest one', () => {
+    expect(facingOf(0.99, 0.1)).toBe('right');
+    expect(facingOf(0.6, 0.8)).toBe('down-right');
+  });
+});
+
 describe('PlayerViewBuilder', () => {
   describe('facing', () => {
-    it('faces right by default', () => {
-      expect(build(new PlayerViewBuilder(), player()).facing).toBe(1);
+    it('faces down by default', () => {
+      expect(build(new PlayerViewBuilder(), player()).facing).toBe('down');
     });
 
-    it('faces along the horizontal heading', () => {
+    it('faces along the heading', () => {
       const builder = new PlayerViewBuilder();
-      expect(build(builder, player({ dirX: -0.7 })).facing).toBe(-1);
-      expect(build(builder, player({ dirX: 0.7 })).facing).toBe(1);
+      expect(build(builder, player({ dirX: -1 })).facing).toBe('left');
+      expect(build(builder, player({ dirX: DIAGONAL, dirY: -DIAGONAL })).facing).toBe('up-right');
     });
 
-    it('keeps the last facing while the heading is vertical', () => {
+    it('keeps the last facing while the heading is the zero vector', () => {
       const builder = new PlayerViewBuilder();
       build(builder, player({ dirX: -1 }));
-      expect(build(builder, player({ dirX: 0, dirY: 1 })).facing).toBe(-1);
+      expect(build(builder, player()).facing).toBe('left');
     });
 
     it('tracks facing per player', () => {
       const builder = new PlayerViewBuilder();
       const views = builder.build(
-        [player({ id: 'a', dirX: -1 }), player({ id: 'b', dirX: 1 })],
+        [player({ id: 'a', dirX: -1 }), player({ id: 'b', dirY: 1 })],
         noCasts,
         null,
       );
-      expect(views.map((v) => v.facing)).toEqual([-1, 1]);
+      expect(views.map((v) => v.facing)).toEqual(['left', 'down']);
     });
 
     it('forgets facing for players who left', () => {
       const builder = new PlayerViewBuilder();
       build(builder, player({ dirX: -1 }));
       builder.build([], noCasts, null); // p1 left the world
-      expect(build(builder, player()).facing).toBe(1);
+      expect(build(builder, player()).facing).toBe('down');
     });
   });
 
