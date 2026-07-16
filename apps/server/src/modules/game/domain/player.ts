@@ -2,6 +2,7 @@ import { GAME_CONSTANTS, SkillId } from '@mmo/shared';
 import { Combatant, CombatUnit, DEFAULT_COMBATANT } from './combatant';
 import { CombatStatsVo } from './value-objects/combat-stats.vo';
 import { CooldownVo } from './value-objects/cooldown.vo';
+import { DirectionVo } from './value-objects/direction.vo';
 import { PositionVo } from './value-objects/position.vo';
 import { ResourcePoolVo } from './value-objects/resource-pool.vo';
 import { Skill } from './skills';
@@ -64,6 +65,12 @@ export class Player implements CombatUnit {
 
   get isMoving(): boolean {
     return this.target !== null;
+  }
+
+  /** Unit direction of travel; ZERO while standing still. */
+  get direction(): DirectionVo {
+    if (this.target === null) return DirectionVo.ZERO;
+    return DirectionVo.between(this._position, this.target);
   }
 
   get casting(): CastingVo | null {

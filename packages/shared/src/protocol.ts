@@ -43,6 +43,12 @@ export interface PlayerSnapshot {
   name: string;
   x: number;
   y: number;
+  /**
+   * Server-authoritative unit direction of travel, quantized to 3 decimals.
+   * Both 0 when the player is standing still.
+   */
+  dirX: number;
+  dirY: number;
   hp: number;
   mp: number;
 }

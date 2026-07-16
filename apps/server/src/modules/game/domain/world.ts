@@ -12,6 +12,9 @@ export type AttackOutcome =
 
 export type CastCancelReason = 'moved' | 'interrupted' | 'died' | 'disconnected';
 
+/** 3-decimal quantization keeps snapshot payloads free of long float tails. */
+const quantize = (v: number): number => Math.round(v * 1000) / 1000;
+
 export type WorldEvent =
   | {
       type: 'attackResolved';
@@ -170,11 +173,14 @@ export class World {
   snapshot(now: number): WorldSnapshot {
     const players: PlayerSnapshot[] = [];
     for (const p of this.players.values()) {
+      const direction = p.direction;
       players.push({
         id: p.id,
         name: p.name,
         x: Math.round(p.x),
         y: Math.round(p.y),
+        dirX: quantize(direction.x),
+        dirY: quantize(direction.y),
         hp: p.hp.remaining,
         mp: p.mp.remaining,
       });
