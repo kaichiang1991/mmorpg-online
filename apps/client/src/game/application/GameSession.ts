@@ -91,12 +91,14 @@ export class GameSession {
 
     this.renderer.onTick(() => {
       const now = performance.now();
+      const attacks = this.attackers.activeAt(now);
       const views = this.playerViews.build(
         this.interpolator.playersAt(now),
         this.casters.activeAt(now),
+        attacks,
         this.selfId,
       );
-      this.renderer.render(views, this.attackers.activeAt(now));
+      this.renderer.render(views, attacks);
       if (this.playerPanel) {
         this.renderer.renderSelectedSkill(this.playerPanel.selectedSkillId);
         this.renderer.renderSkillProcess(this.playerPanel.skillProcesses(now));
