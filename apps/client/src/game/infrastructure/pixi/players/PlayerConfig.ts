@@ -6,6 +6,8 @@ import walkSheetData from '../../../../assets/characters/warrior/walking/sprites
 import walkSheetUrl from '../../../../assets/characters/warrior/walking/spritesheet.png';
 import attackSheetData from '../../../../assets/characters/warrior/attack/spritesheet.json';
 import attackSheetUrl from '../../../../assets/characters/warrior/attack/spritesheet.png';
+import hurtSheetData from '../../../../assets/characters/warrior/hurt/spritesheet.json';
+import hurtSheetUrl from '../../../../assets/characters/warrior/hurt/spritesheet.png';
 
 export interface CharacterSheet {
   url: string;
@@ -28,6 +30,11 @@ export const ATTACK_SHEET: CharacterSheet = {
   data: attackSheetData as SpritesheetData,
 };
 
+export const HURT_SHEET: CharacterSheet = {
+  url: hurtSheetUrl,
+  data: hurtSheetData as SpritesheetData,
+};
+
 /** Sheet row order, top to bottom: clockwise from north (up-left follows up). */
 export const SHEET_ROW_ORDER: readonly Facing8[] = [
   'up',
@@ -40,7 +47,12 @@ export const SHEET_ROW_ORDER: readonly Facing8[] = [
   'up-right',
 ];
 
-export const SHEET_FRAMES_PER_ROW = 4;
+export const ANIMATION_SHEET_FRAMES_PER_ROW: Record<PlayerAnimation, number> = {
+  idle: 4,
+  walk: 4,
+  attack: 4,
+  hurt: 3,
+};
 
 export const BAR_WIDTH = 50;
 export const BAR_HEIGHT = 5;
@@ -50,4 +62,5 @@ export const ANIMATION_SPEED: Record<PlayerAnimation, number> = {
   idle: 0.05,
   walk: 0.15,
   attack: 0.2,
+  hurt: 0.1,
 };

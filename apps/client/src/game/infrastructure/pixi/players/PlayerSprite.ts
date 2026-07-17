@@ -1,14 +1,15 @@
 import { AnimatedSprite, Assets, Container, Graphics, Spritesheet, Text, Texture } from 'pixi.js';
 import type { Facing8, PlayerAnimation, PlayerView } from '../../../domain/player-view';
 import {
+  ANIMATION_SHEET_FRAMES_PER_ROW,
   ANIMATION_SPEED,
   ATTACK_SHEET,
   BAR_HEIGHT,
   BAR_WIDTH,
   BODY_HEIGHT,
   type CharacterSheet,
+  HURT_SHEET,
   IDLE_SHEET,
-  SHEET_FRAMES_PER_ROW,
   SHEET_ROW_ORDER,
   WALK_SHEET,
 } from './PlayerConfig';
@@ -16,7 +17,10 @@ import {
 type DirectionalTextures = Map<Facing8, Texture[]>;
 
 /** frame_000 sorted by name; each row of SHEET_FRAMES_PER_ROW is one facing. */
-const loadDirectionalSheet = async (sheet: CharacterSheet): Promise<DirectionalTextures> => {
+const loadDirectionalSheet = async (
+  sheet: CharacterSheet,
+  animation: PlayerAnimation,
+): Promise<DirectionalTextures> => {
   const texture = await Assets.load<Texture>(sheet.url);
   const parsed = new Spritesheet(texture, sheet.data);
   await parsed.parse();
@@ -28,7 +32,10 @@ const loadDirectionalSheet = async (sheet: CharacterSheet): Promise<DirectionalT
   SHEET_ROW_ORDER.forEach((facing, row) => {
     byFacing.set(
       facing,
-      frames.slice(row * SHEET_FRAMES_PER_ROW, (row + 1) * SHEET_FRAMES_PER_ROW),
+      frames.slice(
+        row * ANIMATION_SHEET_FRAMES_PER_ROW[animation],
+        (row + 1) * ANIMATION_SHEET_FRAMES_PER_ROW[animation],
+      ),
     );
   });
   return byFacing;
@@ -39,13 +46,15 @@ const textures = new Map<PlayerAnimation, DirectionalTextures>();
 
 export const preloadPlayerAssets = async (): Promise<void> => {
   const [idle, walk, attack] = await Promise.all([
-    loadDirectionalSheet(IDLE_SHEET),
-    loadDirectionalSheet(WALK_SHEET),
-    loadDirectionalSheet(ATTACK_SHEET),
+    loadDirectionalSheet(IDLE_SHEET, 'idle'),
+    loadDirectionalSheet(WALK_SHEET, 'walk'),
+    loadDirectionalSheet(ATTACK_SHEET, 'attack'),
+    loadDirectionalSheet(HURT_SHEET, 'hurt'),
   ]);
   textures.set('idle', idle);
   textures.set('walk', walk);
   textures.set('attack', attack);
+  textures.set('hurt', attack);
 };
 
 const texturesFor = (animation: PlayerAnimation, facing: Facing8): Texture[] =>
@@ -153,7 +162,7 @@ export class PlayerSprite extends Container {
 
     this.body.textures = texturesFor(animation, facing);
     this.body.animationSpeed = ANIMATION_SPEED[this.animation];
-    this.body.loop = this.animation !== 'attack';
+    this.body.loop = this.animation !== 'attack' && this.animation !== 'hurt';
     this.fitBody();
     this.body.play(); // assigning textures stops the sprite
   }
