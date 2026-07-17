@@ -45,7 +45,7 @@ const loadDirectionalSheet = async (
 const textures = new Map<PlayerAnimation, DirectionalTextures>();
 
 export const preloadPlayerAssets = async (): Promise<void> => {
-  const [idle, walk, attack] = await Promise.all([
+  const [idle, walk, attack, hurt] = await Promise.all([
     loadDirectionalSheet(IDLE_SHEET, 'idle'),
     loadDirectionalSheet(WALK_SHEET, 'walk'),
     loadDirectionalSheet(ATTACK_SHEET, 'attack'),
@@ -54,7 +54,7 @@ export const preloadPlayerAssets = async (): Promise<void> => {
   textures.set('idle', idle);
   textures.set('walk', walk);
   textures.set('attack', attack);
-  textures.set('hurt', attack);
+  textures.set('hurt', hurt);
 };
 
 const texturesFor = (animation: PlayerAnimation, facing: Facing8): Texture[] =>
