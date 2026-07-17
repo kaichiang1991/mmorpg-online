@@ -1,6 +1,7 @@
 import gsap from 'gsap';
 import { AnimatedSprite, Container, Graphics, Text } from 'pixi.js';
 import { ATTACK_TTL_MS, type ActiveAttack } from '../../domain/active-attacks';
+import { impactAtMs } from '../../domain/skill-timing';
 import type { PlayerView } from '../../domain/player-view';
 import { SkillId } from '@mmo/shared';
 import { getSkillEffect } from './skills/SkillConfig';
@@ -143,7 +144,9 @@ export class EffectLayer {
 
     this.castingLayer.addChild(animation);
 
-    const fallDuration = duration * 0.9;
+    // land exactly when the domain says the hit connects, so the target's
+    // hurt flinch starts the moment the fireball touches down
+    const fallDuration = duration * (impactAtMs('fireball') / ATTACK_TTL_MS);
     const scale = animation.scale.x;
 
     // Fall along the sprite's tilt so the flame trail lines up with the

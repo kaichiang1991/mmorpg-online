@@ -3,6 +3,7 @@ import type { ActiveAttack } from './active-attacks';
 import type { CastProgress } from './active-casts';
 import { facingOf, PlayerViewBuilder } from './player-view';
 import type { Player } from './player';
+import { ATTACK_TTL_MS, HURT_DURATION_MS, impactAtMs } from './skill-timing';
 
 const player = (overrides: Partial<Player> = {}): Player => ({
   id: 'p1',
@@ -20,16 +21,17 @@ const player = (overrides: Partial<Player> = {}): Player => ({
 const noCasts = new Map<string, CastProgress>();
 const noAttacks: ActiveAttack[] = [];
 
-const attackBy = (attackerId: string): ActiveAttack => ({
+const attackBy = (attackerId: string, overrides: Partial<ActiveAttack> = {}): ActiveAttack => ({
   attackerId,
   targetId: 'target',
-  skillId: 'fireball',
+  skillId: 'basic',
   damage: 10,
   startedAt: 0,
+  ...overrides,
 });
 
-const build = (builder: PlayerViewBuilder, p: Player, selfId: string | null = null) =>
-  builder.build([p], noCasts, noAttacks, selfId)[0];
+const build = (builder: PlayerViewBuilder, p: Player, selfId: string | null = null, now = 0) =>
+  builder.build([p], noCasts, noAttacks, selfId, now)[0];
 
 const DIAGONAL = Math.SQRT1_2; // unit-vector component at 45°
 
@@ -78,59 +80,81 @@ describe('PlayerViewBuilder', () => {
         noCasts,
         noAttacks,
         null,
+        0,
       );
       expect(views.map((v) => v.facing)).toEqual(['left', 'down']);
     });
 
-    it('get facing when attack on other player', () => {
-      const builder = new PlayerViewBuilder();
-      const views = builder.build(
+    it('turns combatants toward each other during an attack', () => {
+      const views = new PlayerViewBuilder().build(
         [player({ id: 'p1', x: 0, y: 0 }), player({ id: 'target', x: 10, y: 0 })],
         noCasts,
         [attackBy('p1')],
         null,
+        0,
       );
       expect(views[0].facing).toBe('right');
+      expect(views[1].facing).toBe('left');
     });
 
     it('forgets facing for players who left', () => {
       const builder = new PlayerViewBuilder();
       build(builder, player({ dirX: -1 }));
-      builder.build([], noCasts, noAttacks, null); // p1 left the world
+      builder.build([], noCasts, noAttacks, null, 0); // p1 left the world
       expect(build(builder, player()).facing).toBe('down');
     });
   });
 
   describe('animation', () => {
+    const buildWith = (attacks: ActiveAttack[], players: Player[], now: number) =>
+      new PlayerViewBuilder().build(players, noCasts, attacks, null, now);
+
     it('walks while moving, idles otherwise', () => {
       const builder = new PlayerViewBuilder();
       expect(build(builder, player({ moving: true })).animation).toBe('walk');
       expect(build(builder, player({ moving: false })).animation).toBe('idle');
     });
 
-    it('attacks while an active attack names the player as attacker', () => {
-      const views = new PlayerViewBuilder().build([player()], noCasts, [attackBy('p1')], null);
-      expect(views[0].animation).toBe('attack');
+    it('attacks during the swing, then goes back to idle', () => {
+      const attacks = [attackBy('p1')];
+      expect(buildWith(attacks, [player()], 0)[0].animation).toBe('attack');
+      expect(buildWith(attacks, [player()], ATTACK_TTL_MS)[0].animation).toBe('idle');
     });
 
     it('attack wins over walk', () => {
-      const views = new PlayerViewBuilder().build(
-        [player({ moving: true })],
-        noCasts,
-        [attackBy('p1')],
-        null,
-      );
+      const views = buildWith([attackBy('p1')], [player({ moving: true })], 0);
       expect(views[0].animation).toBe('attack');
     });
 
-    it('being attack wins attack', () => {
-      const views = new PlayerViewBuilder().build(
-        [player(), player({ id: 'p2' })],
-        noCasts,
-        [{ ...attackBy('p1'), targetId: 'p2' }],
-        null,
-      );
+    it('hurts the target immediately for an instant-hit skill', () => {
+      const views = buildWith([attackBy('p1')], [player(), player({ id: 'target' })], 0);
       expect(views[1].animation).toBe('hurt');
+    });
+
+    it('hurt wins over the target own attack', () => {
+      const attacks = [attackBy('p1'), attackBy('target', { targetId: 'p1' })];
+      const views = buildWith(attacks, [player(), player({ id: 'target' })], 0);
+      expect(views.map((v) => v.animation)).toEqual(['hurt', 'hurt']);
+    });
+
+    it('delays the flinch until the skill lands', () => {
+      const impact = impactAtMs('fireball');
+      const attacks = [attackBy('p1', { skillId: 'fireball' })];
+      const players = [player(), player({ id: 'target' })];
+
+      expect(buildWith(attacks, players, impact - 1)[1].animation).toBe('idle');
+      expect(buildWith(attacks, players, impact)[1].animation).toBe('hurt');
+      expect(buildWith(attacks, players, impact + HURT_DURATION_MS - 1)[1].animation).toBe('hurt');
+      expect(buildWith(attacks, players, impact + HURT_DURATION_MS)[1].animation).toBe('idle');
+    });
+
+    it('ends the swing on schedule even while the target still flinches', () => {
+      const attacks = [attackBy('p1', { skillId: 'fireball' })];
+      const players = [player(), player({ id: 'target' })];
+      const views = buildWith(attacks, players, ATTACK_TTL_MS);
+
+      expect(views[0].animation).toBe('idle');
+      expect(views[1].animation).toBe('hurt'); // fireball lands at 0.9 * TTL
     });
   });
 
@@ -152,7 +176,7 @@ describe('PlayerViewBuilder', () => {
           { casterId: 'p1', skillId: 'fireball', startedAt: 0, duration: 1000, progress: 0.4 },
         ],
       ]);
-      expect(builder.build([player()], casts, noAttacks, null)[0].castPct).toBe(0.4);
+      expect(builder.build([player()], casts, noAttacks, null, 0)[0].castPct).toBe(0.4);
       expect(build(builder, player()).castPct).toBe(0);
     });
   });
@@ -163,6 +187,7 @@ describe('PlayerViewBuilder', () => {
       noCasts,
       noAttacks,
       'me',
+      0,
     );
     expect(views.map((v) => v.isSelf)).toEqual([true, false]);
   });

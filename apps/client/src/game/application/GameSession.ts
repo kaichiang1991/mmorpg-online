@@ -97,6 +97,7 @@ export class GameSession {
         this.casters.activeAt(now),
         attacks,
         this.selfId,
+        now,
       );
       this.renderer.render(views, attacks);
       if (this.playerPanel) {

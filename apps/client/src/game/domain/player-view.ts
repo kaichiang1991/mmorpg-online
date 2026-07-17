@@ -2,6 +2,7 @@ import { GAME_CONSTANTS } from '@mmo/shared';
 import type { ActiveAttack } from './active-attacks';
 import type { CastProgress } from './active-casts';
 import type { Player } from './player';
+import { isAttackingAt, isHurtingAt } from './skill-timing';
 
 export type PlayerAnimation = 'idle' | 'walk' | 'attack' | 'hurt';
 
@@ -58,16 +59,22 @@ export class PlayerViewBuilder {
     casts: ReadonlyMap<string, CastProgress>,
     attacks: readonly ActiveAttack[],
     selfId: string | null,
+    now: number,
   ): PlayerView[] {
     const playerById = new Map(players.map((p) => [p.id, p]));
-    const attackById = new Map(attacks.map((a) => [a.attackerId, a.targetId]));
-    const targetById = new Map(attacks.map((a) => [a.targetId, a.attackerId]));
+    // phases open and close independently: the swing runs from the attack
+    // event, the flinch only from the skill's impact time (skill-timing)
+    const attackers = new Set(
+      attacks.filter((a) => isAttackingAt(a, now)).map((a) => a.attackerId),
+    );
+    const hurting = new Set(attacks.filter((a) => isHurtingAt(a, now)).map((a) => a.targetId));
 
-    // facing: heading first, then attackers override to face their target
+    // facing: heading first, then combatants override to face each other
+    // for the attack's whole retention, flinch included
     for (const p of players) {
       if (p.dirX !== 0 || p.dirY !== 0) this.facing.set(p.id, facingOf(p.dirX, p.dirY));
     }
-    for (const [attackerId, targetId] of attackById) {
+    for (const { attackerId, targetId } of attacks) {
       const attacker = playerById.get(attackerId);
       const target = playerById.get(targetId);
       if (attacker && target) {
@@ -82,9 +89,9 @@ export class PlayerViewBuilder {
       x: p.x,
       y: p.y,
       facing: this.facing.get(p.id) ?? 'down',
-      animation: targetById.has(p.id)
+      animation: hurting.has(p.id)
         ? 'hurt'
-        : attackById.has(p.id)
+        : attackers.has(p.id)
           ? 'attack'
           : p.moving
             ? 'walk'

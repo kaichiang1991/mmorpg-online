@@ -1,11 +1,7 @@
 import type { AttackResultPayload, SkillId } from '@mmo/shared';
+import { attackRetentionMs } from './skill-timing';
 
-/**
- * How long an attack counts as "happening" on the client, in local-clock ms.
- * Domain fact — the renderer derives its visual phase timing from this,
- * not the other way around.
- */
-export const ATTACK_TTL_MS = 400;
+export { ATTACK_TTL_MS } from './skill-timing';
 
 /**
  * A client-side fact: "this attack is happening right now."
@@ -39,9 +35,15 @@ export class ActiveAttackTracker {
     });
   }
 
-  /** Attacks still alive at `now`; expired ones are dropped for good. */
+  /**
+   * Attacks still alive at `now`; expired ones are dropped for good.
+   * Retention outlives the swing when the skill hits late (skill-timing),
+   * so the target's flinch can still be derived from the attack.
+   */
   activeAt(now: number): ActiveAttack[] {
-    this.attacks = this.attacks.filter((attack) => now - attack.startedAt < ATTACK_TTL_MS);
+    this.attacks = this.attacks.filter(
+      (attack) => now - attack.startedAt < attackRetentionMs(attack.skillId),
+    );
     return this.attacks;
   }
 }
