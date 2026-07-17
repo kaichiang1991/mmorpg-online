@@ -123,14 +123,14 @@ describe('PlayerViewBuilder', () => {
       expect(views[0].animation).toBe('attack');
     });
 
-    it('being the target does not trigger the attack animation', () => {
+    it('being attack wins attack', () => {
       const views = new PlayerViewBuilder().build(
-        [player()],
+        [player(), player({ id: 'p2' })],
         noCasts,
-        [{ ...attackBy('someone-else'), targetId: 'p1' }],
+        [{ ...attackBy('p1'), targetId: 'p2' }],
         null,
       );
-      expect(views[0].animation).toBe('idle');
+      expect(views[1].animation).toBe('hurt');
     });
   });
 
