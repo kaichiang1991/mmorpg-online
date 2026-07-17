@@ -3,7 +3,7 @@ import type { ActiveAttack } from './active-attacks';
 import type { CastProgress } from './active-casts';
 import type { Player } from './player';
 
-export type PlayerAnimation = 'idle' | 'walk' | 'attack';
+export type PlayerAnimation = 'idle' | 'walk' | 'attack' | 'hurt';
 
 /** Eight-way facing, named by screen direction (y grows downward). */
 export type Facing8 =
@@ -61,6 +61,7 @@ export class PlayerViewBuilder {
   ): PlayerView[] {
     const playerById = new Map(players.map((p) => [p.id, p]));
     const attackById = new Map(attacks.map((a) => [a.attackerId, a.targetId]));
+    const targetById = new Map(attacks.map((a) => [a.targetId, a.attackerId]));
 
     // facing: heading first, then attackers override to face their target
     for (const p of players) {
@@ -71,23 +72,28 @@ export class PlayerViewBuilder {
       const target = playerById.get(targetId);
       if (attacker && target) {
         this.facing.set(attackerId, facingOf(target.x - attacker.x, target.y - attacker.y));
+        this.facing.set(targetId, facingOf(attacker.x - target.x, attacker.y - target.y));
       }
     }
 
-    const views = players.map(
-      (p): PlayerView => ({
-        id: p.id,
-        name: p.name,
-        x: p.x,
-        y: p.y,
-        facing: this.facing.get(p.id) ?? 'down',
-        animation: attackById.has(p.id) ? 'attack' : p.moving ? 'walk' : 'idle',
-        hpPct: p.hp / GAME_CONSTANTS.MAX_HP,
-        mpPct: p.mp / GAME_CONSTANTS.MAX_MP,
-        castPct: casts.get(p.id)?.progress ?? 0,
-        isSelf: p.id === selfId,
-      }),
-    );
+    const views = players.map((p): PlayerView => ({
+      id: p.id,
+      name: p.name,
+      x: p.x,
+      y: p.y,
+      facing: this.facing.get(p.id) ?? 'down',
+      animation: targetById.has(p.id)
+        ? 'hurt'
+        : attackById.has(p.id)
+          ? 'attack'
+          : p.moving
+            ? 'walk'
+            : 'idle',
+      hpPct: p.hp / GAME_CONSTANTS.MAX_HP,
+      mpPct: p.mp / GAME_CONSTANTS.MAX_MP,
+      castPct: casts.get(p.id)?.progress ?? 0,
+      isSelf: p.id === selfId,
+    }));
 
     // forget players who left, so the map doesn't grow forever
     for (const id of this.facing.keys()) {
