@@ -59,7 +59,7 @@ export default class UILayer {
   /** Anchors the skill bar bottom-center and the side panel right-center; call on init and every resize. */
   layout(screenWidth: number, screenHeight: number): void {
     this.skillBar.position.set(screenWidth / 2, screenHeight - SLOT_SIZE - BAR_BOTTOM_MARGIN);
-    this.sidePanel.layout(screenWidth, screenHeight);
+    this.sidePanel.resize(screenWidth, screenHeight);
     this.panels.layoutAll(screenWidth, screenHeight);
   }
 

@@ -12,11 +12,13 @@
   },
   "dependencies": {
     "@mmo/shared": "*",
+    "@pixi/layout": "^3.2.1",
     "gsap": "^3.15.0",
     "pixi.js": "^8.3.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "socket.io-client": "^4.7.5"
+    "socket.io-client": "^4.7.5",
+    "yoga-layout": "^3.2.1"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
