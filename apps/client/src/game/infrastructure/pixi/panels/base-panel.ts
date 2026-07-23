@@ -1,6 +1,9 @@
 import { Container } from 'pixi.js';
 import type { PanelWidget } from './panel-widget';
 
+/** Trigger-icon leaf size for yoga layout in the side-panel icon strip. */
+const ICON_SIZE = 32;
+
 /**
  * Template-method skeleton for sidebar panels: owns the trigger icon, the
  * popup body and the open/close wiring. Subclasses only fill in content via
@@ -14,6 +17,8 @@ export abstract class BasePanel implements PanelWidget {
   private isOpen = false;
 
   constructor() {
+    // Without a layout, yoga skips this child entirely and it sticks at (0,0).
+    this.icon.layout = { width: ICON_SIZE, height: ICON_SIZE };
     this.icon.eventMode = 'static';
     this.icon.cursor = 'pointer';
     this.icon.on('pointerdown', (e) => {

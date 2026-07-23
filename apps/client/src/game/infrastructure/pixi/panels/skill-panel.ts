@@ -1,4 +1,4 @@
-import { Assets, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
+import { Assets, Container, Graphics, Sprite, Text } from 'pixi.js';
 import { BasePanel } from './base-panel';
 import skillIcon from '../../../../assets/icons/skill.png';
 

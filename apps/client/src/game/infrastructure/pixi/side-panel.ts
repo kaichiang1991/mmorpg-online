@@ -1,16 +1,13 @@
-import '@pixi/layout';
 import gsap from 'gsap';
 import { Container, Graphics, Point, Text } from 'pixi.js';
 import type { PanelWidget } from './panels/panel-widget';
 
-const PANEL_WIDTH = 56;
+const PANEL_WIDTH = 108;
 const PANEL_HEIGHT = 260;
 const PANEL_RADIUS = 8;
 const TAB_WIDTH = 22;
 const TAB_HEIGHT = 56;
 const PADDING = 12;
-/** Must match the trigger-icon size the panels build (see panels/skill-panel.ts). */
-const ICON_SIZE = 32;
 const ICON_GAP = 8;
 const COLLAPSE_DURATION = 0.25;
 
@@ -47,8 +44,9 @@ export default class SidePanel extends Container {
       justifyContent: 'center',
       alignItems: 'center',
       gap: ICON_GAP,
+      padding: PADDING,
     };
-    this.icons.position.set(PADDING, 0);
+
     body.position.set(TAB_WIDTH, 0);
     body.addChild(bg, this.icons);
 
@@ -87,9 +85,14 @@ export default class SidePanel extends Container {
    */
   mountWidgets(panels: PanelWidget[], popupLayer: Container): void {
     panels.forEach((panel) => panel.mount(this.icons, popupLayer));
-    this.icons.children.forEach((icon) => {
-      icon.layout = { width: ICON_SIZE, height: ICON_SIZE };
+    const text = new Text({
+      text: 'T',
+      style: { fontSize: 14, fill: 0xffffff, fontWeight: 'bold' },
+      layout: { width: 32, height: 32 },
+
+      label: 'TT',
     });
+    this.icons.addChild(text);
   }
 
   /** Anchors the strip to the right edge, vertically centered; call on init and every resize. */

@@ -21,7 +21,9 @@ export class PixiRenderer {
   private readonly world = new Container();
   private readonly players = new PlayerLayer();
   private readonly effects = new EffectLayer();
-  private readonly ui = new UILayer();
+  // Created in init(): UILayer's subtree sets `container.layout`, which needs
+  // the yoga instance that @pixi/layout's LayoutSystem loads during app.init().
+  private ui?: UILayer;
   private map = { width: 0, height: 0 };
   private destroyed = false;
   private tickHandler: (() => void) | null = null;
@@ -54,9 +56,11 @@ export class PixiRenderer {
     this.effects.container.zIndex = 100;
     this.world.addChild(this.players.container, this.effects.container);
     // UI is screen-fixed: it lives on the stage, not in the camera-driven world
-    this.app.stage.addChild(this.ui.container);
-    this.ui.layout(this.app.screen.width, this.app.screen.height);
-    this.app.renderer.on('resize', (width, height) => this.ui.layout(width, height));
+    const ui = new UILayer();
+    this.ui = ui;
+    this.app.stage.addChild(ui.container);
+    ui.layout(this.app.screen.width, this.app.screen.height);
+    this.app.renderer.on('resize', (width, height) => ui.layout(width, height));
   }
 
   destroy(): void {
@@ -65,7 +69,7 @@ export class PixiRenderer {
     // objects they touch are destroyed.
     gsap.ticker.remove(this.frame);
     this.effects.destroy();
-    this.ui.destroy();
+    this.ui?.destroy();
     this.app.destroy(true, { children: true });
   }
 
@@ -94,19 +98,19 @@ export class PixiRenderer {
   }
 
   onSkillSelect(handler: (index: number) => void): void {
-    this.ui.onSkillSelect(handler);
+    this.ui?.onSkillSelect(handler);
   }
 
   renderDebug(values: Record<string, unknown>): void {
-    this.ui.renderDebug(values);
+    this.ui?.renderDebug(values);
   }
 
   renderSelectedSkill(skillId: SkillId | null): void {
-    this.ui.renderSelectedSkill(skillId);
+    this.ui?.renderSelectedSkill(skillId);
   }
 
   renderSkillProcess(processes: number[]): void {
-    this.ui.renderSkillProcess(processes);
+    this.ui?.renderSkillProcess(processes);
   }
 
   render(views: PlayerView[], attacks: ActiveAttack[]): void {
@@ -141,6 +145,6 @@ export class PixiRenderer {
   }
 
   private renderPlayerPanel(playerPanel: PlayerPanel) {
-    this.ui.initPlayerPanel(playerPanel.skillBar);
+    this.ui?.initPlayerPanel(playerPanel.skillBar);
   }
 }
