@@ -1,5 +1,6 @@
-import { Container, Graphics, Text } from 'pixi.js';
+import { Assets, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { BasePanel } from './base-panel';
+import skillIcon from '../../../../assets/icons/skill.png';
 
 const ICON_SIZE = 32;
 const POPUP_WIDTH = 200;
@@ -9,18 +10,12 @@ const CONTENT_PADDING = 12;
 
 export class SkillPanel extends BasePanel {
   protected buildIcon(icon: Container): void {
-    const bg = new Graphics()
-      .roundRect(0, 0, ICON_SIZE, ICON_SIZE, 6)
-      .fill({ color: 0x000000, alpha: 0.45 })
-      .stroke({ width: 1, color: 0xffffff, alpha: 0.35 });
-
-    const label = new Text({
-      text: 'S',
-      style: { fontSize: 14, fill: 0xffffff, fontWeight: 'bold' },
+    Assets.load(skillIcon).then((r) => {
+      const iconSprite = Sprite.from(r);
+      iconSprite.width = ICON_SIZE;
+      iconSprite.height = ICON_SIZE;
+      icon.addChild(iconSprite);
     });
-    label.position.set((ICON_SIZE - label.width) / 2, (ICON_SIZE - label.height) / 2);
-
-    icon.addChild(bg, label);
   }
 
   protected buildPopup(popup: Container): void {
@@ -43,9 +38,6 @@ export class SkillPanel extends BasePanel {
   }
 
   layout(screenWidth: number, screenHeight: number): void {
-    this.popup.position.set(
-      (screenWidth - POPUP_WIDTH) / 2,
-      (screenHeight - POPUP_HEIGHT) / 2,
-    );
+    this.popup.position.set((screenWidth - POPUP_WIDTH) / 2, (screenHeight - POPUP_HEIGHT) / 2);
   }
 }
