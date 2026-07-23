@@ -41,6 +41,12 @@ export class PixiRenderer {
       preloadSkillEffects(),
     ]);
     if (this.destroyed) return; // destroyed during async init
+
+    if (import.meta.env.DEV) {
+      // PixiJS DevTools hook
+      (globalThis as { __PIXI_APP__?: Application }).__PIXI_APP__ = this.app;
+    }
+
     host.appendChild(this.app.canvas);
     this.app.stage.addChild(this.world);
     // zIndex keeps effects on top of player sprites
