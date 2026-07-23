@@ -1,31 +1,32 @@
 import gsap from 'gsap';
-import { Container, Graphics, Point, Sprite, Text } from 'pixi.js';
-import { SkillId } from '@mmo/shared';
-import { SkillVo } from '../../domain/value-objects/skill-bar.vo';
-import { getSkillEffect } from './skills/SkillConfig';
-import SkillPanel from './skill-panel';
+import { Container, Graphics, Point, Text } from 'pixi.js';
+import type { PanelWidget } from './panels/panel-widget';
 
-const PANEL_WIDTH = 200;
-const PANEL_HEIGHT = 260;
+const PANEL_WIDTH = 56;
 const PANEL_RADIUS = 8;
 const TAB_WIDTH = 22;
 const TAB_HEIGHT = 56;
-const CONTENT_TOP = 40; // below the title
-const CONTENT_PADDING = 12;
-const ICON_SIZE = 40;
-const ENTRY_HEIGHT = 48;
+const PADDING = 12;
+/** Must match the trigger-icon size the panels build (see panels/skill-panel.ts). */
+const ICON_SIZE = 32;
+const ICON_SPACING = ICON_SIZE + 8;
 const COLLAPSE_DURATION = 0.25;
 
 /**
- * Collapsible panel anchored to the right screen edge. A tab sticks out on
- * its left side; clicking it slides the body on/off screen. The tab itself
- * always stays visible.
+ * Collapsible icon strip anchored to the right screen edge: one trigger icon
+ * per panel widget, stacked vertically; the popup bodies live elsewhere. A
+ * tab sticks out on its left side; clicking it slides the strip on/off
+ * screen. The tab itself always stays visible.
  */
 export default class SidePanel extends Container {
-  private readonly entries = new Container();
+  private readonly bg = new Graphics();
+  private readonly icons = new Container();
+  private readonly tab = new Container();
   private readonly tabArrow: Text;
   private collapsed = false;
   private screenWidth = 0;
+  private screenHeight = 0;
+  private panelHeight = PADDING * 2 + ICON_SIZE;
 
   constructor() {
     super();
@@ -34,24 +35,12 @@ export default class SidePanel extends Container {
     body.interactive = true;
     body.on('pointerdown', (e) => e.stopPropagation());
 
-    const bg = new Graphics()
-      .roundRect(0, 0, PANEL_WIDTH, PANEL_HEIGHT, PANEL_RADIUS)
-      .fill({ color: 0x000000, alpha: 0.6 })
-      .stroke({ width: 1, color: 0xffffff, alpha: 0.35 });
-
-    const title = new Text({
-      text: 'Skills',
-      style: { fontSize: 14, fill: 0xffffff, fontWeight: 'bold' },
-    });
-    title.position.set(CONTENT_PADDING, 10);
-
-    this.entries.position.set(CONTENT_PADDING, CONTENT_TOP);
+    this.icons.position.set(PADDING, PADDING);
     body.position.set(TAB_WIDTH, 0);
-    body.addChild(bg, title, this.entries);
+    body.addChild(this.bg, this.icons);
 
-    const tab = new Container();
-    tab.interactive = true;
-    tab.cursor = 'pointer';
+    this.tab.interactive = true;
+    this.tab.cursor = 'pointer';
     const tabBg = new Graphics()
       .roundRect(0, 0, TAB_WIDTH + PANEL_RADIUS, TAB_HEIGHT, PANEL_RADIUS)
       .fill({ color: 0x000000, alpha: 0.6 })
@@ -62,15 +51,15 @@ export default class SidePanel extends Container {
       style: { fontSize: 12, fill: 0xffffff },
     });
     this.tabArrow.position.set(TAB_WIDTH / 2, TAB_HEIGHT / 2);
-    tab.addChild(tabBg, this.tabArrow);
-    tab.position.set(0, (PANEL_HEIGHT - TAB_HEIGHT) / 2);
-    tab.on('pointerdown', (e) => {
+    this.tab.addChild(tabBg, this.tabArrow);
+    this.tab.on('pointerdown', (e) => {
       e.stopPropagation();
       this.toggle();
     });
 
     // tab last so its rounded overlap sits above the body edge
-    this.addChild(body, tab);
+    this.addChild(body, this.tab);
+    this.redraw();
   }
 
   /** Kills in-flight collapse tweens; the display tree is torn down by Pixi's destroy(). */
@@ -78,26 +67,27 @@ export default class SidePanel extends Container {
     gsap.killTweensOf(this);
   }
 
-  init() {
-    new SkillPanel().addTriggerTo(this.entries);
+  /**
+   * Mounts widget trigger icons into the strip, top-to-bottom in call order;
+   * popup bodies go to popupLayer. The strip resizes to fit.
+   */
+  mountWidgets(panels: PanelWidget[], popupLayer: Container): void {
+    panels.forEach((panel) => panel.mount(this.icons, popupLayer));
+    this.icons.children.forEach((icon, index) => {
+      icon.position.set(0, index * ICON_SPACING);
+    });
+    const count = Math.max(this.icons.children.length, 1);
+    this.panelHeight = PADDING * 2 + count * ICON_SPACING - (ICON_SPACING - ICON_SIZE);
+    this.redraw();
+    this.applyPosition();
   }
 
-  /** Replaces the listed skills; empty slots are skipped. */
-  renderSkills(skills: SkillVo[]): void {
-    this.entries.removeChildren().forEach((child) => child.destroy({ children: true }));
-
-    skills
-      .filter((skill): skill is SkillVo & { readonly id: SkillId } => skill.hasSkill())
-      .forEach((skill, index) => {
-        this.entries.addChild(this.createEntry(skill, index));
-      });
-  }
-
-  /** Anchors the panel to the right edge, vertically centered; call on init and every resize. */
+  /** Anchors the strip to the right edge, vertically centered; call on init and every resize. */
   layout(screenWidth: number, screenHeight: number): void {
     this.screenWidth = screenWidth;
+    this.screenHeight = screenHeight;
     gsap.killTweensOf(this);
-    this.position.set(this.targetX(), (screenHeight - PANEL_HEIGHT) / 2);
+    this.applyPosition();
   }
 
   private toggle(): void {
@@ -110,40 +100,24 @@ export default class SidePanel extends Container {
     });
   }
 
+  private redraw(): void {
+    this.bg
+      .clear()
+      .roundRect(0, 0, PANEL_WIDTH, this.panelHeight, PANEL_RADIUS)
+      .fill({ color: 0x000000, alpha: 0.6 })
+      .stroke({ width: 1, color: 0xffffff, alpha: 0.35 });
+    this.tab.position.set(0, (this.panelHeight - TAB_HEIGHT) / 2);
+  }
+
+  /** No-op until layout() provides screen dimensions. */
+  private applyPosition(): void {
+    if (!this.screenWidth) return;
+    this.position.set(this.targetX(), (this.screenHeight - this.panelHeight) / 2);
+  }
+
   private targetX(): number {
     return this.collapsed
       ? this.screenWidth - TAB_WIDTH
       : this.screenWidth - TAB_WIDTH - PANEL_WIDTH;
-  }
-
-  private createEntry(skill: SkillVo & { readonly id: SkillId }, index: number): Container {
-    const entry = new Container();
-    entry.position.set(0, index * ENTRY_HEIGHT);
-
-    const slot = new Graphics()
-      .roundRect(0, 0, ICON_SIZE, ICON_SIZE, 6)
-      .fill({ color: 0x000000, alpha: 0.45 })
-      .stroke({ width: 1, color: 0xffffff, alpha: 0.35 });
-    entry.addChild(slot);
-
-    const effect = getSkillEffect(skill.id);
-    if (effect) {
-      const icon = Sprite.from(effect.icon);
-      // contain-fit: scale down to fit inside the slot, keep aspect ratio
-      const scale = Math.min(ICON_SIZE / icon.texture.width, ICON_SIZE / icon.texture.height);
-      icon.scale.set(scale);
-      icon.anchor.set(0.5);
-      icon.position.set(ICON_SIZE / 2, ICON_SIZE / 2);
-      entry.addChild(icon);
-    }
-
-    const name = new Text({
-      text: skill.name,
-      style: { fontSize: 12, fill: 0xffffff },
-    });
-    name.position.set(ICON_SIZE + 8, (ICON_SIZE - name.height) / 2);
-    entry.addChild(name);
-
-    return entry;
   }
 }

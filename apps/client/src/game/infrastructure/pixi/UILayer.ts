@@ -4,6 +4,7 @@ import { SkillBarVo } from '../../domain/value-objects/skill-bar.vo';
 import SkillBar from './skills/skill-bar';
 import { SLOT_SIZE } from './skills/SkillSprite';
 import SidePanel from './side-panel';
+import { PanelFactory } from './panels/panel-factory';
 
 const BAR_BOTTOM_MARGIN = 16;
 
@@ -12,6 +13,8 @@ export default class UILayer {
 
   private readonly skillBar = new SkillBar();
   private readonly sidePanel = new SidePanel();
+  private readonly panels = new PanelFactory();
+  private readonly popupLayer = new Container();
 
   private readonly debugBg = new Graphics();
   private readonly debugText = new Text({
@@ -25,12 +28,13 @@ export default class UILayer {
     debugPanel.position.set(8, 8);
     this.debugText.position.set(6, 4);
     debugPanel.addChild(this.debugBg, this.debugText);
-    this.container.addChild(this.skillBar, this.sidePanel, debugPanel);
+    this.container.addChild(this.skillBar, this.sidePanel, this.popupLayer, debugPanel);
   }
 
   destroy(): void {
     this.skillBar.dispose();
     this.sidePanel.dispose();
+    this.panels.destroyAll();
   }
 
   /** Debug panel at top-left: prints each entry as `key: value`, one per line. */
@@ -49,13 +53,14 @@ export default class UILayer {
 
   initPlayerPanel(skillBar: SkillBarVo) {
     this.skillBar.init(skillBar);
-    this.sidePanel.init();
+    this.sidePanel.mountWidgets([this.panels.create('skills')], this.popupLayer);
   }
 
   /** Anchors the skill bar bottom-center and the side panel right-center; call on init and every resize. */
   layout(screenWidth: number, screenHeight: number): void {
     this.skillBar.position.set(screenWidth / 2, screenHeight - SLOT_SIZE - BAR_BOTTOM_MARGIN);
     this.sidePanel.layout(screenWidth, screenHeight);
+    this.panels.layoutAll(screenWidth, screenHeight);
   }
 
   onSkillSelect(handler: (index: number) => void) {
