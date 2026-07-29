@@ -8,6 +8,7 @@ import {
   BAR_WIDTH,
   BODY_HEIGHT,
   type CharacterSheet,
+  HALO_START_SHEET,
   HURT_SHEET,
   IDLE_SHEET,
   SHEET_ROW_ORDER,
@@ -116,6 +117,8 @@ export class PlayerSprite extends Container {
   private readonly hpBar = new StatBar(0xff0000);
   private readonly mpBar = new StatBar(0x3b82f6);
   private readonly castingBar = new StatBar(0x00ff00, true);
+  private readonly castingHalo = new AnimatedSprite([Texture.EMPTY]);
+  private haloTextures: Map<string, Texture[]> = new Map();
 
   constructor(name: string, isSelf: boolean) {
     super();
@@ -143,7 +146,23 @@ export class PlayerSprite extends Container {
 
     this.castingBar.y = -BODY_HEIGHT + 10;
 
-    this.addChild(this.body, nameLabel, this.hpBar, this.mpBar, this.castingBar);
+    this.castingHalo.anchor.set(0.5);
+    this.castingHalo.animationSpeed = 0.1;
+    this.castingHalo.blendMode = 'screen';
+
+    this.addChild(this.body, nameLabel, this.hpBar, this.mpBar, this.castingBar, this.castingHalo);
+
+    this.loadHalo();
+  }
+
+  private loadHalo() {
+    Assets.load(HALO_START_SHEET.url).then(async (res) => {
+      const spriteSheet = new Spritesheet(res, HALO_START_SHEET.data);
+      await spriteSheet.parse();
+
+      const textures = Object.values(spriteSheet.textures);
+      this.haloTextures.set('start', textures);
+    });
   }
 
   /** Sync visuals to the latest view; called every frame. */
@@ -170,5 +189,11 @@ export class PlayerSprite extends Container {
   /** Sheets may differ in resolution; keep BODY_HEIGHT on screen. */
   private fitBody(): void {
     this.body.scale.set(BODY_HEIGHT / this.body.texture.height);
+  }
+
+  private fitHalo() {
+    if (!this.haloTextures.size) return;
+
+    this.castingHalo.scale.set(BODY_HEIGHT / this.castingHalo.texture.height);
   }
 }

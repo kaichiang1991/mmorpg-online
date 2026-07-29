@@ -8,6 +8,8 @@ import attackSheetData from '../../../../assets/characters/warrior/attack/sprite
 import attackSheetUrl from '../../../../assets/characters/warrior/attack/spritesheet.png';
 import hurtSheetData from '../../../../assets/characters/warrior/hurt/spritesheet.json';
 import hurtSheetUrl from '../../../../assets/characters/warrior/hurt/spritesheet.png';
+import haloStartData from '../../../../assets/effects/halo-start/spritesheet.json';
+import haloStartUrl from '../../../../assets/effects/halo-start/spritesheet.png';
 
 export interface CharacterSheet {
   url: string;
@@ -33,6 +35,11 @@ export const ATTACK_SHEET: CharacterSheet = {
 export const HURT_SHEET: CharacterSheet = {
   url: hurtSheetUrl,
   data: hurtSheetData as SpritesheetData,
+};
+
+export const HALO_START_SHEET: CharacterSheet = {
+  url: haloStartUrl,
+  data: haloStartData as SpritesheetData,
 };
 
 /** Sheet row order, top to bottom: clockwise from north (up-left follows up). */
