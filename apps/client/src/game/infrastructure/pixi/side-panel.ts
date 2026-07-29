@@ -85,14 +85,6 @@ export default class SidePanel extends Container {
    */
   mountWidgets(panels: PanelWidget[], popupLayer: Container): void {
     panels.forEach((panel) => panel.mount(this.icons, popupLayer));
-    const text = new Text({
-      text: 'T',
-      style: { fontSize: 14, fill: 0xffffff, fontWeight: 'bold' },
-      layout: { width: 32, height: 32 },
-
-      label: 'TT',
-    });
-    this.icons.addChild(text);
   }
 
   /** Anchors the strip to the right edge, vertically centered; call on init and every resize. */
