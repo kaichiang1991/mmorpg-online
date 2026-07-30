@@ -42,6 +42,7 @@ export interface PlayerView {
   hpPct: number;
   mpPct: number;
   castPct: number;
+  isCasting: boolean;
   isSelf: boolean;
 }
 
@@ -99,6 +100,7 @@ export class PlayerViewBuilder {
       hpPct: p.hp / GAME_CONSTANTS.MAX_HP,
       mpPct: p.mp / GAME_CONSTANTS.MAX_MP,
       castPct: casts.get(p.id)?.progress ?? 0,
+      isCasting: casts.has(p.id),
       isSelf: p.id === selfId,
     }));
 
