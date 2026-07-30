@@ -129,6 +129,8 @@ export class PlayerSprite extends Container {
   private facing: Facing8 = 'down';
   private readonly hpBar = new StatBar(0xff0000);
   private readonly mpBar = new StatBar(0x3b82f6);
+
+  private isCasting: boolean = false;
   private readonly castingBar = new StatBar(0x00ff00, true);
   private readonly castingHalo = new AnimatedSprite([Texture.EMPTY]);
 
@@ -161,10 +163,10 @@ export class PlayerSprite extends Container {
     this.castingHalo.anchor.set(0.5);
     this.castingHalo.animationSpeed = 0.1;
     this.castingHalo.blendMode = 'screen';
-    // preloadPlayerAssets resolves before any sprite is created, so frames are ready here;
-    // hidden until casting wiring toggles it
+
     this.castingHalo.textures = haloTextures.get('start') ?? [Texture.EMPTY];
     this.castingHalo.visible = false;
+    this.isCasting = false;
     this.fitHalo();
 
     this.addChild(this.body, nameLabel, this.hpBar, this.mpBar, this.castingBar, this.castingHalo);
@@ -177,6 +179,7 @@ export class PlayerSprite extends Container {
     this.hpBar.setPercentage(view.hpPct);
     this.mpBar.setPercentage(view.mpPct);
     this.castingBar.setPercentage(view.castPct);
+    this.setCastingHalo(view.isCasting);
   }
 
   private setPose(animation: PlayerAnimation, facing: Facing8): void {
@@ -200,5 +203,28 @@ export class PlayerSprite extends Container {
     if (!haloTextures.size) return;
 
     this.castingHalo.scale.set(BODY_HEIGHT / this.castingHalo.texture.height);
+  }
+
+  private setCastingHalo(isCasting: boolean) {
+    if (isCasting === this.isCasting) return; // edge detection, same trick as setPose
+    this.isCasting = isCasting;
+
+    if (this.isCasting) {
+      this.castingHalo.textures = haloTextures.get('start') ?? [Texture.EMPTY];
+      this.castingHalo.loop = false;
+      this.castingHalo.onComplete = () => {
+        this.castingHalo.textures = haloTextures.get('loop') ?? [Texture.EMPTY];
+        this.castingHalo.loop = true;
+        this.fitHalo(); // start/loop sheets differ in frame size; rescale to keep BODY_HEIGHT
+        this.castingHalo.play(); // assigning textures stops the sprite
+      };
+      this.fitHalo();
+      this.castingHalo.visible = true;
+      this.castingHalo.play();
+    } else {
+      this.castingHalo.onComplete = undefined;
+      this.castingHalo.stop();
+      this.castingHalo.visible = false;
+    }
   }
 }

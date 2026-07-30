@@ -22,7 +22,7 @@ export const SKILL_DEFINITIONS: Record<SkillId, SkillDefinition> = {
   fireball: {
     id: 'fireball',
     name: 'Fireball',
-    castTime: 1000,
+    castTime: 3000,
     cooldown: 1000,
     range: 500,
     mpCost: 20,
