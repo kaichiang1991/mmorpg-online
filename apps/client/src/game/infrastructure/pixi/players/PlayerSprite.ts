@@ -15,6 +15,7 @@ import {
   SHEET_ROW_ORDER,
   WALK_SHEET,
 } from './PlayerConfig';
+import gsap from 'gsap';
 
 type DirectionalTextures = Map<Facing8, Texture[]>;
 type HaloPhase = 'start' | 'loop';
@@ -215,8 +216,17 @@ export class PlayerSprite extends Container {
       this.castingHalo.onComplete = () => {
         this.castingHalo.textures = haloTextures.get('loop') ?? [Texture.EMPTY];
         this.castingHalo.loop = true;
-        this.fitHalo(); // start/loop sheets differ in frame size; rescale to keep BODY_HEIGHT
-        this.castingHalo.play(); // assigning textures stops the sprite
+        this.fitHalo();
+        this.castingHalo.play();
+
+        this.castingHalo.alpha = 1;
+        gsap.to(this.castingHalo, {
+          alpha: 0.7,
+          duration: 1,
+          ease: 'sine.inOut',
+          yoyo: true,
+          repeat: -1,
+        });
       };
       this.fitHalo();
       this.castingHalo.visible = true;
@@ -225,6 +235,14 @@ export class PlayerSprite extends Container {
       this.castingHalo.onComplete = undefined;
       this.castingHalo.stop();
       this.castingHalo.visible = false;
+      gsap.killTweensOf(this.castingHalo);
+      this.castingHalo.alpha = 1;
     }
+  }
+
+  /** The pulse tween is infinite; without this, gsap would keep ticking a destroyed sprite. */
+  override destroy(options?: Parameters<Container['destroy']>[0]): void {
+    gsap.killTweensOf(this.castingHalo);
+    super.destroy(options);
   }
 }
