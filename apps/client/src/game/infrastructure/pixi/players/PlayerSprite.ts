@@ -1,4 +1,4 @@
-import { AnimatedSprite, Assets, Container, Graphics, Spritesheet, Text, Texture } from 'pixi.js';
+import { AnimatedSprite, Container, Graphics, Text, Texture } from 'pixi.js';
 import type { Facing8, PlayerAnimation, PlayerView } from '../../../domain/player-view';
 import {
   ANIMATION_SHEET_FRAMES_PER_ROW,
@@ -8,27 +8,15 @@ import {
   BAR_WIDTH,
   BODY_HEIGHT,
   type CharacterSheet,
-  HALO_LOOP_SHEET,
-  HALO_START_SHEET,
   HURT_SHEET,
   IDLE_SHEET,
   SHEET_ROW_ORDER,
   WALK_SHEET,
 } from './PlayerConfig';
-import gsap from 'gsap';
+import { CastingHalo, preloadHaloAssets } from './casting-halo';
+import { loadSheetFrames } from './load-sheet-frames';
 
 type DirectionalTextures = Map<Facing8, Texture[]>;
-type HaloPhase = 'start' | 'loop';
-
-/** Vite keeps png/json as separate imports; this pairs them back into name-ordered frames. */
-const loadSheetFrames = async ({ url, data }: CharacterSheet): Promise<Texture[]> => {
-  const texture = await Assets.load<Texture>(url);
-  const sheet = new Spritesheet(texture, data);
-  await sheet.parse();
-  return Object.keys(sheet.textures)
-    .sort()
-    .map((name) => sheet.textures[name]);
-};
 
 /** frame_000 sorted by name; each row of SHEET_FRAMES_PER_ROW is one facing. */
 const loadDirectionalSheet = async (
@@ -52,24 +40,18 @@ const loadDirectionalSheet = async (
 /** Populated once by preloadPlayerAssets; sprites only read from it. */
 const textures = new Map<PlayerAnimation, DirectionalTextures>();
 
-/** Casting halo frames, shared by every player; populated once by preloadPlayerAssets. */
-const haloTextures = new Map<HaloPhase, Texture[]>();
-
 export const preloadPlayerAssets = async (): Promise<void> => {
-  const [idle, walk, attack, hurt, haloStart, haloLoop] = await Promise.all([
+  const [idle, walk, attack, hurt] = await Promise.all([
     loadDirectionalSheet(IDLE_SHEET, 'idle'),
     loadDirectionalSheet(WALK_SHEET, 'walk'),
     loadDirectionalSheet(ATTACK_SHEET, 'attack'),
     loadDirectionalSheet(HURT_SHEET, 'hurt'),
-    loadSheetFrames(HALO_START_SHEET),
-    loadSheetFrames(HALO_LOOP_SHEET),
+    preloadHaloAssets(),
   ]);
   textures.set('idle', idle);
   textures.set('walk', walk);
   textures.set('attack', attack);
   textures.set('hurt', hurt);
-  haloTextures.set('start', haloStart);
-  haloTextures.set('loop', haloLoop);
 };
 
 const texturesFor = (animation: PlayerAnimation, facing: Facing8): Texture[] =>
@@ -120,9 +102,10 @@ class StatBar extends Container {
 }
 
 /**
- * One player's avatar: body, name label, hp/mp bars. Owns its look only —
- * what to show (facing, animation, percentages) arrives precomputed in the
- * PlayerView; lifecycle (create/destroy) and click wiring belong to PlayerLayer.
+ * One player's avatar: body, name label, hp/mp/cast bars and casting halo.
+ * Owns its look only — what to show (facing, animation, percentages) arrives
+ * precomputed in the PlayerView; lifecycle (create/destroy) and click wiring
+ * belong to PlayerLayer.
  */
 export class PlayerSprite extends Container {
   private readonly body: AnimatedSprite;
@@ -131,9 +114,8 @@ export class PlayerSprite extends Container {
   private readonly hpBar = new StatBar(0xff0000);
   private readonly mpBar = new StatBar(0x3b82f6);
 
-  private isCasting: boolean = false;
   private readonly castingBar = new StatBar(0x00ff00, true);
-  private readonly castingHalo = new AnimatedSprite([Texture.EMPTY]);
+  private readonly castingHalo = new CastingHalo();
 
   constructor(name: string, isSelf: boolean) {
     super();
@@ -161,15 +143,6 @@ export class PlayerSprite extends Container {
 
     this.castingBar.y = -BODY_HEIGHT + 10;
 
-    this.castingHalo.anchor.set(0.5);
-    this.castingHalo.animationSpeed = 0.1;
-    this.castingHalo.blendMode = 'screen';
-
-    this.castingHalo.textures = haloTextures.get('start') ?? [Texture.EMPTY];
-    this.castingHalo.visible = false;
-    this.isCasting = false;
-    this.fitHalo();
-
     this.addChild(this.body, nameLabel, this.hpBar, this.mpBar, this.castingBar, this.castingHalo);
   }
 
@@ -180,7 +153,7 @@ export class PlayerSprite extends Container {
     this.hpBar.setPercentage(view.hpPct);
     this.mpBar.setPercentage(view.mpPct);
     this.castingBar.setPercentage(view.castPct);
-    this.setCastingHalo(view.isCasting);
+    this.castingHalo.setCasting(view.isCasting);
   }
 
   private setPose(animation: PlayerAnimation, facing: Facing8): void {
@@ -198,51 +171,5 @@ export class PlayerSprite extends Container {
   /** Sheets may differ in resolution; keep BODY_HEIGHT on screen. */
   private fitBody(): void {
     this.body.scale.set(BODY_HEIGHT / this.body.texture.height);
-  }
-
-  private fitHalo() {
-    if (!haloTextures.size) return;
-
-    this.castingHalo.scale.set(BODY_HEIGHT / this.castingHalo.texture.height);
-  }
-
-  private setCastingHalo(isCasting: boolean) {
-    if (isCasting === this.isCasting) return; // edge detection, same trick as setPose
-    this.isCasting = isCasting;
-
-    if (this.isCasting) {
-      this.castingHalo.textures = haloTextures.get('start') ?? [Texture.EMPTY];
-      this.castingHalo.loop = false;
-      this.castingHalo.onComplete = () => {
-        this.castingHalo.textures = haloTextures.get('loop') ?? [Texture.EMPTY];
-        this.castingHalo.loop = true;
-        this.fitHalo();
-        this.castingHalo.play();
-
-        this.castingHalo.alpha = 1;
-        gsap.to(this.castingHalo, {
-          alpha: 0.7,
-          duration: 1,
-          ease: 'sine.inOut',
-          yoyo: true,
-          repeat: -1,
-        });
-      };
-      this.fitHalo();
-      this.castingHalo.visible = true;
-      this.castingHalo.play();
-    } else {
-      this.castingHalo.onComplete = undefined;
-      this.castingHalo.stop();
-      this.castingHalo.visible = false;
-      gsap.killTweensOf(this.castingHalo);
-      this.castingHalo.alpha = 1;
-    }
-  }
-
-  /** The pulse tween is infinite; without this, gsap would keep ticking a destroyed sprite. */
-  override destroy(options?: Parameters<Container['destroy']>[0]): void {
-    gsap.killTweensOf(this.castingHalo);
-    super.destroy(options);
   }
 }
