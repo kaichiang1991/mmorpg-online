@@ -38,7 +38,7 @@ export class CastingHalo extends AnimatedSprite {
   }
 
   setCasting(casting: boolean): void {
-    if (casting === this.casting) return; // edge detection: view state arrives every frame
+    if (casting === this.casting) return;
     this.casting = casting;
 
     if (casting) {
@@ -47,8 +47,8 @@ export class CastingHalo extends AnimatedSprite {
       this.onComplete = () => {
         this.textures = texturesFor('loop');
         this.loop = true;
-        this.fit(); // start/loop sheets differ in frame size
-        this.play(); // assigning textures stops the sprite
+        this.fit();
+        this.play();
 
         this.alpha = 1;
         gsap.to(this, {
@@ -71,7 +71,6 @@ export class CastingHalo extends AnimatedSprite {
     }
   }
 
-  /** Keep BODY_HEIGHT on screen regardless of the current sheet's frame size. */
   private fit(): void {
     this.scale.set(BODY_HEIGHT / this.texture.height);
   }
